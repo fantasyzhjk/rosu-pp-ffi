@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>RosuPP</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <Target Name="Build Rust" BeforeTargets="Build">
+		<Exec Command="cargo test"/>
+		<Exec Command="cargo build"/>
+		<Exec Command="mv ./target/debug/rosu_cs.dll ./rosu_cs.dll"/>
+	</Target>
+
+</Project>
