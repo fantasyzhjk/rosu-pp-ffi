@@ -11,7 +11,7 @@
   <Target Name="Build Rust" BeforeTargets="Build">
 		<Exec Command="cargo test"/>
 		<Exec Command="cargo build"/>
-		<Exec Command="mv ./target/debug/rosu_cs.dll ./rosu_cs.dll"/>
+		<Exec Command="mv ./target/debug/rosu_pp_ffi.dll ./rosu_pp_ffi.dll"/>
 	</Target>
 
 </Project>

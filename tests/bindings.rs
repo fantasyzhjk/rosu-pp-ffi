@@ -9,41 +9,41 @@ fn bindings_csharp() -> Result<(), Error> {
     Generator::new(
         Config {
             class: "Rosu".to_string(),
-            dll_name: "rosu_cs".to_string(),
+            dll_name: "rosu_pp_ffi".to_string(),
             namespace_mappings: NamespaceMappings::new("RosuPP"),
             ..Config::default()
         },
-        rosu_cs::my_inventory(),
+        rosu_pp_ffi::my_inventory(),
     )
-    .write_file("./bindings/Interop.cs")?;
+    .write_file("./bindings/bindings.cs")?;
 
     Ok(())
 }
 
-// #[test]
-// #[cfg_attr(miri, ignore)]
-// fn bindings_c() -> Result<(), Error> {
-//     use interoptopus_backend_c::{Config, Generator};
+#[test]
+#[cfg_attr(miri, ignore)]
+fn bindings_c() -> Result<(), Error> {
+    use interoptopus_backend_c::{Config, Generator};
 
-//     Generator::new(
-//         Config {
-//             ifndef: "example_hello_world".to_string(),
-//             ..Config::default()
-//         },
-//         example_hello_world::my_inventory(),
-//     )
-//     .write_file("bindings/c/example_complex.h")?;
+    Generator::new(
+        Config {
+            ifndef: "rosu_pp".to_string(),
+            ..Config::default()
+        },
+        rosu_pp_ffi::my_inventory(),
+    )
+    .write_file("bindings/bindings.h")?;
 
-//     Ok(())
-// }
+    Ok(())
+}
 
-// #[test]
-// #[cfg_attr(miri, ignore)]
-// fn bindings_cpython_cffi() -> Result<(), Error> {
-//     use interoptopus_backend_cpython::{Config, Generator};
+#[test]
+#[cfg_attr(miri, ignore)]
+fn bindings_cpython_cffi() -> Result<(), Error> {
+    use interoptopus_backend_cpython::{Config, Generator};
 
-//     let library = example_hello_world::my_inventory();
-//     Generator::new(Config::default(), library).write_file("bindings/python/example_complex.py")?;
+    let library = rosu_pp_ffi::my_inventory();
+    Generator::new(Config::default(), library).write_file("bindings/bindings.py")?;
 
-//     Ok(())
-// }
+    Ok(())
+}

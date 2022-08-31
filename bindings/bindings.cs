@@ -12,7 +12,7 @@ namespace RosuPP
 {
     public static partial class Rosu
     {
-        public const string NativeLib = "rosu_cs";
+        public const string NativeLib = "rosu_pp_ffi";
 
         static Rosu()
         {
