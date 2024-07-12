@@ -51,4 +51,24 @@ public class UnitTest1
         output.WriteLine("{0}", perf_attr);
         Assert.Equal(46.11642717726248, perf_attr.taiko.ToNullable()!.Value.pp_acc);
     }
+
+    [Fact]
+    public void TestBeatmapAttr()
+    {
+        var beatmap = Beatmap.FromPath("../../../resources/2785319.osu");
+        var builder = BeatmapAttributesBuilder.New();
+        builder.Mods("DT");
+        var bmattr = builder.Build(beatmap);
+        output.WriteLine("cs: {0}", bmattr.cs);
+        output.WriteLine("od: {0}", bmattr.od);
+        output.WriteLine("hp: {0}", bmattr.hp);
+        output.WriteLine("ar: {0}", bmattr.ar);
+        output.WriteLine("cr: {0}", bmattr.clock_rate);
+        var difficulty = Difficulty.New();
+        var diff_attr = difficulty.Calculate(beatmap);
+        var performance = Performance.New();
+        var perf_attr = performance.CalculateFromDifficulty(diff_attr);
+        output.WriteLine("{0}", perf_attr);
+        Assert.Equal(46.11642717726248, perf_attr.taiko.ToNullable()!.Value.pp_acc);
+    }
 }

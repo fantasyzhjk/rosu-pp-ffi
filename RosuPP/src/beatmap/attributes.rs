@@ -148,7 +148,7 @@ impl BeatmapAttributesBuilder {
                 .unwrap_or_else(|| panic!("beatmap: {beatmap:?}"))
         };
 
-        let mut builder = rosu_pp::model::beatmap::BeatmapAttributesBuilder::new();
+        let mut builder = rosu_pp::model::beatmap::BeatmapAttributesBuilder::new().map(&beatmap.inner);
         let BeatmapAttributesBuilder {
             mode,
             mods,
