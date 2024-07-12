@@ -3,6 +3,7 @@ use interoptopus::{
     ffi_service, ffi_service_ctor, ffi_type, ffi_service_method,
     patterns::{slice::FFISlice, string::AsciiPointer},
 };
+use mode::Mode;
 
 #[ffi_type(opaque)]
 #[derive(Default)]
@@ -33,5 +34,15 @@ impl Beatmap {
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn convert(&mut self, mode: Mode) -> bool {
         self.inner.convert_in_place(mode.into()).success()
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn bpm(&mut self) -> f64 {
+        self.inner.bpm()
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn total_break_time(&mut self) -> f64 {
+        self.inner.total_break_time()
     }
 }

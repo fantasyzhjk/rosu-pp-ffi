@@ -8,14 +8,8 @@ using RosuPP;
 
 namespace RosuPP
 {
-    public static class Utils
-    {
-        public static readonly ImmutableArray<string> mods_str = [
-            "NF", "EZ", "TD", "HD", "HR", "SD", "DT", "RX", "HT", "NC", "FL", "AU", "SO", "AP", "PF",
-            "K4", "K5", "K6", "K7", "K8", "FI", "RD", "CN", "TG", "K9", "KC", "K1", "K3", "K2", "S2", "MR"
-        ];
-
-        public enum Mods
+    public static class Utils {
+        public enum Mods : uint
         {
             None = 1 >> 1,
             NoFail = 1 << 0,
@@ -64,39 +58,6 @@ namespace RosuPP
                 | KeyMod,
             ScoreIncreaseMods = Hidden | HardRock | DoubleTime | Flashlight | FadeIn
         };
-
-        public static uint modsParser(string[] mods)
-        {
-            List<Mods> enabled_mods = new();
-            uint num = 0;
-            foreach (var x in mods)
-            {
-                var t = x.ToUpper();
-                for (int i = 0; i < 31; ++i)
-                {
-                    {
-                        if (mods_str[i] == t)
-                        {
-                            uint mod_num = (uint)1 << i;
-                            if (i == 9)
-                            {
-                                mod_num += (uint)Mods.DoubleTime;
-                            }
-                            if (i == 14)
-                            {
-                                mod_num += (uint)Mods.SuddenDeath;
-                            }
-                            enabled_mods.Add((Mods)mod_num);
-                            break;
-                        }
-                    }
-                }
-            }
-            //get mod number
-            foreach (var xx in enabled_mods)
-                num |= (uint)xx;
-            return num;
-        }
     }
 
     public partial struct ScoreState
@@ -182,6 +143,22 @@ namespace RosuPP
         {
             return Calculate(beatmap.Context);
         }
+
+        public void Mods(uint mods) {
+            IMods(mods);
+        }
+
+        public void Mods(string mods) {
+            SMods(mods);
+        }
+
+        public void Mods(string[] mods) {
+            SMods(string.Concat(mods));
+        }
+
+        public void Mods(Mods mods) {
+            PMods(mods.Context);
+        }
     }
 
     public partial class Performance
@@ -189,6 +166,22 @@ namespace RosuPP
         public PerformanceAttributes Calculate(Beatmap beatmap)
         {
             return Calculate(beatmap.Context);
+        }
+
+        public void Mods(uint mods) {
+            IMods(mods);
+        }
+
+        public void Mods(string mods) {
+            SMods(mods);
+        }
+
+        public void Mods(string[] mods) {
+            SMods(string.Concat(mods));
+        }
+
+        public void Mods(Mods mods) {
+            PMods(mods.Context);
         }
     }
 

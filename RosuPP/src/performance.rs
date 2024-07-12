@@ -1,10 +1,14 @@
 use crate::*;
 use attributes::DifficultyAttributes;
 use beatmap::Beatmap;
+use hitresult_priority::HitResultPriority;
 use interoptopus::{
     ffi_service, ffi_service_ctor, ffi_service_method, ffi_type,
-    patterns::option::FFIOption,
+    patterns::{option::FFIOption, string::AsciiPointer},
 };
+use mode::Mode;
+use rosu_mods::GameModsIntermode;
+use mods::Mods;
 
 #[ffi_type(opaque)]
 #[repr(C)]
@@ -12,7 +16,7 @@ use interoptopus::{
 #[allow(non_snake_case)]
 pub struct Performance {
     pub mode: FFIOption<Mode>,
-    pub mods: FFIOption<u32>,
+    pub mods: FFIOption<GameModsIntermode>,
     pub passed_objects: FFIOption<u32>,
     pub clock_rate: FFIOption<f64>,
     pub ar: FFIOption<f32>,
@@ -24,7 +28,7 @@ pub struct Performance {
     pub accuracy: FFIOption<f64>,
     pub misses: FFIOption<u32>,
     pub combo: FFIOption<u32>,
-    // todo: pub hitresult_priority: some_enum
+    pub hitresult_priority: FFIOption<HitResultPriority>,
     
     pub n300: FFIOption<u32>,
     pub n100: FFIOption<u32>,
@@ -47,10 +51,23 @@ impl Performance {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn mods(&mut self, mods: u32) {
-        self.mods = Some(mods).into();
+    pub fn p_mods(&mut self, mods: &Mods) {
+        self.mods = Some(mods.inner.clone()).into();
     }
 
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn i_mods(&mut self, mods: u32) {
+        self.mods = Some(GameModsIntermode::from_bits(mods)).into();
+    }
+
+    #[ffi_service_method(on_panic = "ffi_error")]
+    pub fn s_mods(&mut self, str: AsciiPointer) -> Result<(), Error> {
+        self.mods = Some(GameModsIntermode::from_acronyms(
+            str.as_str().map_err(|_e| Error::InvalidString(None))?,
+        ))
+        .into();
+        Ok(())
+    }
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn passed_objects(&mut self, passed_objects: u32) {
         self.passed_objects = Some(passed_objects).into();
@@ -96,6 +113,11 @@ impl Performance {
         self.combo = Some(combo).into();
     }
 
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn hitresult_priority(&mut self, hitresult_priority: HitResultPriority) {
+        self.hitresult_priority = Some(hitresult_priority).into();
+    }
+    
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn n300(&mut self, n300: u32) {
         self.n300 = Some(n300).into();
@@ -164,6 +186,7 @@ impl Performance {
             accuracy,
             misses,
             combo,
+            hitresult_priority,
             n300,
             n100,
             n50,
@@ -175,8 +198,8 @@ impl Performance {
             perf = perf.mode_or_ignore(mode.into());
         }
 
-        if let Some(mods) = mods.into_option() {
-            perf = perf.mods(mods);
+        if let Some(mods) = mods.as_ref() {
+            perf = perf.mods(mods.bits());
         }
 
         if let Some(passed_objects) = passed_objects.into_option() {
@@ -217,6 +240,10 @@ impl Performance {
 
         if let Some(combo) = combo.into_option() {
             perf = perf.combo(combo);
+        }
+
+        if let Some(hitresult_priority) = hitresult_priority.into_option() {
+            perf = perf.hitresult_priority(hitresult_priority.into());
         }
 
         if let Some(n300) = n300.into_option() {

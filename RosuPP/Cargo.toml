@@ -13,6 +13,7 @@ crate-type = ["cdylib", "rlib"]
 interoptopus = { version = "0.14.26", features = ["log"] }
 rosu-pp = "1.1.0"
 rosu-map = "0.1.1"
+rosu-mods = "0.1.0"
 thiserror = "1.0"
 
 [dev-dependencies]

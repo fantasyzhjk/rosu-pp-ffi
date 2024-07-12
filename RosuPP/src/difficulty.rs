@@ -1,16 +1,17 @@
+use crate::beatmap::Beatmap;
 use crate::*;
 use interoptopus::{
     ffi_service, ffi_service_ctor, ffi_service_method, ffi_type,
-    patterns::option::FFIOption,
+    patterns::{option::FFIOption, string::AsciiPointer},
 };
-use crate::beatmap::Beatmap;
+use mods::Mods;
+use rosu_mods::GameModsIntermode;
 
 #[ffi_type(opaque)]
-#[repr(C)]
-#[derive(Clone, Default, PartialEq)]
+#[derive(Default)]
 #[allow(non_snake_case)]
 pub struct Difficulty {
-    pub mods: FFIOption<u32>,
+    pub mods: FFIOption<GameModsIntermode>,
     pub passed_objects: FFIOption<u32>,
     /// Clock rate will be clamped internally between 0.01 and 100.0.
     ///
@@ -38,8 +39,22 @@ impl Difficulty {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn mods(&mut self, mods: u32) {
-        self.mods = Some(mods).into();
+    pub fn p_mods(&mut self, mods: &Mods) {
+        self.mods = Some(mods.inner.clone()).into();
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn i_mods(&mut self, mods: u32) {
+        self.mods = Some(GameModsIntermode::from_bits(mods)).into();
+    }
+
+    #[ffi_service_method(on_panic = "ffi_error")]
+    pub fn s_mods(&mut self, str: AsciiPointer) -> Result<(), Error> {
+        self.mods = Some(GameModsIntermode::from_acronyms(
+            str.as_str().map_err(|_e| Error::InvalidString(None))?,
+        ))
+        .into();
+        Ok(())
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
@@ -61,7 +76,7 @@ impl Difficulty {
     pub fn cs(&mut self, cs: f32) {
         self.cs = Some(cs).into();
     }
-    
+
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn hp(&mut self, hp: f32) {
         self.hp = Some(hp).into();
@@ -80,19 +95,29 @@ impl Difficulty {
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn calculate(&self, beatmap: *const Beatmap) -> attributes::DifficultyAttributes {
         let beatmap = unsafe {
-            beatmap.as_ref().unwrap_or_else(|| {
-                panic!("beatmap: {beatmap:?}")
-            })
+            beatmap
+                .as_ref()
+                .unwrap_or_else(|| panic!("beatmap: {beatmap:?}"))
         };
-        
+
         self.construct().calculate(&beatmap.inner).into()
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn get_clock_rate(&mut self) -> f64 {
+        f64::from(
+            self.mods
+                .as_ref()
+                .map(GameModsIntermode::legacy_clock_rate)
+                .unwrap_or(1.0),
+        )
     }
 }
 
 impl Difficulty {
     pub fn construct(&self) -> rosu_pp::Difficulty {
         let mut diff = rosu_pp::Difficulty::new();
-        
+
         let Difficulty {
             mods,
             passed_objects,
@@ -104,7 +129,7 @@ impl Difficulty {
             hardrock_offsets,
         } = self;
 
-        if let Some(mods) = mods.into_option() {
+        if let Some(mods) = mods.as_ref() {
             diff = diff.mods(mods);
         }
 

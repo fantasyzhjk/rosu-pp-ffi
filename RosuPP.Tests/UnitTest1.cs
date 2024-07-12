@@ -33,9 +33,10 @@ public class UnitTest1
         var d = Assembly.GetExecutingAssembly().Location;
         var beatmap = Beatmap.FromPath("../../../resources/2785319.osu");
         var performance = Performance.New();
+        performance.Mods((uint)Utils.Mods.Hidden);
         var attr = performance.Calculate(beatmap);
         output.WriteLine("{0}", attr);
-        Assert.Equal(255.9419635475736, attr.osu.ToNullable()!.Value.pp);
+        Assert.Equal(281.28736211196446, attr.osu.ToNullable()!.Value.pp);
     }
 
     [Fact]

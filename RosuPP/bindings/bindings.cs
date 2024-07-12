@@ -38,6 +38,12 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_convert")]
         public static extern bool beatmap_convert(IntPtr context, Mode mode);
 
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_bpm")]
+        public static extern double beatmap_bpm(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_total_break_time")]
+        public static extern double beatmap_total_break_time(IntPtr context);
+
         /// Destroys the given instance.
         ///
         /// # Safety
@@ -50,8 +56,14 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_new")]
         public static extern FFIError difficulty_new(ref IntPtr context);
 
-        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_mods")]
-        public static extern void difficulty_mods(IntPtr context, uint mods);
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_p_mods")]
+        public static extern void difficulty_p_mods(IntPtr context, IntPtr mods);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_i_mods")]
+        public static extern void difficulty_i_mods(IntPtr context, uint mods);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_s_mods")]
+        public static extern FFIError difficulty_s_mods(IntPtr context, string str);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_passed_objects")]
         public static extern void difficulty_passed_objects(IntPtr context, uint passed_objects);
@@ -77,6 +89,9 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_calculate")]
         public static extern DifficultyAttributes difficulty_calculate(IntPtr context, IntPtr beatmap);
 
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_get_clock_rate")]
+        public static extern double difficulty_get_clock_rate(IntPtr context);
+
         /// Destroys the given instance.
         ///
         /// # Safety
@@ -92,8 +107,14 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_mode")]
         public static extern void performance_mode(IntPtr context, Mode mode);
 
-        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_mods")]
-        public static extern void performance_mods(IntPtr context, uint mods);
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_p_mods")]
+        public static extern void performance_p_mods(IntPtr context, IntPtr mods);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_i_mods")]
+        public static extern void performance_i_mods(IntPtr context, uint mods);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_s_mods")]
+        public static extern FFIError performance_s_mods(IntPtr context, string str);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_passed_objects")]
         public static extern void performance_passed_objects(IntPtr context, uint passed_objects);
@@ -121,6 +142,9 @@ namespace RosuPP
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_combo")]
         public static extern void performance_combo(IntPtr context, uint combo);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_hitresult_priority")]
+        public static extern void performance_hitresult_priority(IntPtr context, HitResultPriority hitresult_priority);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_n300")]
         public static extern void performance_n300(IntPtr context, uint n300);
@@ -164,6 +188,36 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "string_to_cstr")]
         public static extern IntPtr string_to_cstr(IntPtr context);
 
+        /// Destroys the given instance.
+        ///
+        /// # Safety
+        ///
+        /// The passed parameter MUST have been created with the corresponding init function;
+        /// passing any other value results in undefined behavior.
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_destroy")]
+        public static extern FFIError mods_destroy(ref IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_from_acronyms")]
+        public static extern FFIError mods_from_acronyms(ref IntPtr context, string str);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_from_bits")]
+        public static extern FFIError mods_from_bits(ref IntPtr context, uint bits);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_bits")]
+        public static extern uint mods_bits(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_is_empty")]
+        public static extern bool mods_is_empty(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_contains")]
+        public static extern bool mods_contains(IntPtr context, string str);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intersects")]
+        public static extern bool mods_intersects(IntPtr context, string str);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_legacy_clock_rate")]
+        public static extern float mods_legacy_clock_rate(IntPtr context);
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "debug_difficylty_attributes")]
         public static extern void debug_difficylty_attributes(ref DifficultyAttributes res, IntPtr str);
 
@@ -173,6 +227,12 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "debug_score_state")]
         public static extern void debug_score_state(ref ScoreState res, IntPtr str);
 
+    }
+
+    public enum HitResultPriority
+    {
+        BestCase = 0,
+        WorstCase = 1,
     }
 
     public enum Mode
@@ -769,6 +829,16 @@ namespace RosuPP
             return Rosu.beatmap_convert(_context, mode);
         }
 
+        public double Bpm()
+        {
+            return Rosu.beatmap_bpm(_context);
+        }
+
+        public double TotalBreakTime()
+        {
+            return Rosu.beatmap_total_break_time(_context);
+        }
+
         public IntPtr Context => _context;
     }
 
@@ -799,9 +869,23 @@ namespace RosuPP
             }
         }
 
-        public void Mods(uint mods)
+        public void PMods(IntPtr mods)
         {
-            Rosu.difficulty_mods(_context, mods);
+            Rosu.difficulty_p_mods(_context, mods);
+        }
+
+        public void IMods(uint mods)
+        {
+            Rosu.difficulty_i_mods(_context, mods);
+        }
+
+        public void SMods(string str)
+        {
+            var rval = Rosu.difficulty_s_mods(_context, str);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
         }
 
         public void PassedObjects(uint passed_objects)
@@ -844,6 +928,11 @@ namespace RosuPP
             return Rosu.difficulty_calculate(_context, beatmap);
         }
 
+        public double GetClockRate()
+        {
+            return Rosu.difficulty_get_clock_rate(_context);
+        }
+
         public IntPtr Context => _context;
     }
 
@@ -879,9 +968,23 @@ namespace RosuPP
             Rosu.performance_mode(_context, mode);
         }
 
-        public void Mods(uint mods)
+        public void PMods(IntPtr mods)
         {
-            Rosu.performance_mods(_context, mods);
+            Rosu.performance_p_mods(_context, mods);
+        }
+
+        public void IMods(uint mods)
+        {
+            Rosu.performance_i_mods(_context, mods);
+        }
+
+        public void SMods(string str)
+        {
+            var rval = Rosu.performance_s_mods(_context, str);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
         }
 
         public void PassedObjects(uint passed_objects)
@@ -927,6 +1030,11 @@ namespace RosuPP
         public void Combo(uint combo)
         {
             Rosu.performance_combo(_context, combo);
+        }
+
+        public void HitresultPriority(HitResultPriority hitresult_priority)
+        {
+            Rosu.performance_hitresult_priority(_context, hitresult_priority);
         }
 
         public void N300(uint n300)
@@ -1014,6 +1122,72 @@ namespace RosuPP
         {
             var s = Rosu.string_to_cstr(_context);
             return Marshal.PtrToStringAnsi(s);
+        }
+
+        public IntPtr Context => _context;
+    }
+
+
+    public partial class Mods : IDisposable
+    {
+        private IntPtr _context;
+
+        private Mods() {}
+
+        public static Mods FromAcronyms(string str)
+        {
+            var self = new Mods();
+            var rval = Rosu.mods_from_acronyms(ref self._context, str);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+            return self;
+        }
+
+        public static Mods FromBits(uint bits)
+        {
+            var self = new Mods();
+            var rval = Rosu.mods_from_bits(ref self._context, bits);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+            return self;
+        }
+
+        public void Dispose()
+        {
+            var rval = Rosu.mods_destroy(ref _context);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
+        public uint Bits()
+        {
+            return Rosu.mods_bits(_context);
+        }
+
+        public bool IsEmpty()
+        {
+            return Rosu.mods_is_empty(_context);
+        }
+
+        public bool Contains(string str)
+        {
+            return Rosu.mods_contains(_context, str);
+        }
+
+        public bool Intersects(string str)
+        {
+            return Rosu.mods_intersects(_context, str);
+        }
+
+        public float LegacyClockRate()
+        {
+            return Rosu.mods_legacy_clock_rate(_context);
         }
 
         public IntPtr Context => _context;

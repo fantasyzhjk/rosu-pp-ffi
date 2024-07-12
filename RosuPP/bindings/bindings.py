@@ -14,9 +14,13 @@ def init_lib(path):
     c_lib.beatmap_from_bytes.argtypes = [ctypes.POINTER(ctypes.c_void_p), Sliceu8]
     c_lib.beatmap_from_path.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_char)]
     c_lib.beatmap_convert.argtypes = [ctypes.c_void_p, ctypes.c_int]
+    c_lib.beatmap_bpm.argtypes = [ctypes.c_void_p]
+    c_lib.beatmap_total_break_time.argtypes = [ctypes.c_void_p]
     c_lib.difficulty_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
     c_lib.difficulty_new.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
-    c_lib.difficulty_mods.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.difficulty_p_mods.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    c_lib.difficulty_i_mods.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.difficulty_s_mods.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
     c_lib.difficulty_passed_objects.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.difficulty_clock_rate.argtypes = [ctypes.c_void_p, ctypes.c_double]
     c_lib.difficulty_ar.argtypes = [ctypes.c_void_p, ctypes.c_float]
@@ -25,10 +29,13 @@ def init_lib(path):
     c_lib.difficulty_od.argtypes = [ctypes.c_void_p, ctypes.c_float]
     c_lib.difficulty_hardrock_offsets.argtypes = [ctypes.c_void_p, ctypes.c_bool]
     c_lib.difficulty_calculate.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    c_lib.difficulty_get_clock_rate.argtypes = [ctypes.c_void_p]
     c_lib.performance_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
     c_lib.performance_new.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
     c_lib.performance_mode.argtypes = [ctypes.c_void_p, ctypes.c_int]
-    c_lib.performance_mods.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_p_mods.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    c_lib.performance_i_mods.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_s_mods.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
     c_lib.performance_passed_objects.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_clock_rate.argtypes = [ctypes.c_void_p, ctypes.c_double]
     c_lib.performance_ar.argtypes = [ctypes.c_void_p, ctypes.c_float]
@@ -50,6 +57,14 @@ def init_lib(path):
     c_lib.string_empty.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
     c_lib.string_is_init.argtypes = [ctypes.c_void_p]
     c_lib.string_to_cstr.argtypes = [ctypes.c_void_p]
+    c_lib.mods_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
+    c_lib.mods_from_acronyms.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_char)]
+    c_lib.mods_from_bits.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_uint32]
+    c_lib.mods_bits.argtypes = [ctypes.c_void_p]
+    c_lib.mods_is_empty.argtypes = [ctypes.c_void_p]
+    c_lib.mods_contains.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
+    c_lib.mods_intersects.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
+    c_lib.mods_legacy_clock_rate.argtypes = [ctypes.c_void_p]
     c_lib.debug_difficylty_attributes.argtypes = [ctypes.POINTER(DifficultyAttributes), ctypes.c_void_p]
     c_lib.debug_performance_attributes.argtypes = [ctypes.POINTER(PerformanceAttributes), ctypes.c_void_p]
     c_lib.debug_score_state.argtypes = [ctypes.POINTER(ScoreState), ctypes.c_void_p]
@@ -58,11 +73,16 @@ def init_lib(path):
     c_lib.beatmap_from_bytes.restype = ctypes.c_int
     c_lib.beatmap_from_path.restype = ctypes.c_int
     c_lib.beatmap_convert.restype = ctypes.c_bool
+    c_lib.beatmap_bpm.restype = ctypes.c_double
+    c_lib.beatmap_total_break_time.restype = ctypes.c_double
     c_lib.difficulty_destroy.restype = ctypes.c_int
     c_lib.difficulty_new.restype = ctypes.c_int
+    c_lib.difficulty_s_mods.restype = ctypes.c_int
     c_lib.difficulty_calculate.restype = DifficultyAttributes
+    c_lib.difficulty_get_clock_rate.restype = ctypes.c_double
     c_lib.performance_destroy.restype = ctypes.c_int
     c_lib.performance_new.restype = ctypes.c_int
+    c_lib.performance_s_mods.restype = ctypes.c_int
     c_lib.performance_generate_state.restype = ScoreState
     c_lib.performance_calculate.restype = PerformanceAttributes
     c_lib.performance_calculate_from_difficulty.restype = PerformanceAttributes
@@ -71,17 +91,30 @@ def init_lib(path):
     c_lib.string_empty.restype = ctypes.c_int
     c_lib.string_is_init.restype = ctypes.c_bool
     c_lib.string_to_cstr.restype = ctypes.POINTER(ctypes.c_char)
+    c_lib.mods_destroy.restype = ctypes.c_int
+    c_lib.mods_from_acronyms.restype = ctypes.c_int
+    c_lib.mods_from_bits.restype = ctypes.c_int
+    c_lib.mods_bits.restype = ctypes.c_uint32
+    c_lib.mods_is_empty.restype = ctypes.c_bool
+    c_lib.mods_contains.restype = ctypes.c_bool
+    c_lib.mods_intersects.restype = ctypes.c_bool
+    c_lib.mods_legacy_clock_rate.restype = ctypes.c_float
 
     c_lib.beatmap_destroy.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
     c_lib.beatmap_from_bytes.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
     c_lib.beatmap_from_path.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
     c_lib.difficulty_destroy.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
     c_lib.difficulty_new.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
+    c_lib.difficulty_s_mods.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
     c_lib.performance_destroy.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
     c_lib.performance_new.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
+    c_lib.performance_s_mods.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
     c_lib.string_destroy.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
     c_lib.string_from_c_str.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
     c_lib.string_empty.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
+    c_lib.mods_destroy.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
+    c_lib.mods_from_acronyms.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
+    c_lib.mods_from_bits.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
 
 
 def debug_difficylty_attributes(res: ctypes.POINTER(DifficultyAttributes), str: ctypes.c_void_p):
@@ -1427,6 +1460,14 @@ class Beatmap:
         """ Convert a Beatmap to the specified mode"""
         return c_lib.beatmap_convert(self._ctx, mode)
 
+    def bpm(self, ) -> float:
+        """"""
+        return c_lib.beatmap_bpm(self._ctx, )
+
+    def total_break_time(self, ) -> float:
+        """"""
+        return c_lib.beatmap_total_break_time(self._ctx, )
+
 
 
 class Difficulty:
@@ -1450,9 +1491,19 @@ class Difficulty:
 
     def __del__(self):
         c_lib.difficulty_destroy(self._ctx, )
-    def mods(self, mods: int):
+    def p_mods(self, mods: ctypes.c_void_p):
         """"""
-        return c_lib.difficulty_mods(self._ctx, mods)
+        return c_lib.difficulty_p_mods(self._ctx, mods)
+
+    def i_mods(self, mods: int):
+        """"""
+        return c_lib.difficulty_i_mods(self._ctx, mods)
+
+    def s_mods(self, str: bytes):
+        """"""
+        if not hasattr(str, "__ctypes_from_outparam__"):
+            str = ctypes.cast(str, ctypes.POINTER(ctypes.c_char))
+        return c_lib.difficulty_s_mods(self._ctx, str)
 
     def passed_objects(self, passed_objects: int):
         """"""
@@ -1486,6 +1537,10 @@ class Difficulty:
         """"""
         return c_lib.difficulty_calculate(self._ctx, beatmap)
 
+    def get_clock_rate(self, ) -> float:
+        """"""
+        return c_lib.difficulty_get_clock_rate(self._ctx, )
+
 
 
 class Performance:
@@ -1513,9 +1568,19 @@ class Performance:
         """"""
         return c_lib.performance_mode(self._ctx, mode)
 
-    def mods(self, mods: int):
+    def p_mods(self, mods: ctypes.c_void_p):
         """"""
-        return c_lib.performance_mods(self._ctx, mods)
+        return c_lib.performance_p_mods(self._ctx, mods)
+
+    def i_mods(self, mods: int):
+        """"""
+        return c_lib.performance_i_mods(self._ctx, mods)
+
+    def s_mods(self, str: bytes):
+        """"""
+        if not hasattr(str, "__ctypes_from_outparam__"):
+            str = ctypes.cast(str, ctypes.POINTER(ctypes.c_char))
+        return c_lib.performance_s_mods(self._ctx, str)
 
     def passed_objects(self, passed_objects: int):
         """"""
@@ -1622,6 +1687,63 @@ class OwnedString:
         """"""
         rval = c_lib.string_to_cstr(self._ctx, )
         return ctypes.string_at(rval)
+
+
+
+class Mods:
+    __api_lock = object()
+
+    def __init__(self, api_lock, ctx):
+        assert(api_lock == Mods.__api_lock), "You must create this with a static constructor." 
+        self._ctx = ctx
+
+    @property
+    def _as_parameter_(self):
+        return self._ctx
+
+    @staticmethod
+    def from_acronyms(str: bytes) -> Mods:
+        """"""
+        ctx = ctypes.c_void_p()
+        if not hasattr(str, "__ctypes_from_outparam__"):
+            str = ctypes.cast(str, ctypes.POINTER(ctypes.c_char))
+        c_lib.mods_from_acronyms(ctx, str)
+        self = Mods(Mods.__api_lock, ctx)
+        return self
+
+    @staticmethod
+    def from_bits(bits: int) -> Mods:
+        """"""
+        ctx = ctypes.c_void_p()
+        c_lib.mods_from_bits(ctx, bits)
+        self = Mods(Mods.__api_lock, ctx)
+        return self
+
+    def __del__(self):
+        c_lib.mods_destroy(self._ctx, )
+    def bits(self, ) -> int:
+        """"""
+        return c_lib.mods_bits(self._ctx, )
+
+    def is_empty(self, ) -> bool:
+        """"""
+        return c_lib.mods_is_empty(self._ctx, )
+
+    def contains(self, str: bytes) -> bool:
+        """"""
+        if not hasattr(str, "__ctypes_from_outparam__"):
+            str = ctypes.cast(str, ctypes.POINTER(ctypes.c_char))
+        return c_lib.mods_contains(self._ctx, str)
+
+    def intersects(self, str: bytes) -> bool:
+        """"""
+        if not hasattr(str, "__ctypes_from_outparam__"):
+            str = ctypes.cast(str, ctypes.POINTER(ctypes.c_char))
+        return c_lib.mods_intersects(self._ctx, str)
+
+    def legacy_clock_rate(self, ) -> float:
+        """"""
+        return c_lib.mods_legacy_clock_rate(self._ctx, )
 
 
 

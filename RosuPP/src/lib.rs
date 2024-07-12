@@ -17,8 +17,9 @@ mod fruit;
 mod taiko;
 mod performance;
 mod state;
+mod mods;
+mod hitresult_priority;
 use error::{FFIError, Error};
-use mode::Mode;
 
 #[ffi_function]
 #[no_mangle]
@@ -30,7 +31,8 @@ pub extern "C" fn pattern_api_guard() -> APIVersion {
 // an abstract FFI representation (called `Library`) for this crate.
 pub fn ffi_inventory() -> Inventory {
     InventoryBuilder::new()
-        .register(extra_type!(Mode))
+        .register(extra_type!(mode::Mode))
+        .register(extra_type!(hitresult_priority::HitResultPriority))
         .register(extra_type!(osu::attributes::OsuDifficultyAttributes))
         .register(extra_type!(osu::attributes::OsuPerformanceAttributes))
         .register(extra_type!(state::ScoreState))
@@ -40,6 +42,7 @@ pub fn ffi_inventory() -> Inventory {
         .register(pattern!(difficulty::Difficulty))
         .register(pattern!(performance::Performance))
         .register(pattern!(owned_string::OwnedString))
+        .register(pattern!(mods::Mods))
         .register(function!(attributes::debug_difficylty_attributes))
         .register(function!(attributes::debug_performance_attributes))
         .register(function!(state::debug_score_state))

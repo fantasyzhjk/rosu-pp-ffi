@@ -29,6 +29,8 @@ typedef struct beatmap beatmap;
 
 typedef struct difficulty difficulty;
 
+typedef struct mods mods;
+
 typedef struct ownedstring ownedstring;
 
 typedef struct performance performance;
@@ -328,6 +330,10 @@ ffierror beatmap_from_path(beatmap** context, const char* path);
 /// Convert a Beatmap to the specified mode
 bool beatmap_convert(beatmap* context, mode mode);
 
+double beatmap_bpm(beatmap* context);
+
+double beatmap_total_break_time(beatmap* context);
+
 /// Destroys the given instance.
 ///
 /// # Safety
@@ -338,7 +344,11 @@ ffierror difficulty_destroy(difficulty** context);
 
 ffierror difficulty_new(difficulty** context);
 
-void difficulty_mods(difficulty* context, uint32_t mods);
+void difficulty_p_mods(difficulty* context, const mods* mods);
+
+void difficulty_i_mods(difficulty* context, uint32_t mods);
+
+ffierror difficulty_s_mods(difficulty* context, const char* str);
 
 void difficulty_passed_objects(difficulty* context, uint32_t passed_objects);
 
@@ -356,6 +366,8 @@ void difficulty_hardrock_offsets(difficulty* context, bool hardrock_offsets);
 
 difficultyattributes difficulty_calculate(const difficulty* context, const beatmap* beatmap);
 
+double difficulty_get_clock_rate(difficulty* context);
+
 /// Destroys the given instance.
 ///
 /// # Safety
@@ -368,7 +380,11 @@ ffierror performance_new(performance** context);
 
 void performance_mode(performance* context, mode mode);
 
-void performance_mods(performance* context, uint32_t mods);
+void performance_p_mods(performance* context, const mods* mods);
+
+void performance_i_mods(performance* context, uint32_t mods);
+
+ffierror performance_s_mods(performance* context, const char* str);
 
 void performance_passed_objects(performance* context, uint32_t passed_objects);
 
@@ -417,6 +433,28 @@ ffierror string_empty(ownedstring** context);
 bool string_is_init(const ownedstring* context);
 
 const char* string_to_cstr(const ownedstring* context);
+
+/// Destroys the given instance.
+///
+/// # Safety
+///
+/// The passed parameter MUST have been created with the corresponding init function;
+/// passing any other value results in undefined behavior.
+ffierror mods_destroy(mods** context);
+
+ffierror mods_from_acronyms(mods** context, const char* str);
+
+ffierror mods_from_bits(mods** context, uint32_t bits);
+
+uint32_t mods_bits(mods* context);
+
+bool mods_is_empty(mods* context);
+
+bool mods_contains(mods* context, const char* str);
+
+bool mods_intersects(mods* context, const char* str);
+
+float mods_legacy_clock_rate(mods* context);
 
 void debug_difficylty_attributes(const difficultyattributes* res, ownedstring* str);
 

@@ -206,6 +206,7 @@ dependencies = [
  "interoptopus_backend_cpython",
  "interoptopus_backend_csharp",
  "rosu-map",
+ "rosu-mods",
  "rosu-pp",
  "thiserror",
 ]
