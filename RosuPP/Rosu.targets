@@ -60,11 +60,10 @@
     <ItemGroup>
         <CargoChannelArg Condition=" '$(CargoChannel)' != '' " Include="+$(CargoChannel)" />
         <CargoBuildArg Include="--target $(CargoTarget)" />
-        <!-- 不管了，一直release就完了 -->
-        <CargoBuildArg Include="--release" />
+        <CargoBuildArg Condition=" '$(CargoConfiguration)' == 'release' " Include="--release" />
     </ItemGroup>
 
-    <Target Name="Cargo" BeforeTargets="Build">
+    <Target Name="Cargo" BeforeTargets="BeforeBuild">
         <Exec Command="cargo @(CargoChannelArg, ' ') build @(CargoBuildArg, ' ')" WorkingDirectory="$(CargoWorkspacePath)" />
         <Exec Command="cargo @(CargoChannelArg, ' ') test --test bindings_cs @(CargoBuildArg, ' ')" WorkingDirectory="$(CargoWorkspacePath)" />
     </Target>
@@ -79,21 +78,19 @@
         <NativeLibrary Include="$(CargoArtifactPath)" />
     </ItemGroup>
 
-    <!-- Some additional libs we need for Windows
-    <ItemGroup Condition=" '$(IsAotBuild)' == 'true' And '$(IsWindows)' == 'true' ">
-        <NativeLibrary Include="xx.lib" />
-    </ItemGroup> -->
-
     <!-- In standard builds, copy the native dynamic artifact to the output dir  -->
     <ItemGroup Condition=" '$(IsAotBuild)' == 'false' ">
         <CargoLibrary Include="$(CargoArtifactPath)" />
     </ItemGroup>
 
-    <Target Name="CargoBuildCopy" DependsOnTargets="Cargo" AfterTargets="Build" Condition=" '$(IsAotBuild)' == 'false' ">
-        <Copy Condition=" '$(TargetDir)' != '' " SourceFiles="@(CargoLibrary)" DestinationFolder="$(TargetDir)" />
-    </Target>
-
-    <Target Name="CargoPublishCopy" DependsOnTargets="Cargo" AfterTargets="Publish" Condition=" '$(IsAotBuild)' == 'false' ">
-        <Copy SourceFiles="@(CargoLibrary)" DestinationFolder="$(PublishDir)" />
+    <Target Name="CargoBuildCopy" DependsOnTargets="Cargo" BeforeTargets="BeforeBuild" Condition=" '$(IsAotBuild)' == 'false' ">
+        <!-- <Copy Condition=" '$(TargetDir)' != '' " SourceFiles="@(CargoLibrary)" DestinationFolder="$(TargetDir)/native/" /> -->
+        <Message Text="Copy native libs" Importance="high" />
+        <ItemGroup>
+			<Content Include="@(CargoLibrary)">
+                <Link>native/%(RecursiveDir)%(Filename)%(Extension)</Link>
+                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            </Content>
+		</ItemGroup>
     </Target>
 </Project>

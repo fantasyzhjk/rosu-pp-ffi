@@ -23,6 +23,5 @@
   <ItemGroup>
     <ProjectReference Include="..\RosuPP\RosuPP.csproj" />
   </ItemGroup>
-  <Import Project="../RosuPP/Rosu.targets" />
 
 </Project>
