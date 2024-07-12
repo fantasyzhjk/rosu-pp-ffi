@@ -168,7 +168,15 @@ impl Performance {
         performance.calculate().into()
     }
 
-
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn get_clock_rate(&mut self) -> f64 {
+        f64::from(
+            self.mods
+                .as_ref()
+                .map(GameModsIntermode::legacy_clock_rate)
+                .unwrap_or(1.0),
+        )
+    }
 }
 
 impl Performance {

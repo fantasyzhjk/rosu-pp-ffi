@@ -1,3 +1,5 @@
+pub mod attributes;
+
 use crate::*;
 use interoptopus::{
     ffi_service, ffi_service_ctor, ffi_type, ffi_service_method,

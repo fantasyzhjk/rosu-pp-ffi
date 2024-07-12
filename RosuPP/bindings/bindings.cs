@@ -25,6 +25,51 @@ namespace RosuPP
         ///
         /// The passed parameter MUST have been created with the corresponding init function;
         /// passing any other value results in undefined behavior.
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_destroy")]
+        public static extern FFIError beatmap_attributes_destroy(ref IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_new")]
+        public static extern FFIError beatmap_attributes_new(ref IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_mode")]
+        public static extern void beatmap_attributes_mode(IntPtr context, Mode mode);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_p_mods")]
+        public static extern void beatmap_attributes_p_mods(IntPtr context, IntPtr mods);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_i_mods")]
+        public static extern void beatmap_attributes_i_mods(IntPtr context, uint mods);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_s_mods")]
+        public static extern FFIError beatmap_attributes_s_mods(IntPtr context, string str);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_clock_rate")]
+        public static extern void beatmap_attributes_clock_rate(IntPtr context, double clock_rate);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_ar")]
+        public static extern void beatmap_attributes_ar(IntPtr context, float ar);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_cs")]
+        public static extern void beatmap_attributes_cs(IntPtr context, float cs);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_hp")]
+        public static extern void beatmap_attributes_hp(IntPtr context, float hp);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_od")]
+        public static extern void beatmap_attributes_od(IntPtr context, float od);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_get_clock_rate")]
+        public static extern double beatmap_attributes_get_clock_rate(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_build")]
+        public static extern BeatmapAttributes beatmap_attributes_build(IntPtr context, IntPtr beatmap);
+
+        /// Destroys the given instance.
+        ///
+        /// # Safety
+        ///
+        /// The passed parameter MUST have been created with the corresponding init function;
+        /// passing any other value results in undefined behavior.
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_destroy")]
         public static extern FFIError beatmap_destroy(ref IntPtr context);
 
@@ -167,6 +212,9 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_calculate_from_difficulty")]
         public static extern PerformanceAttributes performance_calculate_from_difficulty(IntPtr context, DifficultyAttributes difficulty_attr);
 
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_get_clock_rate")]
+        public static extern double performance_get_clock_rate(IntPtr context);
+
         /// Destroys the given instance.
         ///
         /// # Safety
@@ -247,6 +295,25 @@ namespace RosuPP
         Mania = 3,
     }
 
+    /// Summary struct for a [`Beatmap`]'s attributes.
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
+    public partial struct BeatmapAttributes
+    {
+        /// The approach rate.
+        public double ar;
+        /// The overall difficulty.
+        public double od;
+        /// The circle size.
+        public double cs;
+        /// The health drain rate
+        public double hp;
+        /// The clock rate with respect to mods.
+        public double clock_rate;
+        /// The hit windows for approach rate and overall difficulty.
+        public HitWindows hit_windows;
+    }
+
     /// The result of a difficulty calculation on an osu!catch map.
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
@@ -289,6 +356,17 @@ namespace RosuPP
         public OptionCatchDifficultyAttributes fruit;
         public OptionManiaDifficultyAttributes mania;
         public Mode mode;
+    }
+
+    /// AR and OD hit windows
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
+    public partial struct HitWindows
+    {
+        /// Hit window for approach rate i.e. `TimePreempt` in milliseconds.
+        public double ar;
+        /// Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds.
+        public double od;
     }
 
     /// The result of a difficulty calculation on an osu!mania map.
@@ -786,6 +864,95 @@ namespace RosuPP
 
 
 
+    public partial class BeatmapAttributesBuilder : IDisposable
+    {
+        private IntPtr _context;
+
+        private BeatmapAttributesBuilder() {}
+
+        public static BeatmapAttributesBuilder New()
+        {
+            var self = new BeatmapAttributesBuilder();
+            var rval = Rosu.beatmap_attributes_new(ref self._context);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+            return self;
+        }
+
+        public void Dispose()
+        {
+            var rval = Rosu.beatmap_attributes_destroy(ref _context);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
+        public void Mode(Mode mode)
+        {
+            Rosu.beatmap_attributes_mode(_context, mode);
+        }
+
+        public void PMods(IntPtr mods)
+        {
+            Rosu.beatmap_attributes_p_mods(_context, mods);
+        }
+
+        public void IMods(uint mods)
+        {
+            Rosu.beatmap_attributes_i_mods(_context, mods);
+        }
+
+        public void SMods(string str)
+        {
+            var rval = Rosu.beatmap_attributes_s_mods(_context, str);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
+        public void ClockRate(double clock_rate)
+        {
+            Rosu.beatmap_attributes_clock_rate(_context, clock_rate);
+        }
+
+        public void Ar(float ar)
+        {
+            Rosu.beatmap_attributes_ar(_context, ar);
+        }
+
+        public void Cs(float cs)
+        {
+            Rosu.beatmap_attributes_cs(_context, cs);
+        }
+
+        public void Hp(float hp)
+        {
+            Rosu.beatmap_attributes_hp(_context, hp);
+        }
+
+        public void Od(float od)
+        {
+            Rosu.beatmap_attributes_od(_context, od);
+        }
+
+        public double GetClockRate()
+        {
+            return Rosu.beatmap_attributes_get_clock_rate(_context);
+        }
+
+        public BeatmapAttributes Build(IntPtr beatmap)
+        {
+            return Rosu.beatmap_attributes_build(_context, beatmap);
+        }
+
+        public IntPtr Context => _context;
+    }
+
+
     public partial class Beatmap : IDisposable
     {
         private IntPtr _context;
@@ -1070,6 +1237,11 @@ namespace RosuPP
         public PerformanceAttributes CalculateFromDifficulty(DifficultyAttributes difficulty_attr)
         {
             return Rosu.performance_calculate_from_difficulty(_context, difficulty_attr);
+        }
+
+        public double GetClockRate()
+        {
+            return Rosu.performance_get_clock_rate(_context);
         }
 
         public IntPtr Context => _context;

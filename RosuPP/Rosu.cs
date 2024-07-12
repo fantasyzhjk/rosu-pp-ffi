@@ -197,6 +197,34 @@ public partial class Performance
     }
 }
 
+public partial class BeatmapAttributesBuilder
+{
+    public BeatmapAttributes Build(Beatmap beatmap)
+    {
+        return Build(beatmap.Context);
+    }
+
+    public void Mods(uint mods)
+    {
+        IMods(mods);
+    }
+
+    public void Mods(string mods)
+    {
+        SMods(mods);
+    }
+
+    public void Mods(string[] mods)
+    {
+        SMods(string.Concat(mods));
+    }
+
+    public void Mods(Mods mods)
+    {
+        PMods(mods.Context);
+    }
+}
+
 public partial class OwnedString
 {
     public override string ToString()
