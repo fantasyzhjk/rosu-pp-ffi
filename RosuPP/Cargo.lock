@@ -66,9 +66,9 @@ checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
 
 [[package]]
 name = "interoptopus"
-version = "0.14.26"
+version = "0.14.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac6522ba0d7bb19288bf710ccf5af97f11f8ab764b1d857c0bdb68c2816581ef"
+checksum = "5931cf9059c2a44f93302bf686125e5046eb0661b05d63d42a4d8a82f2367056"
 dependencies = [
  "interoptopus_proc",
  "log",
@@ -177,15 +177,15 @@ checksum = "c08c74e62047bb2de4ff487b251e4a92e24f48745648451635cec7d591162d9f"
 
 [[package]]
 name = "rosu-map"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c55926c8f0fed1db12fbe96f7a6083a2c4186443dd32532ab34e6902467a4f3"
+checksum = "907d85647905d8de0b5560a8e2d87b7bf457b4b22cdd8f2025c1ff384435ec25"
 
 [[package]]
 name = "rosu-mods"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d69daf02885f7477085403a6eada6215f44333c7b54355ea1c4e276a02263bde"
+checksum = "3966ad347b6a8140feaa2424c947ada9b69d29f6966ef2590db34d456eb137be"
 
 [[package]]
 name = "rosu-pp"

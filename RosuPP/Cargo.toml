@@ -10,10 +10,10 @@ publish = false
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-interoptopus = { version = "0.14.26", features = ["log"] }
+interoptopus = { version = "0.14.27", features = ["log"] }
 rosu-pp = "1.1.0"
-rosu-map = "0.1.1"
-rosu-mods = "0.1.0"
+rosu-map = "0.1.2"
+rosu-mods = "0.1.1"
 thiserror = "1.0"
 
 [dev-dependencies]
