@@ -18,6 +18,23 @@ public class UnitTest1
 
 
     [Fact]
+    public void TestPPNext()
+    {
+        var d = Assembly.GetExecutingAssembly().Location;
+        var beatmap = Beatmap.FromPath("../../../resources/657916.osu");
+        var performance = Performance.New();
+        performance.Mods(["HDCL"]);
+        performance.N100(66);
+        performance.N50(1);
+        performance.Misses(1);
+        performance.Combo(1786);
+
+        var attr = performance.Calculate(beatmap);
+        output.WriteLine("{0}", attr);
+        Assert.Equal(281.28736211196446, attr.osu.ToNullable()!.Value.pp);
+    }
+
+    [Fact]
     public void TestDiff()
     {
         var d = Assembly.GetExecutingAssembly().Location;
@@ -26,7 +43,7 @@ public class UnitTest1
         var difficulty = Difficulty.New();
         var attr = difficulty.Calculate(beatmap.Context);
         output.WriteLine("{0}", attr);
-        Assert.Equal(5.247857660585606, attr.taiko.ToNullable()!.Value.stars);
+        Assert.Equal(5.6601490215152728, attr.taiko.ToNullable()!.Value.stars);
     }
 
 
@@ -39,7 +56,7 @@ public class UnitTest1
         performance.Mods((uint)Utils.Mods.Hidden);
         var attr = performance.Calculate(beatmap);
         output.WriteLine("{0}", attr);
-        Assert.Equal(281.28736211196446, attr.osu.ToNullable()!.Value.pp);
+        Assert.Equal(281.18902663807626, attr.osu.ToNullable()!.Value.pp);
     }
 
     [Fact]
@@ -52,15 +69,13 @@ public class UnitTest1
         var performance = Performance.New();
         var perf_attr = performance.CalculateFromDifficulty(diff_attr);
         output.WriteLine("{0}", perf_attr);
-        Assert.Equal(46.11642717726248, perf_attr.taiko.ToNullable()!.Value.pp_acc);
+        Assert.Equal(45.722317618639458, perf_attr.taiko.ToNullable()!.Value.pp_acc);
     }
 
     [Fact]
     public void TestBeatmapAttr()
     {
         var beatmap = Beatmap.FromPath("../../../resources/2785319.osu");
-        beatmap.Convert(Mode.Taiko);
-
         var builder = BeatmapAttributesBuilder.New();
         builder.Mods("DT");
 
@@ -76,7 +91,7 @@ public class UnitTest1
         var perf_attr = performance.CalculateFromDifficulty(diff_attr);
         output.WriteLine("{0}", perf_attr);
 
-        Assert.Equal(125.81086361861148, perf_attr.taiko.ToNullable()!.Value.pp_acc);
+        Assert.Equal(79.84500076626814, perf_attr.osu.ToNullable()!.Value.pp_acc);
 
       
     }
