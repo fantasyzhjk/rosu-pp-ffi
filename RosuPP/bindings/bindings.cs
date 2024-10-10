@@ -89,6 +89,12 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_total_break_time")]
         public static extern double beatmap_total_break_time(IntPtr context);
 
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_mode")]
+        public static extern Mode beatmap_mode(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_is_convert")]
+        public static extern bool beatmap_is_convert(IntPtr context);
+
         /// Destroys the given instance.
         ///
         /// # Safety
@@ -1082,6 +1088,16 @@ namespace RosuPP
         public double TotalBreakTime()
         {
             return Rosu.beatmap_total_break_time(_context);
+        }
+
+        public Mode Mode()
+        {
+            return Rosu.beatmap_mode(_context);
+        }
+
+        public bool IsConvert()
+        {
+            return Rosu.beatmap_is_convert(_context);
         }
 
         public IntPtr Context => _context;

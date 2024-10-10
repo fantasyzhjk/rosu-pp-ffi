@@ -2,8 +2,7 @@ pub mod attributes;
 
 use crate::*;
 use interoptopus::{
-    ffi_service, ffi_service_ctor, ffi_type, ffi_service_method,
-    patterns::{slice::FFISlice, string::AsciiPointer},
+    ffi_service, ffi_service_ctor, ffi_service_method, ffi_type, patterns::{slice::FFISlice, string::AsciiPointer}
 };
 use mode::Mode;
 
@@ -46,5 +45,15 @@ impl Beatmap {
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn total_break_time(&mut self) -> f64 {
         self.inner.total_break_time()
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn mode(&mut self) -> Mode {
+        self.inner.mode.into()
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn is_convert(&mut self) -> bool {
+        self.inner.is_convert
     }
 }
