@@ -5,6 +5,7 @@
     <RootNamespace>RosuPP</RootNamespace>
     <TieredPGO>true</TieredPGO>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <Import Project="./Rosu.targets" />
