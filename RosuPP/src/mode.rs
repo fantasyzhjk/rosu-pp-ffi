@@ -12,6 +12,17 @@ impl From<Mode> for GameMode {
     }
 }
 
+impl From<Mode> for rosu_mods::GameMode {
+    fn from(value: Mode) -> Self {
+        match value {
+            Mode::Osu => rosu_mods::GameMode::Osu,
+            Mode::Taiko => rosu_mods::GameMode::Taiko,
+            Mode::Catch => rosu_mods::GameMode::Catch,
+            Mode::Mania => rosu_mods::GameMode::Mania,
+        }
+    }
+}
+
 #[ffi_type]
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, Default)]

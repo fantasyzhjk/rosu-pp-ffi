@@ -244,3 +244,9 @@ public partial class Beatmap
         return self;
     }
 }
+public partial class Mods
+{
+    public void Json(ref OwnedString str) {
+        this.Json(str.Context);
+    }
+}

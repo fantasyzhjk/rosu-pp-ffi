@@ -13,6 +13,12 @@ extern "C" {
 
 
 
+typedef enum hitresultpriority
+    {
+    HITRESULTPRIORITY_BESTCASE = 0,
+    HITRESULTPRIORITY_WORSTCASE = 1,
+    } hitresultpriority;
+
 typedef enum mode
     {
     /// osu!standard
@@ -27,9 +33,13 @@ typedef enum mode
 
 typedef struct beatmap beatmap;
 
+typedef struct beatmapattributesbuilder beatmapattributesbuilder;
+
 typedef struct difficulty difficulty;
 
 typedef struct mods mods;
+
+typedef struct modsintermode modsintermode;
 
 typedef struct ownedstring ownedstring;
 
@@ -63,6 +73,15 @@ typedef struct catchdifficultyattributes
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
     bool is_convert;
     } catchdifficultyattributes;
+
+/// AR and OD hit windows
+typedef struct hitwindows
+    {
+    /// Hit window for approach rate i.e. `TimePreempt` in milliseconds.
+    double ar;
+    /// Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds.
+    double od;
+    } hitwindows;
 
 /// The result of a difficulty calculation on an osu!mania map.
 typedef struct maniadifficultyattributes
@@ -160,6 +179,32 @@ typedef struct taikodifficultyattributes
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
     bool is_convert;
     } taikodifficultyattributes;
+
+///Option type containing boolean flag and maybe valid data.
+typedef struct optionf32
+    {
+    ///Element that is maybe valid.
+    float t;
+    ///Byte where `1` means element `t` is valid.
+    uint8_t is_some;
+    } optionf32;
+
+/// Summary struct for a [`Beatmap`]'s attributes.
+typedef struct beatmapattributes
+    {
+    /// The approach rate.
+    double ar;
+    /// The overall difficulty.
+    double od;
+    /// The circle size.
+    double cs;
+    /// The health drain rate
+    double hp;
+    /// The clock rate with respect to mods.
+    double clock_rate;
+    /// The hit windows for approach rate and overall difficulty.
+    hitwindows hit_windows;
+    } beatmapattributes;
 
 /// The result of a performance calculation on an osu!catch map.
 typedef struct catchperformanceattributes
@@ -321,6 +366,38 @@ typedef struct performanceattributes
 ///
 /// The passed parameter MUST have been created with the corresponding init function;
 /// passing any other value results in undefined behavior.
+ffierror beatmap_attributes_destroy(beatmapattributesbuilder** context);
+
+ffierror beatmap_attributes_new(beatmapattributesbuilder** context);
+
+void beatmap_attributes_mode(beatmapattributesbuilder* context, mode mode);
+
+void beatmap_attributes_p_mods(beatmapattributesbuilder* context, const mods* mods);
+
+void beatmap_attributes_i_mods(beatmapattributesbuilder* context, uint32_t mods);
+
+ffierror beatmap_attributes_s_mods(beatmapattributesbuilder* context, const char* str);
+
+void beatmap_attributes_clock_rate(beatmapattributesbuilder* context, double clock_rate);
+
+void beatmap_attributes_ar(beatmapattributesbuilder* context, float ar);
+
+void beatmap_attributes_cs(beatmapattributesbuilder* context, float cs);
+
+void beatmap_attributes_hp(beatmapattributesbuilder* context, float hp);
+
+void beatmap_attributes_od(beatmapattributesbuilder* context, float od);
+
+double beatmap_attributes_get_clock_rate(beatmapattributesbuilder* context);
+
+beatmapattributes beatmap_attributes_build(const beatmapattributesbuilder* context, const beatmap* beatmap);
+
+/// Destroys the given instance.
+///
+/// # Safety
+///
+/// The passed parameter MUST have been created with the corresponding init function;
+/// passing any other value results in undefined behavior.
 ffierror beatmap_destroy(beatmap** context);
 
 ffierror beatmap_from_bytes(beatmap** context, sliceu8 data);
@@ -404,6 +481,8 @@ void performance_misses(performance* context, uint32_t misses);
 
 void performance_combo(performance* context, uint32_t combo);
 
+void performance_hitresult_priority(performance* context, hitresultpriority hitresult_priority);
+
 void performance_n300(performance* context, uint32_t n300);
 
 void performance_n100(performance* context, uint32_t n100);
@@ -417,6 +496,8 @@ scorestate performance_generate_state(const performance* context, const beatmap*
 performanceattributes performance_calculate(const performance* context, const beatmap* beatmap);
 
 performanceattributes performance_calculate_from_difficulty(const performance* context, difficultyattributes difficulty_attr);
+
+double performance_get_clock_rate(performance* context);
 
 /// Destroys the given instance.
 ///
@@ -442,9 +523,9 @@ const char* string_to_cstr(const ownedstring* context);
 /// passing any other value results in undefined behavior.
 ffierror mods_destroy(mods** context);
 
-ffierror mods_from_acronyms(mods** context, const char* str);
+ffierror mods_from_acronyms(mods** context, const char* str, mode mode);
 
-ffierror mods_from_bits(mods** context, uint32_t bits);
+ffierror mods_from_bits(mods** context, uint32_t bits, mode mode);
 
 uint32_t mods_bits(mods* context);
 
@@ -452,9 +533,29 @@ bool mods_is_empty(mods* context);
 
 bool mods_contains(mods* context, const char* str);
 
-bool mods_intersects(mods* context, const char* str);
+optionf32 mods_clock_rate(mods* context);
 
-float mods_legacy_clock_rate(mods* context);
+/// Destroys the given instance.
+///
+/// # Safety
+///
+/// The passed parameter MUST have been created with the corresponding init function;
+/// passing any other value results in undefined behavior.
+ffierror mods_intermode_destroy(modsintermode** context);
+
+ffierror mods_intermode_from_acronyms(modsintermode** context, const char* str);
+
+ffierror mods_intermode_from_bits(modsintermode** context, uint32_t bits);
+
+uint32_t mods_intermode_bits(modsintermode* context);
+
+bool mods_intermode_is_empty(modsintermode* context);
+
+bool mods_intermode_contains(modsintermode* context, const char* str);
+
+bool mods_intermode_intersects(modsintermode* context, const char* str);
+
+float mods_intermode_legacy_clock_rate(modsintermode* context);
 
 void debug_difficylty_attributes(const difficultyattributes* res, ownedstring* str);
 

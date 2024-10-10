@@ -245,26 +245,71 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_destroy")]
         public static extern FFIError mods_destroy(ref IntPtr context);
 
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_new")]
+        public static extern FFIError mods_new(ref IntPtr context, Mode mode);
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_from_acronyms")]
-        public static extern FFIError mods_from_acronyms(ref IntPtr context, string str);
+        public static extern FFIError mods_from_acronyms(ref IntPtr context, string str, Mode mode);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_from_bits")]
-        public static extern FFIError mods_from_bits(ref IntPtr context, uint bits);
+        public static extern FFIError mods_from_bits(ref IntPtr context, uint bits, Mode mode);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_from_json")]
+        public static extern FFIError mods_from_json(ref IntPtr context, string str, Mode mode);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_bits")]
         public static extern uint mods_bits(IntPtr context);
 
-        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_is_empty")]
-        public static extern bool mods_is_empty(IntPtr context);
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_len")]
+        public static extern uint mods_len(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_json")]
+        public static extern void mods_json(IntPtr context, IntPtr str);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_insert_json")]
+        public static extern bool mods_insert_json(IntPtr context, string str);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_insert")]
+        public static extern bool mods_insert(IntPtr context, string str);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_contains")]
         public static extern bool mods_contains(IntPtr context, string str);
 
-        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intersects")]
-        public static extern bool mods_intersects(IntPtr context, string str);
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_clear")]
+        public static extern void mods_clear(IntPtr context);
 
-        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_legacy_clock_rate")]
-        public static extern float mods_legacy_clock_rate(IntPtr context);
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_clock_rate")]
+        public static extern Optionf32 mods_clock_rate(IntPtr context);
+
+        /// Destroys the given instance.
+        ///
+        /// # Safety
+        ///
+        /// The passed parameter MUST have been created with the corresponding init function;
+        /// passing any other value results in undefined behavior.
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intermode_destroy")]
+        public static extern FFIError mods_intermode_destroy(ref IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intermode_from_acronyms")]
+        public static extern FFIError mods_intermode_from_acronyms(ref IntPtr context, string str);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intermode_from_bits")]
+        public static extern FFIError mods_intermode_from_bits(ref IntPtr context, uint bits);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intermode_bits")]
+        public static extern uint mods_intermode_bits(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intermode_len")]
+        public static extern uint mods_intermode_len(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intermode_contains")]
+        public static extern bool mods_intermode_contains(IntPtr context, string str);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intermode_intersects")]
+        public static extern bool mods_intermode_intersects(IntPtr context, string str);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intermode_legacy_clock_rate")]
+        public static extern float mods_intermode_legacy_clock_rate(IntPtr context);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "debug_difficylty_attributes")]
         public static extern void debug_difficylty_attributes(ref DifficultyAttributes res, IntPtr str);
@@ -545,6 +590,7 @@ namespace RosuPP
         Panic = 200,
         ParseError = 300,
         InvalidString = 400,
+        SerializeError = 500,
         Unknown = 1000,
     }
 
@@ -859,6 +905,38 @@ namespace RosuPP
         public TaikoPerformanceAttributes? ToNullable()
         {
             return this.is_some == 1 ? this.t : (TaikoPerformanceAttributes?)null;
+        }
+    }
+
+
+    ///Option type containing boolean flag and maybe valid data.
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
+    public partial struct Optionf32
+    {
+        ///Element that is maybe valid.
+        float t;
+        ///Byte where `1` means element `t` is valid.
+        byte is_some;
+    }
+
+    public partial struct Optionf32
+    {
+        public static Optionf32 FromNullable(float? nullable)
+        {
+            var result = new Optionf32();
+            if (nullable.HasValue)
+            {
+                result.is_some = 1;
+                result.t = nullable.Value;
+            }
+
+            return result;
+        }
+
+        public float? ToNullable()
+        {
+            return this.is_some == 1 ? this.t : (float?)null;
         }
     }
 
@@ -1306,10 +1384,10 @@ namespace RosuPP
 
         private Mods() {}
 
-        public static Mods FromAcronyms(string str)
+        public static Mods New(Mode mode)
         {
             var self = new Mods();
-            var rval = Rosu.mods_from_acronyms(ref self._context, str);
+            var rval = Rosu.mods_new(ref self._context, mode);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1317,10 +1395,32 @@ namespace RosuPP
             return self;
         }
 
-        public static Mods FromBits(uint bits)
+        public static Mods FromAcronyms(string str, Mode mode)
         {
             var self = new Mods();
-            var rval = Rosu.mods_from_bits(ref self._context, bits);
+            var rval = Rosu.mods_from_acronyms(ref self._context, str, mode);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+            return self;
+        }
+
+        public static Mods FromBits(uint bits, Mode mode)
+        {
+            var self = new Mods();
+            var rval = Rosu.mods_from_bits(ref self._context, bits, mode);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+            return self;
+        }
+
+        public static Mods FromJson(string str, Mode mode)
+        {
+            var self = new Mods();
+            var rval = Rosu.mods_from_json(ref self._context, str, mode);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1342,9 +1442,24 @@ namespace RosuPP
             return Rosu.mods_bits(_context);
         }
 
-        public bool IsEmpty()
+        public uint Len()
         {
-            return Rosu.mods_is_empty(_context);
+            return Rosu.mods_len(_context);
+        }
+
+        public void Json(IntPtr str)
+        {
+            Rosu.mods_json(_context, str);
+        }
+
+        public bool InsertJson(string str)
+        {
+            return Rosu.mods_insert_json(_context, str);
+        }
+
+        public bool Insert(string str)
+        {
+            return Rosu.mods_insert(_context, str);
         }
 
         public bool Contains(string str)
@@ -1352,14 +1467,80 @@ namespace RosuPP
             return Rosu.mods_contains(_context, str);
         }
 
+        public void Clear()
+        {
+            Rosu.mods_clear(_context);
+        }
+
+        public Optionf32 ClockRate()
+        {
+            return Rosu.mods_clock_rate(_context);
+        }
+
+        public IntPtr Context => _context;
+    }
+
+
+    public partial class ModsIntermode : IDisposable
+    {
+        private IntPtr _context;
+
+        private ModsIntermode() {}
+
+        public static ModsIntermode FromAcronyms(string str)
+        {
+            var self = new ModsIntermode();
+            var rval = Rosu.mods_intermode_from_acronyms(ref self._context, str);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+            return self;
+        }
+
+        public static ModsIntermode FromBits(uint bits)
+        {
+            var self = new ModsIntermode();
+            var rval = Rosu.mods_intermode_from_bits(ref self._context, bits);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+            return self;
+        }
+
+        public void Dispose()
+        {
+            var rval = Rosu.mods_intermode_destroy(ref _context);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
+        public uint Bits()
+        {
+            return Rosu.mods_intermode_bits(_context);
+        }
+
+        public uint Len()
+        {
+            return Rosu.mods_intermode_len(_context);
+        }
+
+        public bool Contains(string str)
+        {
+            return Rosu.mods_intermode_contains(_context, str);
+        }
+
         public bool Intersects(string str)
         {
-            return Rosu.mods_intersects(_context, str);
+            return Rosu.mods_intermode_intersects(_context, str);
         }
 
         public float LegacyClockRate()
         {
-            return Rosu.mods_legacy_clock_rate(_context);
+            return Rosu.mods_intermode_legacy_clock_rate(_context);
         }
 
         public IntPtr Context => _context;

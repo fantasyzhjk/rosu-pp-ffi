@@ -3,6 +3,7 @@ using System.Reflection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.ClientProtocol;
 using Xunit.Abstractions;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace RosuPP.Tests;
 
@@ -15,6 +16,7 @@ public class UnitTest1
         this.output = output;
     }
 
+
     [Fact]
     public void TestDiff()
     {
@@ -26,6 +28,7 @@ public class UnitTest1
         output.WriteLine("{0}", attr);
         Assert.Equal(5.247857660585606, attr.taiko.ToNullable()!.Value.stars);
     }
+
 
     [Fact]
     public void TestPerf()
@@ -56,8 +59,11 @@ public class UnitTest1
     public void TestBeatmapAttr()
     {
         var beatmap = Beatmap.FromPath("../../../resources/2785319.osu");
+        beatmap.Convert(Mode.Taiko);
+
         var builder = BeatmapAttributesBuilder.New();
         builder.Mods("DT");
+
         var bmattr = builder.Build(beatmap);
         output.WriteLine("cs: {0}", bmattr.cs);
         output.WriteLine("od: {0}", bmattr.od);
@@ -69,6 +75,42 @@ public class UnitTest1
         var performance = Performance.New();
         var perf_attr = performance.CalculateFromDifficulty(diff_attr);
         output.WriteLine("{0}", perf_attr);
-        Assert.Equal(46.11642717726248, perf_attr.taiko.ToNullable()!.Value.pp_acc);
+
+        Assert.Equal(125.81086361861148, perf_attr.taiko.ToNullable()!.Value.pp_acc);
+
+      
+    }
+
+    [Fact]
+    public void ModsTest()
+    {
+        var s = OwnedString.Empty();
+        var j = """
+                        [
+                            { "acronym": "HD" },
+                            { "acronym": "CL" },
+                            { "acronym": "DT", "settings": { "speed_change": 1.5 } }
+                        ]
+                        """;
+
+        var mods = Mods.FromJson(j, Mode.Taiko);
+        Assert.Equal((uint)3, mods.Len());
+        Assert.True(mods.Contains("DT"));
+
+        Assert.Equal((double?)1.5, mods.ClockRate().ToNullable());
+
+        mods.Json(ref s);
+        var res = s.ToString();
+        output.WriteLine(res);
+
+        var parsed_json = JsonSerializer.Deserialize<JsonArray>(res);
+        Assert.NotNull(parsed_json);
+        Assert.Equal(3, parsed_json!.Count);
+        var dt_node = parsed_json.First(x => x?["acronym"]?.ToString() == "DT");
+        Assert.NotNull(dt_node);
+        Assert.Equal(1.5, dt_node["settings"]?["speed_change"]?.GetValue<double>());
+        
+        mods.Insert("HR");
+        Assert.Equal((uint)4, mods.Len());
     }
 }

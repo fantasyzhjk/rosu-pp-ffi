@@ -13,8 +13,10 @@ crate-type = ["cdylib", "rlib"]
 interoptopus = { version = "0.14.27", features = ["log"] }
 rosu-pp = "1.1.0"
 rosu-map = "0.1.2"
-rosu-mods = "0.1.1"
+rosu-mods = { version = "0.1.1", features = ["serde"] }
 thiserror = "1.0"
+serde_json = "1.0.128"
+serde = { version = "1.0.210", features = ["derive"] }
 
 [dev-dependencies]
 interoptopus_backend_csharp = "0.14.25"

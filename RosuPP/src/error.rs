@@ -13,6 +13,7 @@ pub enum FFIError {
     Panic = 200,
     ParseError = 300,
     InvalidString = 400,
+    SerializeError = 500,
     Unknown = 1000,
 }
 
@@ -35,12 +36,14 @@ impl interoptopus::patterns::result::FFIError for FFIError {
 use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("Unknown error")]
+    #[error("UnknownError")]
     Unknown,
     #[error("ParseError")]
     Parse(#[from] std::io::Error),
-    #[error("Invalid String")]
+    #[error("InvalidString")]
     InvalidString(#[from] Option<std::str::Utf8Error>),
+    #[error("SerializeError")]
+    Serialize(#[from] serde_json::Error),
 }
 
 // Implement Default so we know what the "good" case is.
@@ -58,6 +61,7 @@ impl From<Error> for FFIError {
             Error::Unknown => Self::Unknown,
             Error::Parse(_) => Self::ParseError,
             Error::InvalidString(_) => Self::InvalidString,
+            Error::Serialize(_) => Self::SerializeError,
         }
     }
 }

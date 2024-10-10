@@ -7,7 +7,7 @@ use interoptopus::{
     patterns::{option::FFIOption, string::AsciiPointer},
 };
 use mode::Mode;
-use rosu_mods::GameModsIntermode;
+use rosu_mods::{GameMods, GameModsIntermode};
 use mods::Mods;
 
 #[ffi_type(opaque)]
@@ -16,7 +16,8 @@ use mods::Mods;
 #[allow(non_snake_case)]
 pub struct Performance {
     pub mode: FFIOption<Mode>,
-    pub mods: FFIOption<GameModsIntermode>,
+    pub mods: FFIOption<GameMods>,
+    pub mods_intermode: FFIOption<GameModsIntermode>,
     pub passed_objects: FFIOption<u32>,
     pub clock_rate: FFIOption<f64>,
     pub ar: FFIOption<f32>,
@@ -52,22 +53,23 @@ impl Performance {
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn p_mods(&mut self, mods: &Mods) {
-        self.mods = Some(mods.inner.clone()).into();
+        self.mods = Some(mods.mods.clone()).into();
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn i_mods(&mut self, mods: u32) {
-        self.mods = Some(GameModsIntermode::from_bits(mods)).into();
+        self.mods_intermode = Some(GameModsIntermode::from_bits(mods)).into();
     }
 
     #[ffi_service_method(on_panic = "ffi_error")]
     pub fn s_mods(&mut self, str: AsciiPointer) -> Result<(), Error> {
-        self.mods = Some(GameModsIntermode::from_acronyms(
+        self.mods_intermode = Some(GameModsIntermode::from_acronyms(
             str.as_str().map_err(|_e| Error::InvalidString(None))?,
         ))
         .into();
         Ok(())
     }
+    
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn passed_objects(&mut self, passed_objects: u32) {
         self.passed_objects = Some(passed_objects).into();
@@ -170,12 +172,15 @@ impl Performance {
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn get_clock_rate(&mut self) -> f64 {
-        f64::from(
-            self.mods
-                .as_ref()
-                .map(GameModsIntermode::legacy_clock_rate)
-                .unwrap_or(1.0),
-        )
+        if let Some(mods) = self.mods.as_ref() {
+            return f64::from(mods.clock_rate().unwrap_or(1.0))
+        }
+        
+        if let Some(mods_intermode) = self.mods_intermode.as_ref() {
+            return f64::from(mods_intermode.legacy_clock_rate())
+        }
+
+        1.0
     }
 }
 
@@ -184,6 +189,7 @@ impl Performance {
         let Performance {
             mode,
             mods,
+            mods_intermode,
             passed_objects,
             clock_rate,
             ar,
@@ -207,7 +213,19 @@ impl Performance {
         }
 
         if let Some(mods) = mods.as_ref() {
-            perf = perf.mods(mods.bits());
+            perf = match perf {
+                rosu_pp::Performance::Osu(o) => rosu_pp::Performance::Osu(o.mods(mods.clone())),
+                rosu_pp::Performance::Taiko(t) => rosu_pp::Performance::Taiko(t.mods(mods.clone())),
+                rosu_pp::Performance::Catch(f) => rosu_pp::Performance::Catch(f.mods(mods.clone())),
+                rosu_pp::Performance::Mania(m) => rosu_pp::Performance::Mania(m.mods(mods.clone())),
+            };
+        } else if let Some(mods_intermode) = mods_intermode.as_ref() {
+            perf = match perf {
+                rosu_pp::Performance::Osu(o) => rosu_pp::Performance::Osu(o.mods(mods_intermode)),
+                rosu_pp::Performance::Taiko(t) => rosu_pp::Performance::Taiko(t.mods(mods_intermode)),
+                rosu_pp::Performance::Catch(f) => rosu_pp::Performance::Catch(f.mods(mods_intermode)),
+                rosu_pp::Performance::Mania(m) => rosu_pp::Performance::Mania(m.mods(mods_intermode)),
+            };
         }
 
         if let Some(passed_objects) = passed_objects.into_option() {

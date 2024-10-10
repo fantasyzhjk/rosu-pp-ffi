@@ -5,13 +5,14 @@ use interoptopus::{
     patterns::{option::FFIOption, string::AsciiPointer},
 };
 use mods::Mods;
-use rosu_mods::GameModsIntermode;
+use rosu_mods::{GameModsIntermode, GameMods};
 
 #[ffi_type(opaque)]
 #[derive(Default)]
 #[allow(non_snake_case)]
 pub struct Difficulty {
-    pub mods: FFIOption<GameModsIntermode>,
+    pub mods: FFIOption<GameMods>,
+    pub mods_intermode: FFIOption<GameModsIntermode>,
     pub passed_objects: FFIOption<u32>,
     /// Clock rate will be clamped internally between 0.01 and 100.0.
     ///
@@ -40,17 +41,17 @@ impl Difficulty {
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn p_mods(&mut self, mods: &Mods) {
-        self.mods = Some(mods.inner.clone()).into();
+        self.mods = Some(mods.mods.clone()).into();
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn i_mods(&mut self, mods: u32) {
-        self.mods = Some(GameModsIntermode::from_bits(mods)).into();
+        self.mods_intermode = Some(GameModsIntermode::from_bits(mods)).into();
     }
 
     #[ffi_service_method(on_panic = "ffi_error")]
     pub fn s_mods(&mut self, str: AsciiPointer) -> Result<(), Error> {
-        self.mods = Some(GameModsIntermode::from_acronyms(
+        self.mods_intermode = Some(GameModsIntermode::from_acronyms(
             str.as_str().map_err(|_e| Error::InvalidString(None))?,
         ))
         .into();
@@ -105,12 +106,15 @@ impl Difficulty {
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn get_clock_rate(&mut self) -> f64 {
-        f64::from(
-            self.mods
-                .as_ref()
-                .map(GameModsIntermode::legacy_clock_rate)
-                .unwrap_or(1.0),
-        )
+        if let Some(mods) = self.mods.as_ref() {
+            return f64::from(mods.clock_rate().unwrap_or(1.0))
+        }
+        
+        if let Some(mods_intermode) = self.mods_intermode.as_ref() {
+            return f64::from(mods_intermode.legacy_clock_rate())
+        }
+
+        1.0
     }
 }
 
@@ -120,6 +124,7 @@ impl Difficulty {
 
         let Difficulty {
             mods,
+            mods_intermode,
             passed_objects,
             clock_rate,
             ar,
@@ -130,7 +135,9 @@ impl Difficulty {
         } = self;
 
         if let Some(mods) = mods.as_ref() {
-            diff = diff.mods(mods);
+            diff = diff.mods(mods.clone());
+        } else if let Some(mods_intermode) = mods_intermode.as_ref() {
+            diff = diff.mods(mods_intermode);
         }
 
         if let Some(passed_objects) = passed_objects.into_option() {

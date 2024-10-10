@@ -18,6 +18,7 @@ mod taiko;
 mod performance;
 mod state;
 mod mods;
+mod mods_intermode;
 mod hitresult_priority;
 use error::{FFIError, Error};
 
@@ -46,6 +47,7 @@ pub fn ffi_inventory() -> Inventory {
         .register(pattern!(performance::Performance))
         .register(pattern!(owned_string::OwnedString))
         .register(pattern!(mods::Mods))
+        .register(pattern!(mods_intermode::ModsIntermode))
         .register(function!(attributes::debug_difficylty_attributes))
         .register(function!(attributes::debug_performance_attributes))
         .register(function!(state::debug_score_state))
