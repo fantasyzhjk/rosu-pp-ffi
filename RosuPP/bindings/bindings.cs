@@ -209,6 +209,9 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_n_katu")]
         public static extern void performance_n_katu(IntPtr context, uint n_katu);
 
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_n_geki")]
+        public static extern void performance_n_geki(IntPtr context, uint n_geki);
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_generate_state")]
         public static extern ScoreState performance_generate_state(IntPtr context, IntPtr beatmap);
 
@@ -1316,6 +1319,11 @@ namespace RosuPP
         public void NKatu(uint n_katu)
         {
             Rosu.performance_n_katu(_context, n_katu);
+        }
+
+        public void NGeki(uint n_geki)
+        {
+            Rosu.performance_n_geki(_context, n_geki);
         }
 
         public ScoreState GenerateState(IntPtr beatmap)

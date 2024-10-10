@@ -141,6 +141,11 @@ impl Performance {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn n_geki(&mut self, n_geki: u32) {
+        self.n_geki = Some(n_geki).into();
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn generate_state(&self, beatmap: *const Beatmap) -> state::ScoreState {
         let beatmap = unsafe {
             beatmap.as_ref().unwrap_or_else(|| {
