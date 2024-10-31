@@ -52,6 +52,7 @@ typedef enum ffierror
     FFIERROR_PANIC = 200,
     FFIERROR_PARSEERROR = 300,
     FFIERROR_INVALIDSTRING = 400,
+    FFIERROR_SERIALIZEERROR = 500,
     FFIERROR_UNKNOWN = 1000,
     } ffierror;
 
@@ -73,15 +74,6 @@ typedef struct catchdifficultyattributes
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
     bool is_convert;
     } catchdifficultyattributes;
-
-/// AR and OD hit windows
-typedef struct hitwindows
-    {
-    /// Hit window for approach rate i.e. `TimePreempt` in milliseconds.
-    double ar;
-    /// Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds.
-    double od;
-    } hitwindows;
 
 /// The result of a difficulty calculation on an osu!mania map.
 typedef struct maniadifficultyattributes
@@ -113,6 +105,10 @@ typedef struct osudifficultyattributes
     double slider_factor;
     /// The number of clickable objects weighted by difficulty.
     double speed_note_count;
+    /// Weighted sum of aim strains.
+    double aim_difficult_strain_count;
+    /// Weighted sum of speed strains.
+    double speed_difficult_strain_count;
     /// The approach rate.
     double ar;
     /// The overall difficulty
@@ -123,6 +119,8 @@ typedef struct osudifficultyattributes
     uint32_t n_circles;
     /// The amount of sliders.
     uint32_t n_sliders;
+    /// The amount of slider ticks and repeat points.
+    uint32_t n_slider_ticks;
     /// The amount of spinners.
     uint32_t n_spinners;
     /// The final star rating
@@ -142,6 +140,14 @@ typedef struct scorestate
     ///
     /// Irrelevant for osu!mania.
     uint32_t max_combo;
+    /// Amount of successfully hit slider ticks and repeats.
+    ///
+    /// Only relevant for osu!standard in lazer.
+    uint32_t slider_tick_hits;
+    /// Amount of successfully hit slider ends.
+    ///
+    /// Only relevant for osu!standard in lazer.
+    uint32_t slider_end_hits;
     /// Amount of current gekis (n320 for osu!mania).
     uint32_t n_geki;
     /// Amount of current katus (tiny droplet misses for osu!catch / n200 for
@@ -169,7 +175,9 @@ typedef struct taikodifficultyattributes
     /// The difficulty of the hardest parts of the map.
     double peak;
     /// The perceived hit window for an n300 inclusive of rate-adjusting mods (DT/HT/etc)
-    double hit_window;
+    double great_hit_window;
+    /// The perceived hit window for an n100 inclusive of rate-adjusting mods (DT/HT/etc)
+    double ok_hit_window;
     /// The final star rating.
     double stars;
     /// The maximum combo.
@@ -189,22 +197,14 @@ typedef struct optionf32
     uint8_t is_some;
     } optionf32;
 
-/// Summary struct for a [`Beatmap`]'s attributes.
-typedef struct beatmapattributes
+///Option type containing boolean flag and maybe valid data.
+typedef struct optionf64
     {
-    /// The approach rate.
-    double ar;
-    /// The overall difficulty.
-    double od;
-    /// The circle size.
-    double cs;
-    /// The health drain rate
-    double hp;
-    /// The clock rate with respect to mods.
-    double clock_rate;
-    /// The hit windows for approach rate and overall difficulty.
-    hitwindows hit_windows;
-    } beatmapattributes;
+    ///Element that is maybe valid.
+    double t;
+    ///Byte where `1` means element `t` is valid.
+    uint8_t is_some;
+    } optionf64;
 
 /// The result of a performance calculation on an osu!catch map.
 typedef struct catchperformanceattributes
@@ -214,6 +214,19 @@ typedef struct catchperformanceattributes
     /// The final performance points.
     double pp;
     } catchperformanceattributes;
+
+/// AR and OD hit windows
+typedef struct hitwindows
+    {
+    /// Hit window for approach rate i.e. `TimePreempt` in milliseconds.
+    double ar;
+    /// Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds.
+    double od_great;
+    /// Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
+    ///
+    /// `None` for osu!mania.
+    optionf64 od_ok;
+    } hitwindows;
 
 /// The result of a performance calculation on an osu!mania map.
 typedef struct maniaperformanceattributes
@@ -258,6 +271,8 @@ typedef struct taikoperformanceattributes
     double pp_difficulty;
     /// Scaled miss count based on total hits.
     double effective_miss_count;
+    /// Upper bound on the player's tap deviation.
+    optionf64 estimated_unstable_rate;
     } taikoperformanceattributes;
 
 ///A pointer to an array of data someone else owns which may not be modified.
@@ -304,6 +319,23 @@ typedef struct optiontaikodifficultyattributes
     ///Byte where `1` means element `t` is valid.
     uint8_t is_some;
     } optiontaikodifficultyattributes;
+
+/// Summary struct for a [`Beatmap`]'s attributes.
+typedef struct beatmapattributes
+    {
+    /// The approach rate.
+    double ar;
+    /// The overall difficulty.
+    double od;
+    /// The circle size.
+    double cs;
+    /// The health drain rate
+    double hp;
+    /// The clock rate with respect to mods.
+    double clock_rate;
+    /// The hit windows for approach rate and overall difficulty.
+    hitwindows hit_windows;
+    } beatmapattributes;
 
 typedef struct difficultyattributes
     {
@@ -411,6 +443,10 @@ double beatmap_bpm(beatmap* context);
 
 double beatmap_total_break_time(beatmap* context);
 
+mode beatmap_mode(beatmap* context);
+
+bool beatmap_is_convert(beatmap* context);
+
 /// Destroys the given instance.
 ///
 /// # Safety
@@ -440,6 +476,8 @@ void difficulty_hp(difficulty* context, float hp);
 void difficulty_od(difficulty* context, float od);
 
 void difficulty_hardrock_offsets(difficulty* context, bool hardrock_offsets);
+
+void difficulty_lazer(difficulty* context, bool lazer);
 
 difficultyattributes difficulty_calculate(const difficulty* context, const beatmap* beatmap);
 
@@ -475,6 +513,8 @@ void performance_hp(performance* context, float hp);
 
 void performance_od(performance* context, float od);
 
+void performance_hardrock_offsets(performance* context, bool hardrock_offsets);
+
 void performance_accuracy(performance* context, double accuracy);
 
 void performance_misses(performance* context, uint32_t misses);
@@ -482,6 +522,8 @@ void performance_misses(performance* context, uint32_t misses);
 void performance_combo(performance* context, uint32_t combo);
 
 void performance_hitresult_priority(performance* context, hitresultpriority hitresult_priority);
+
+void performance_lazer(performance* context, bool lazer);
 
 void performance_n300(performance* context, uint32_t n300);
 
@@ -523,15 +565,27 @@ const char* string_to_cstr(const ownedstring* context);
 /// passing any other value results in undefined behavior.
 ffierror mods_destroy(mods** context);
 
+ffierror mods_new(mods** context, mode mode);
+
 ffierror mods_from_acronyms(mods** context, const char* str, mode mode);
 
 ffierror mods_from_bits(mods** context, uint32_t bits, mode mode);
 
+ffierror mods_from_json(mods** context, const char* str, mode mode);
+
 uint32_t mods_bits(mods* context);
 
-bool mods_is_empty(mods* context);
+uint32_t mods_len(mods* context);
+
+void mods_json(mods* context, ownedstring* str);
+
+bool mods_insert_json(mods* context, const char* str);
+
+bool mods_insert(mods* context, const char* str);
 
 bool mods_contains(mods* context, const char* str);
+
+void mods_clear(mods* context);
 
 optionf32 mods_clock_rate(mods* context);
 
@@ -549,7 +603,7 @@ ffierror mods_intermode_from_bits(modsintermode** context, uint32_t bits);
 
 uint32_t mods_intermode_bits(modsintermode* context);
 
-bool mods_intermode_is_empty(modsintermode* context);
+uint32_t mods_intermode_len(modsintermode* context);
 
 bool mods_intermode_contains(modsintermode* context, const char* str);
 

@@ -15,6 +15,14 @@ pub struct ScoreState {
     ///
     /// Irrelevant for osu!mania.
     pub max_combo: u32,
+    /// Amount of successfully hit slider ticks and repeats.
+    ///
+    /// Only relevant for osu!standard in lazer.
+    pub slider_tick_hits: u32,
+    /// Amount of successfully hit slider ends.
+    ///
+    /// Only relevant for osu!standard in lazer.
+    pub slider_end_hits: u32,
     /// Amount of current gekis (n320 for osu!mania).
     pub n_geki: u32,
     /// Amount of current katus (tiny droplet misses for osu!catch / n200 for
@@ -53,6 +61,8 @@ impl From<rosu_pp::any::ScoreState> for ScoreState {
     fn from(value: rosu_pp::any::ScoreState) -> Self {
         Self {
             max_combo: value.max_combo,
+            slider_tick_hits: value.slider_tick_hits,
+            slider_end_hits: value.slider_end_hits,
             n_geki: value.n_geki,
             n_katu: value.n_katu,
             n300: value.n300,
@@ -67,6 +77,8 @@ impl From<ScoreState> for rosu_pp::any::ScoreState {
     fn from(value: ScoreState) -> Self {
         Self {
             max_combo: value.max_combo,
+            slider_tick_hits: value.slider_tick_hits,
+            slider_end_hits: value.slider_end_hits,
             n_geki: value.n_geki,
             n_katu: value.n_katu,
             n300: value.n300,

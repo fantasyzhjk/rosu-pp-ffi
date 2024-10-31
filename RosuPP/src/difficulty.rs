@@ -29,6 +29,7 @@ pub struct Difficulty {
     pub od: FFIOption<f32>,
 
     pub hardrock_offsets: FFIOption<bool>,
+    pub lazer: FFIOption<bool>,
 }
 
 // Regular implementation of methods.
@@ -94,6 +95,11 @@ impl Difficulty {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn lazer(&mut self, lazer: bool) {
+        self.lazer = Some(lazer).into();
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn calculate(&self, beatmap: *const Beatmap) -> attributes::DifficultyAttributes {
         let beatmap = unsafe {
             beatmap
@@ -132,6 +138,7 @@ impl Difficulty {
             hp,
             od,
             hardrock_offsets,
+            lazer
         } = self;
 
         if let Some(mods) = mods.as_ref() {
@@ -166,6 +173,10 @@ impl Difficulty {
 
         if let Some(hardrock_offsets) = hardrock_offsets.into_option() {
             diff = diff.hardrock_offsets(hardrock_offsets);
+        }
+
+        if let Some(lazer) = lazer.into_option() {
+            diff = diff.lazer(lazer);
         }
 
         diff

@@ -7,8 +7,8 @@ use interoptopus::{
     patterns::{option::FFIOption, string::AsciiPointer},
 };
 use mode::Mode;
-use rosu_mods::{GameMods, GameModsIntermode};
 use mods::Mods;
+use rosu_mods::{GameMods, GameModsIntermode};
 
 #[ffi_type(opaque)]
 #[repr(C)]
@@ -25,12 +25,15 @@ pub struct Performance {
     pub hp: FFIOption<f32>,
     pub od: FFIOption<f32>,
     pub hardrock_offsets: FFIOption<bool>,
-    
+    pub lazer: FFIOption<bool>,
+
     pub accuracy: FFIOption<f64>,
     pub misses: FFIOption<u32>,
     pub combo: FFIOption<u32>,
     pub hitresult_priority: FFIOption<HitResultPriority>,
-    
+
+    pub slider_tick_hits: FFIOption<u32>,
+    pub slider_end_hits: FFIOption<u32>,
     pub n300: FFIOption<u32>,
     pub n100: FFIOption<u32>,
     pub n50: FFIOption<u32>,
@@ -69,7 +72,7 @@ impl Performance {
         .into();
         Ok(())
     }
-    
+
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn passed_objects(&mut self, passed_objects: u32) {
         self.passed_objects = Some(passed_objects).into();
@@ -89,7 +92,7 @@ impl Performance {
     pub fn cs(&mut self, cs: f32) {
         self.cs = Some(cs).into();
     }
-    
+
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn hp(&mut self, hp: f32) {
         self.hp = Some(hp).into();
@@ -98,6 +101,11 @@ impl Performance {
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn od(&mut self, od: f32) {
         self.od = Some(od).into();
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn hardrock_offsets(&mut self, hardrock_offsets: bool) {
+        self.hardrock_offsets = Some(hardrock_offsets).into();
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
@@ -119,7 +127,12 @@ impl Performance {
     pub fn hitresult_priority(&mut self, hitresult_priority: HitResultPriority) {
         self.hitresult_priority = Some(hitresult_priority).into();
     }
-    
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn lazer(&mut self, lazer: bool) {
+        self.lazer = Some(lazer).into();
+    }
+
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn n300(&mut self, n300: u32) {
         self.n300 = Some(n300).into();
@@ -129,7 +142,7 @@ impl Performance {
     pub fn n100(&mut self, n100: u32) {
         self.n100 = Some(n100).into();
     }
-    
+
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn n50(&mut self, n50: u32) {
         self.n50 = Some(n50).into();
@@ -143,11 +156,11 @@ impl Performance {
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn generate_state(&self, beatmap: *const Beatmap) -> state::ScoreState {
         let beatmap = unsafe {
-            beatmap.as_ref().unwrap_or_else(|| {
-                panic!("beatmap: {beatmap:?}")
-            })
+            beatmap
+                .as_ref()
+                .unwrap_or_else(|| panic!("beatmap: {beatmap:?}"))
         };
-        
+
         let mut performance = self.apply(rosu_pp::Performance::new(&beatmap.inner));
         performance.generate_state().into()
     }
@@ -155,29 +168,34 @@ impl Performance {
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn calculate(&self, beatmap: *const Beatmap) -> attributes::PerformanceAttributes {
         let beatmap = unsafe {
-            beatmap.as_ref().unwrap_or_else(|| {
-                panic!("beatmap: {beatmap:?}")
-            })
+            beatmap
+                .as_ref()
+                .unwrap_or_else(|| panic!("beatmap: {beatmap:?}"))
         };
-        
+
         let performance = self.apply(rosu_pp::Performance::new(&beatmap.inner));
         performance.calculate().into()
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn calculate_from_difficulty(&self, difficulty_attr: DifficultyAttributes) -> attributes::PerformanceAttributes {
-        let performance = self.apply(rosu_pp::Performance::new(rosu_pp::any::DifficultyAttributes::from(difficulty_attr)));
+    pub fn calculate_from_difficulty(
+        &self,
+        difficulty_attr: DifficultyAttributes,
+    ) -> attributes::PerformanceAttributes {
+        let performance = self.apply(rosu_pp::Performance::new(
+            rosu_pp::any::DifficultyAttributes::from(difficulty_attr),
+        ));
         performance.calculate().into()
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn get_clock_rate(&mut self) -> f64 {
         if let Some(mods) = self.mods.as_ref() {
-            return f64::from(mods.clock_rate().unwrap_or(1.0))
+            return f64::from(mods.clock_rate().unwrap_or(1.0));
         }
-        
+
         if let Some(mods_intermode) = self.mods_intermode.as_ref() {
-            return f64::from(mods_intermode.legacy_clock_rate())
+            return f64::from(mods_intermode.legacy_clock_rate());
         }
 
         1.0
@@ -201,6 +219,9 @@ impl Performance {
             misses,
             combo,
             hitresult_priority,
+            lazer,
+            slider_tick_hits,
+            slider_end_hits,
             n300,
             n100,
             n50,
@@ -222,9 +243,15 @@ impl Performance {
         } else if let Some(mods_intermode) = mods_intermode.as_ref() {
             perf = match perf {
                 rosu_pp::Performance::Osu(o) => rosu_pp::Performance::Osu(o.mods(mods_intermode)),
-                rosu_pp::Performance::Taiko(t) => rosu_pp::Performance::Taiko(t.mods(mods_intermode)),
-                rosu_pp::Performance::Catch(f) => rosu_pp::Performance::Catch(f.mods(mods_intermode)),
-                rosu_pp::Performance::Mania(m) => rosu_pp::Performance::Mania(m.mods(mods_intermode)),
+                rosu_pp::Performance::Taiko(t) => {
+                    rosu_pp::Performance::Taiko(t.mods(mods_intermode))
+                }
+                rosu_pp::Performance::Catch(f) => {
+                    rosu_pp::Performance::Catch(f.mods(mods_intermode))
+                }
+                rosu_pp::Performance::Mania(m) => {
+                    rosu_pp::Performance::Mania(m.mods(mods_intermode))
+                }
             };
         }
 
@@ -270,6 +297,26 @@ impl Performance {
 
         if let Some(hitresult_priority) = hitresult_priority.into_option() {
             perf = perf.hitresult_priority(hitresult_priority.into());
+        }
+
+        if let Some(lazer) = lazer.into_option() {
+            perf = perf.lazer(lazer);
+        }
+
+        if let Some(slider_tick_hits) = slider_tick_hits.into_option() {
+            perf = if let rosu_pp::Performance::Osu(o) = perf {
+                rosu_pp::Performance::Osu(o.n_slider_ticks(slider_tick_hits))
+            } else {
+                perf
+            };
+        }
+
+        if let Some(slider_end_hits) = slider_end_hits.into_option() {
+            perf = if let rosu_pp::Performance::Osu(o) = perf {
+                rosu_pp::Performance::Osu(o.n_slider_ends(slider_end_hits))
+            } else {
+                perf
+            };
         }
 
         if let Some(n300) = n300.into_option() {

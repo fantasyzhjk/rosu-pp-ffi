@@ -137,6 +137,9 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_hardrock_offsets")]
         public static extern void difficulty_hardrock_offsets(IntPtr context, bool hardrock_offsets);
 
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_lazer")]
+        public static extern void difficulty_lazer(IntPtr context, bool lazer);
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_calculate")]
         public static extern DifficultyAttributes difficulty_calculate(IntPtr context, IntPtr beatmap);
 
@@ -185,6 +188,9 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_od")]
         public static extern void performance_od(IntPtr context, float od);
 
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_hardrock_offsets")]
+        public static extern void performance_hardrock_offsets(IntPtr context, bool hardrock_offsets);
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_accuracy")]
         public static extern void performance_accuracy(IntPtr context, double accuracy);
 
@@ -196,6 +202,9 @@ namespace RosuPP
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_hitresult_priority")]
         public static extern void performance_hitresult_priority(IntPtr context, HitResultPriority hitresult_priority);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_lazer")]
+        public static extern void performance_lazer(IntPtr context, bool lazer);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_n300")]
         public static extern void performance_n300(IntPtr context, uint n300);
@@ -417,7 +426,11 @@ namespace RosuPP
         /// Hit window for approach rate i.e. `TimePreempt` in milliseconds.
         public double ar;
         /// Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds.
-        public double od;
+        public double od_great;
+        /// Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
+        ///
+        /// `None` for osu!mania.
+        public Optionf64 od_ok;
     }
 
     /// The result of a difficulty calculation on an osu!mania map.
@@ -468,6 +481,10 @@ namespace RosuPP
         public double slider_factor;
         /// The number of clickable objects weighted by difficulty.
         public double speed_note_count;
+        /// Weighted sum of aim strains.
+        public double aim_difficult_strain_count;
+        /// Weighted sum of speed strains.
+        public double speed_difficult_strain_count;
         /// The approach rate.
         public double ar;
         /// The overall difficulty
@@ -478,6 +495,8 @@ namespace RosuPP
         public uint n_circles;
         /// The amount of sliders.
         public uint n_sliders;
+        /// The amount of slider ticks and repeat points.
+        public uint n_slider_ticks;
         /// The amount of spinners.
         public uint n_spinners;
         /// The final star rating
@@ -531,6 +550,14 @@ namespace RosuPP
         ///
         /// Irrelevant for osu!mania.
         public uint max_combo;
+        /// Amount of successfully hit slider ticks and repeats.
+        ///
+        /// Only relevant for osu!standard in lazer.
+        public uint slider_tick_hits;
+        /// Amount of successfully hit slider ends.
+        ///
+        /// Only relevant for osu!standard in lazer.
+        public uint slider_end_hits;
         /// Amount of current gekis (n320 for osu!mania).
         public uint n_geki;
         /// Amount of current katus (tiny droplet misses for osu!catch / n200 for
@@ -560,7 +587,9 @@ namespace RosuPP
         /// The difficulty of the hardest parts of the map.
         public double peak;
         /// The perceived hit window for an n300 inclusive of rate-adjusting mods (DT/HT/etc)
-        public double hit_window;
+        public double great_hit_window;
+        /// The perceived hit window for an n100 inclusive of rate-adjusting mods (DT/HT/etc)
+        public double ok_hit_window;
         /// The final star rating.
         public double stars;
         /// The maximum combo.
@@ -587,6 +616,8 @@ namespace RosuPP
         public double pp_difficulty;
         /// Scaled miss count based on total hits.
         public double effective_miss_count;
+        /// Upper bound on the player's tap deviation.
+        public Optionf64 estimated_unstable_rate;
     }
 
     public enum FFIError
@@ -947,6 +978,38 @@ namespace RosuPP
     }
 
 
+    ///Option type containing boolean flag and maybe valid data.
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
+    public partial struct Optionf64
+    {
+        ///Element that is maybe valid.
+        double t;
+        ///Byte where `1` means element `t` is valid.
+        byte is_some;
+    }
+
+    public partial struct Optionf64
+    {
+        public static Optionf64 FromNullable(double? nullable)
+        {
+            var result = new Optionf64();
+            if (nullable.HasValue)
+            {
+                result.is_some = 1;
+                result.t = nullable.Value;
+            }
+
+            return result;
+        }
+
+        public double? ToNullable()
+        {
+            return this.is_some == 1 ? this.t : (double?)null;
+        }
+    }
+
+
 
     public partial class BeatmapAttributesBuilder : IDisposable
     {
@@ -1184,6 +1247,11 @@ namespace RosuPP
             Rosu.difficulty_hardrock_offsets(_context, hardrock_offsets);
         }
 
+        public void Lazer(bool lazer)
+        {
+            Rosu.difficulty_lazer(_context, lazer);
+        }
+
         public DifficultyAttributes Calculate(IntPtr beatmap)
         {
             return Rosu.difficulty_calculate(_context, beatmap);
@@ -1278,6 +1346,11 @@ namespace RosuPP
             Rosu.performance_od(_context, od);
         }
 
+        public void HardrockOffsets(bool hardrock_offsets)
+        {
+            Rosu.performance_hardrock_offsets(_context, hardrock_offsets);
+        }
+
         public void Accuracy(double accuracy)
         {
             Rosu.performance_accuracy(_context, accuracy);
@@ -1296,6 +1369,11 @@ namespace RosuPP
         public void HitresultPriority(HitResultPriority hitresult_priority)
         {
             Rosu.performance_hitresult_priority(_context, hitresult_priority);
+        }
+
+        public void Lazer(bool lazer)
+        {
+            Rosu.performance_lazer(_context, lazer);
         }
 
         public void N300(uint n300)

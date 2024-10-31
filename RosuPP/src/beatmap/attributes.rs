@@ -48,14 +48,19 @@ pub struct HitWindows {
     /// Hit window for approach rate i.e. `TimePreempt` in milliseconds.
     pub ar: f64,
     /// Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds.
-    pub od: f64,
+    pub od_great: f64,
+    /// Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
+    ///
+    /// `None` for osu!mania.
+    pub od_ok: FFIOption<f64>,
 }
 
 impl From<rosu_pp::model::beatmap::HitWindows> for HitWindows {
     fn from(attributes: rosu_pp::model::beatmap::HitWindows) -> Self {
         Self {
             ar: attributes.ar,
-            od: attributes.od,
+            od_great: attributes.od_great,
+            od_ok: attributes.od_ok.into(),
         }
     }
 }
