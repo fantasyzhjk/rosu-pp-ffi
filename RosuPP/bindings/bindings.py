@@ -64,6 +64,8 @@ def init_lib(path):
     c_lib.performance_combo.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_hitresult_priority.argtypes = [ctypes.c_void_p, ctypes.c_int]
     c_lib.performance_lazer.argtypes = [ctypes.c_void_p, ctypes.c_bool]
+    c_lib.performance_slider_tick_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_slider_end_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_n300.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_n100.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_n50.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
@@ -2066,6 +2068,14 @@ class Performance:
     def lazer(self, lazer: bool):
         """"""
         return c_lib.performance_lazer(self._ctx, lazer)
+
+    def slider_tick_hits(self, slider_tick_hits: int):
+        """"""
+        return c_lib.performance_slider_tick_hits(self._ctx, slider_tick_hits)
+
+    def slider_end_hits(self, slider_end_hits: int):
+        """"""
+        return c_lib.performance_slider_end_hits(self._ctx, slider_end_hits)
 
     def n300(self, n300: int):
         """"""

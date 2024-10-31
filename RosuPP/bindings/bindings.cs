@@ -206,6 +206,12 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_lazer")]
         public static extern void performance_lazer(IntPtr context, bool lazer);
 
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_slider_tick_hits")]
+        public static extern void performance_slider_tick_hits(IntPtr context, uint slider_tick_hits);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_slider_end_hits")]
+        public static extern void performance_slider_end_hits(IntPtr context, uint slider_end_hits);
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_n300")]
         public static extern void performance_n300(IntPtr context, uint n300);
 
@@ -217,6 +223,9 @@ namespace RosuPP
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_n_katu")]
         public static extern void performance_n_katu(IntPtr context, uint n_katu);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_n_geki")]
+        public static extern void performance_n_geki(IntPtr context, uint n_geki);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_generate_state")]
         public static extern ScoreState performance_generate_state(IntPtr context, IntPtr beatmap);
@@ -1376,6 +1385,16 @@ namespace RosuPP
             Rosu.performance_lazer(_context, lazer);
         }
 
+        public void SliderTickHits(uint slider_tick_hits)
+        {
+            Rosu.performance_slider_tick_hits(_context, slider_tick_hits);
+        }
+
+        public void SliderEndHits(uint slider_end_hits)
+        {
+            Rosu.performance_slider_end_hits(_context, slider_end_hits);
+        }
+
         public void N300(uint n300)
         {
             Rosu.performance_n300(_context, n300);
@@ -1394,6 +1413,11 @@ namespace RosuPP
         public void NKatu(uint n_katu)
         {
             Rosu.performance_n_katu(_context, n_katu);
+        }
+
+        public void NGeki(uint n_geki)
+        {
+            Rosu.performance_n_geki(_context, n_geki);
         }
 
         public ScoreState GenerateState(IntPtr beatmap)

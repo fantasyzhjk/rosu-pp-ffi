@@ -134,6 +134,16 @@ impl Performance {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn slider_tick_hits(&mut self, slider_tick_hits: u32) {
+        self.slider_tick_hits = Some(slider_tick_hits).into();
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn slider_end_hits(&mut self, slider_end_hits: u32) {
+        self.slider_end_hits = Some(slider_end_hits).into();
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn n300(&mut self, n300: u32) {
         self.n300 = Some(n300).into();
     }
@@ -151,6 +161,11 @@ impl Performance {
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn n_katu(&mut self, n_katu: u32) {
         self.n_katu = Some(n_katu).into();
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn n_geki(&mut self, n_geki: u32) {
+        self.n_geki = Some(n_geki).into();
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]

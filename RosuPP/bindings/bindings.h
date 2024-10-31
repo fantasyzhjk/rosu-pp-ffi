@@ -525,6 +525,10 @@ void performance_hitresult_priority(performance* context, hitresultpriority hitr
 
 void performance_lazer(performance* context, bool lazer);
 
+void performance_slider_tick_hits(performance* context, uint32_t slider_tick_hits);
+
+void performance_slider_end_hits(performance* context, uint32_t slider_end_hits);
+
 void performance_n300(performance* context, uint32_t n300);
 
 void performance_n100(performance* context, uint32_t n100);
