@@ -59,8 +59,8 @@ impl From<rosu_pp::model::beatmap::HitWindows> for HitWindows {
     fn from(attributes: rosu_pp::model::beatmap::HitWindows) -> Self {
         Self {
             ar: attributes.ar,
-            od_great: attributes.od_great,
-            od_ok: attributes.od_ok.into(),
+            od_great: attributes.od,
+            od_ok: None.into(),
         }
     }
 }

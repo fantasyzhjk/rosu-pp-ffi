@@ -65,11 +65,13 @@ def init_lib(path):
     c_lib.performance_hitresult_priority.argtypes = [ctypes.c_void_p, ctypes.c_int]
     c_lib.performance_lazer.argtypes = [ctypes.c_void_p, ctypes.c_bool]
     c_lib.performance_slider_tick_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_slider_tick_misses.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_slider_end_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_n300.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_n100.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_n50.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_n_katu.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_n_geki.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_generate_state.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
     c_lib.performance_calculate.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
     c_lib.performance_calculate_from_difficulty.argtypes = [ctypes.c_void_p, DifficultyAttributes]
@@ -2073,6 +2075,10 @@ class Performance:
         """"""
         return c_lib.performance_slider_tick_hits(self._ctx, slider_tick_hits)
 
+    def slider_tick_misses(self, slider_tick_misses: int):
+        """"""
+        return c_lib.performance_slider_tick_misses(self._ctx, slider_tick_misses)
+
     def slider_end_hits(self, slider_end_hits: int):
         """"""
         return c_lib.performance_slider_end_hits(self._ctx, slider_end_hits)
@@ -2092,6 +2098,10 @@ class Performance:
     def n_katu(self, n_katu: int):
         """"""
         return c_lib.performance_n_katu(self._ctx, n_katu)
+
+    def n_geki(self, n_geki: int):
+        """"""
+        return c_lib.performance_n_geki(self._ctx, n_geki)
 
     def generate_state(self, beatmap: ctypes.c_void_p) -> ScoreState:
         """"""

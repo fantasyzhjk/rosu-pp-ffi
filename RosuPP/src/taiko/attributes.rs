@@ -48,8 +48,8 @@ impl From<rosu_pp::taiko::TaikoDifficultyAttributes> for TaikoDifficultyAttribut
             rhythm: attributes.rhythm,
             color: attributes.color,
             peak: attributes.peak,
-            great_hit_window: attributes.great_hit_window,
-            ok_hit_window: attributes.ok_hit_window,
+            great_hit_window: attributes.hit_window,
+            ok_hit_window: 0.0,
             stars: attributes.stars,
             max_combo: attributes.max_combo,
             is_convert: attributes.is_convert,
@@ -64,8 +64,7 @@ impl From<TaikoDifficultyAttributes> for rosu_pp::taiko::TaikoDifficultyAttribut
             rhythm: attributes.rhythm,
             color: attributes.color,
             peak: attributes.peak,
-            great_hit_window: attributes.great_hit_window,
-            ok_hit_window: attributes.ok_hit_window,
+            hit_window: attributes.great_hit_window,
             stars: attributes.stars,
             max_combo: attributes.max_combo,
             is_convert: attributes.is_convert,
@@ -124,7 +123,7 @@ impl From<rosu_pp::taiko::TaikoPerformanceAttributes> for TaikoPerformanceAttrib
             pp_acc: attributes.pp_acc,
             pp_difficulty: attributes.pp_difficulty,
             effective_miss_count: attributes.effective_miss_count,
-            estimated_unstable_rate: attributes.estimated_unstable_rate.into(),
+            estimated_unstable_rate: None.into(),
         }
     }
 }
@@ -137,7 +136,6 @@ impl From<TaikoPerformanceAttributes> for rosu_pp::taiko::TaikoPerformanceAttrib
             pp_acc: attributes.pp_acc,
             pp_difficulty: attributes.pp_difficulty,
             effective_miss_count: attributes.effective_miss_count,
-            estimated_unstable_rate: attributes.estimated_unstable_rate.into_option(),
         }
     }
 }

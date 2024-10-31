@@ -527,6 +527,8 @@ void performance_lazer(performance* context, bool lazer);
 
 void performance_slider_tick_hits(performance* context, uint32_t slider_tick_hits);
 
+void performance_slider_tick_misses(performance* context, uint32_t slider_tick_misses);
+
 void performance_slider_end_hits(performance* context, uint32_t slider_end_hits);
 
 void performance_n300(performance* context, uint32_t n300);
@@ -536,6 +538,8 @@ void performance_n100(performance* context, uint32_t n100);
 void performance_n50(performance* context, uint32_t n50);
 
 void performance_n_katu(performance* context, uint32_t n_katu);
+
+void performance_n_geki(performance* context, uint32_t n_geki);
 
 scorestate performance_generate_state(const performance* context, const beatmap* beatmap);
 

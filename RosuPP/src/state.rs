@@ -2,6 +2,7 @@ use interoptopus::{ffi_function, ffi_type};
 
 use crate::{mode::Mode, owned_string::OwnedString};
 
+
 /// Aggregation for a score's current state.
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[repr(C)]
@@ -61,8 +62,8 @@ impl From<rosu_pp::any::ScoreState> for ScoreState {
     fn from(value: rosu_pp::any::ScoreState) -> Self {
         Self {
             max_combo: value.max_combo,
-            slider_tick_hits: value.slider_tick_hits,
-            slider_end_hits: value.slider_end_hits,
+            slider_tick_hits: 0,
+            slider_end_hits: 0,
             n_geki: value.n_geki,
             n_katu: value.n_katu,
             n300: value.n300,
@@ -77,8 +78,6 @@ impl From<ScoreState> for rosu_pp::any::ScoreState {
     fn from(value: ScoreState) -> Self {
         Self {
             max_combo: value.max_combo,
-            slider_tick_hits: value.slider_tick_hits,
-            slider_end_hits: value.slider_end_hits,
             n_geki: value.n_geki,
             n_katu: value.n_katu,
             n300: value.n300,

@@ -175,10 +175,6 @@ impl Difficulty {
             diff = diff.hardrock_offsets(hardrock_offsets);
         }
 
-        if let Some(lazer) = lazer.into_option() {
-            diff = diff.lazer(lazer);
-        }
-
         diff
     }
 }

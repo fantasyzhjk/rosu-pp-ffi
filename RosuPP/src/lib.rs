@@ -20,6 +20,7 @@ mod state;
 mod mods;
 mod mods_intermode;
 mod hitresult_priority;
+pub mod generate_state_lazer;
 use error::{FFIError, Error};
 
 #[ffi_function]

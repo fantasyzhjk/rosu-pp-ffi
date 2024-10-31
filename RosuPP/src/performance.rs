@@ -1,6 +1,7 @@
 use crate::*;
 use attributes::DifficultyAttributes;
 use beatmap::Beatmap;
+use generate_state_lazer::GenerateStateLazer;
 use hitresult_priority::HitResultPriority;
 use interoptopus::{
     ffi_service, ffi_service_ctor, ffi_service_method, ffi_type,
@@ -33,6 +34,7 @@ pub struct Performance {
     pub hitresult_priority: FFIOption<HitResultPriority>,
 
     pub slider_tick_hits: FFIOption<u32>,
+    pub slider_tick_misses: FFIOption<u32>,
     pub slider_end_hits: FFIOption<u32>,
     pub n300: FFIOption<u32>,
     pub n100: FFIOption<u32>,
@@ -139,6 +141,11 @@ impl Performance {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn slider_tick_misses(&mut self, slider_tick_misses: u32) {
+        self.slider_tick_misses = Some(slider_tick_misses).into();
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn slider_end_hits(&mut self, slider_end_hits: u32) {
         self.slider_end_hits = Some(slider_end_hits).into();
     }
@@ -176,8 +183,12 @@ impl Performance {
                 .unwrap_or_else(|| panic!("beatmap: {beatmap:?}"))
         };
 
-        let mut performance = self.apply(rosu_pp::Performance::new(&beatmap.inner));
-        performance.generate_state().into()
+        if self.lazer.into_option().unwrap_or(false) {
+            self.generate_state_lazer(beatmap)
+        } else {
+            let mut performance: rosu_pp::Performance<'_> = self.apply(rosu_pp::Performance::new(&beatmap.inner));
+            performance.generate_state().into()
+        }
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
@@ -236,6 +247,7 @@ impl Performance {
             hitresult_priority,
             lazer,
             slider_tick_hits,
+            slider_tick_misses,
             slider_end_hits,
             n300,
             n100,
@@ -314,25 +326,6 @@ impl Performance {
             perf = perf.hitresult_priority(hitresult_priority.into());
         }
 
-        if let Some(lazer) = lazer.into_option() {
-            perf = perf.lazer(lazer);
-        }
-
-        if let Some(slider_tick_hits) = slider_tick_hits.into_option() {
-            perf = if let rosu_pp::Performance::Osu(o) = perf {
-                rosu_pp::Performance::Osu(o.n_slider_ticks(slider_tick_hits))
-            } else {
-                perf
-            };
-        }
-
-        if let Some(slider_end_hits) = slider_end_hits.into_option() {
-            perf = if let rosu_pp::Performance::Osu(o) = perf {
-                rosu_pp::Performance::Osu(o.n_slider_ends(slider_end_hits))
-            } else {
-                perf
-            };
-        }
 
         if let Some(n300) = n300.into_option() {
             perf = perf.n300(n300);

@@ -209,6 +209,9 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_slider_tick_hits")]
         public static extern void performance_slider_tick_hits(IntPtr context, uint slider_tick_hits);
 
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_slider_tick_misses")]
+        public static extern void performance_slider_tick_misses(IntPtr context, uint slider_tick_misses);
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_slider_end_hits")]
         public static extern void performance_slider_end_hits(IntPtr context, uint slider_end_hits);
 
@@ -1388,6 +1391,11 @@ namespace RosuPP
         public void SliderTickHits(uint slider_tick_hits)
         {
             Rosu.performance_slider_tick_hits(_context, slider_tick_hits);
+        }
+
+        public void SliderTickMisses(uint slider_tick_misses)
+        {
+            Rosu.performance_slider_tick_misses(_context, slider_tick_misses);
         }
 
         public void SliderEndHits(uint slider_end_hits)
