@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <CargoPackage>rosu_pp_ffi</CargoPackage>
+        <CargoPackage>sb_pp_ffi</CargoPackage>
         <CargoWorkspacePath>$(MSBuildThisFileDirectory)</CargoWorkspacePath>
     </PropertyGroup>
 

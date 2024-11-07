@@ -7,11 +7,11 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
-using RosuPP;
+using SBRosuPP;
 
 #nullable enable
 
-namespace RosuPP;
+namespace SBRosuPP;
 
 internal static unsafe partial class NativeMethods
 {
@@ -28,7 +28,7 @@ internal static unsafe partial class NativeMethods
 
     static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
     {
-        if (libraryName == Rosu.NativeLib)
+        if (libraryName == SBRosu.NativeLib)
         {
             var path = "native/";
             var extension = "";
@@ -37,17 +37,17 @@ internal static unsafe partial class NativeMethods
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 extension = ".dll";
-                name = Rosu.NativeLib;
+                name = SBRosu.NativeLib;
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 extension = ".dylib";
-                name = "lib" + Rosu.NativeLib;
+                name = "lib" + SBRosu.NativeLib;
             }
             else
             {
                 extension = ".so";
-                name = "lib" + Rosu.NativeLib;
+                name = "lib" + SBRosu.NativeLib;
             }
 
             path += name + extension;

@@ -126,7 +126,7 @@ public partial struct DifficultyAttributes
     public override string ToString()
     {
         var str = OwnedString.Empty();
-        Rosu.debug_difficylty_attributes(ref this, str.Context);
+        SBRosu.debug_difficylty_attributes(ref this, str.Context);
         return str.ToString();
     }
 }
@@ -136,7 +136,7 @@ public partial struct PerformanceAttributes
     public override string ToString()
     {
         var str = OwnedString.Empty();
-        Rosu.debug_performance_attributes(ref this, str.Context);
+        SBRosu.debug_performance_attributes(ref this, str.Context);
         return str.ToString();
     }
 }
