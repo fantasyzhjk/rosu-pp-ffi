@@ -1,90 +1,42 @@
-use crate::mods::Mods;
+use crate::beatmap::Beatmap;
 use crate::*;
-use beatmap::Beatmap;
 use interoptopus::{
     ffi_service, ffi_service_ctor, ffi_service_method, ffi_type,
     patterns::{option::FFIOption, string::AsciiPointer},
 };
-use mode::Mode;
-use rosu_mods::{GameMods, GameModsIntermode};
-
-/// Summary struct for a [`Beatmap`]'s attributes.
-#[derive(Clone, Debug, PartialEq)]
-#[repr(C)]
-#[ffi_type]
-pub struct BeatmapAttributes {
-    /// The approach rate.
-    pub ar: f64,
-    /// The overall difficulty.
-    pub od: f64,
-    /// The circle size.
-    pub cs: f64,
-    /// The health drain rate
-    pub hp: f64,
-    /// The clock rate with respect to mods.
-    pub clock_rate: f64,
-    /// The hit windows for approach rate and overall difficulty.
-    pub hit_windows: HitWindows,
-}
-
-impl From<rosu_pp::model::beatmap::BeatmapAttributes> for BeatmapAttributes {
-    fn from(attributes: rosu_pp::model::beatmap::BeatmapAttributes) -> Self {
-        Self {
-            ar: attributes.ar,
-            od: attributes.od,
-            cs: attributes.cs,
-            hp: attributes.hp,
-            clock_rate: attributes.clock_rate,
-            hit_windows: attributes.hit_windows.into(),
-        }
-    }
-}
-
-/// AR and OD hit windows
-#[derive(Copy, Clone, Debug, PartialEq)]
-#[repr(C)]
-#[ffi_type]
-pub struct HitWindows {
-    /// Hit window for approach rate i.e. `TimePreempt` in milliseconds.
-    pub ar: f64,
-    /// Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds.
-    pub od: f64,
-}
-
-impl From<rosu_pp::model::beatmap::HitWindows> for HitWindows {
-    fn from(attributes: rosu_pp::model::beatmap::HitWindows) -> Self {
-        Self {
-            ar: attributes.ar,
-            od: attributes.od,
-        }
-    }
-}
+use mods::Mods;
+use rosu_mods::{GameModsIntermode, GameMods};
 
 #[ffi_type(opaque)]
 #[derive(Default)]
 #[allow(non_snake_case)]
-pub struct BeatmapAttributesBuilder {
-    pub mode: FFIOption<Mode>,
+pub struct Difficulty {
     pub mods: FFIOption<GameMods>,
     pub mods_intermode: FFIOption<GameModsIntermode>,
+    pub passed_objects: FFIOption<u32>,
+    /// Clock rate will be clamped internally between 0.01 and 100.0.
+    ///
+    /// Since its minimum value is 0.01, its bits are never zero.
+    /// Additionally, values between 0.01 and 100 are represented sufficiently
+    /// precise with 32 bits.
+    ///
+    /// This allows for an optimization to reduce the struct size by storing its
+    /// bits as a [`NonZeroU32`].
     pub clock_rate: FFIOption<f64>,
     pub ar: FFIOption<f32>,
     pub cs: FFIOption<f32>,
     pub hp: FFIOption<f32>,
     pub od: FFIOption<f32>,
+
+    pub hardrock_offsets: FFIOption<bool>,
 }
 
 // Regular implementation of methods.
-#[ffi_service(error = "FFIError", prefix = "beatmap_attributes_")]
-impl BeatmapAttributesBuilder {
+#[ffi_service(error = "FFIError", prefix = "difficulty_")]
+impl Difficulty {
     #[ffi_service_ctor]
     pub fn new() -> Result<Self, Error> {
         Ok(Self::default())
-    }
-
-    #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn mode(&mut self, mode: Mode) {
-        self.mode = Some(mode).into();
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
@@ -104,6 +56,11 @@ impl BeatmapAttributesBuilder {
         ))
         .into();
         Ok(())
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn passed_objects(&mut self, passed_objects: u32) {
+        self.passed_objects = Some(passed_objects).into();
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
@@ -132,6 +89,22 @@ impl BeatmapAttributesBuilder {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn hardrock_offsets(&mut self, hardrock_offsets: bool) {
+        self.hardrock_offsets = Some(hardrock_offsets).into();
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn calculate(&self, beatmap: *const Beatmap) -> attributes::DifficultyAttributes {
+        let beatmap = unsafe {
+            beatmap
+                .as_ref()
+                .unwrap_or_else(|| panic!("beatmap: {beatmap:?}"))
+        };
+
+        self.construct().calculate(&beatmap.inner).into()
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn get_clock_rate(&mut self) -> f64 {
         if let Some(mods) = self.mods.as_ref() {
             return f64::from(mods.clock_rate().unwrap_or(1.0))
@@ -143,57 +116,58 @@ impl BeatmapAttributesBuilder {
 
         1.0
     }
+}
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn build(&self, beatmap: *const Beatmap) -> BeatmapAttributes {
-        let beatmap = unsafe {
-            beatmap
-                .as_ref()
-                .unwrap_or_else(|| panic!("beatmap: {beatmap:?}"))
-        };
+impl Difficulty {
+    pub fn construct(&self) -> rosu_pp::Difficulty {
+        let mut diff = rosu_pp::Difficulty::new();
 
-        let mut builder = rosu_pp::model::beatmap::BeatmapAttributesBuilder::new().map(&beatmap.inner);
-        let BeatmapAttributesBuilder {
-            mode,
+        let Difficulty {
             mods,
             mods_intermode,
+            passed_objects,
             clock_rate,
             ar,
             cs,
             hp,
             od,
+            hardrock_offsets,
         } = self;
 
-        if let Some(mode) = mode.into_option() {
-            builder = builder.mode(mode.into(), beatmap.inner.is_convert);
+        if let Some(mods) = mods.as_ref() {
+            diff = diff.mods(mods.bits());
+        } else if let Some(mods_intermode) = mods_intermode.as_ref() {
+            diff = diff.mods(mods_intermode.bits());
         }
 
-        if let Some(mods) = mods.as_ref() {
-            builder = builder.mods(mods.clone());
-        } else if let Some(mods_intermode) = mods_intermode.as_ref() {
-            builder = builder.mods(mods_intermode);
+        if let Some(passed_objects) = passed_objects.into_option() {
+            diff = diff.passed_objects(passed_objects);
         }
 
         if let Some(clock_rate) = clock_rate.into_option() {
-            builder = builder.clock_rate(clock_rate);
+            diff = diff.clock_rate(clock_rate);
         }
 
         if let Some(ar) = ar.into_option() {
-            builder = builder.ar(ar, false);
+            diff = diff.ar(ar, false);
         }
 
         if let Some(cs) = cs.into_option() {
-            builder = builder.cs(cs, false);
+            diff = diff.cs(cs, false);
         }
 
         if let Some(hp) = hp.into_option() {
-            builder = builder.hp(hp, false);
+            diff = diff.hp(hp, false);
         }
 
         if let Some(od) = od.into_option() {
-            builder = builder.od(od, false);
+            diff = diff.od(od, false);
         }
 
-        builder.build().into()
+        if let Some(hardrock_offsets) = hardrock_offsets.into_option() {
+            diff = diff.hardrock_offsets(hardrock_offsets);
+        }
+
+        diff
     }
 }

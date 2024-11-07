@@ -29,6 +29,8 @@ def init_lib(path):
     c_lib.beatmap_convert.argtypes = [ctypes.c_void_p, ctypes.c_int]
     c_lib.beatmap_bpm.argtypes = [ctypes.c_void_p]
     c_lib.beatmap_total_break_time.argtypes = [ctypes.c_void_p]
+    c_lib.beatmap_mode.argtypes = [ctypes.c_void_p]
+    c_lib.beatmap_is_convert.argtypes = [ctypes.c_void_p]
     c_lib.difficulty_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
     c_lib.difficulty_new.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
     c_lib.difficulty_p_mods.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
@@ -63,6 +65,7 @@ def init_lib(path):
     c_lib.performance_n100.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_n50.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_n_katu.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_n_geki.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_generate_state.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
     c_lib.performance_calculate.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
     c_lib.performance_calculate_from_difficulty.argtypes = [ctypes.c_void_p, DifficultyAttributes]
@@ -73,17 +76,23 @@ def init_lib(path):
     c_lib.string_is_init.argtypes = [ctypes.c_void_p]
     c_lib.string_to_cstr.argtypes = [ctypes.c_void_p]
     c_lib.mods_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
+    c_lib.mods_new.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_int]
     c_lib.mods_from_acronyms.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_char), ctypes.c_int]
     c_lib.mods_from_bits.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_uint32, ctypes.c_int]
+    c_lib.mods_from_json.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_char), ctypes.c_int]
     c_lib.mods_bits.argtypes = [ctypes.c_void_p]
-    c_lib.mods_is_empty.argtypes = [ctypes.c_void_p]
+    c_lib.mods_len.argtypes = [ctypes.c_void_p]
+    c_lib.mods_json.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    c_lib.mods_insert_json.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
+    c_lib.mods_insert.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
     c_lib.mods_contains.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
+    c_lib.mods_clear.argtypes = [ctypes.c_void_p]
     c_lib.mods_clock_rate.argtypes = [ctypes.c_void_p]
     c_lib.mods_intermode_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
     c_lib.mods_intermode_from_acronyms.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_char)]
     c_lib.mods_intermode_from_bits.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_uint32]
     c_lib.mods_intermode_bits.argtypes = [ctypes.c_void_p]
-    c_lib.mods_intermode_is_empty.argtypes = [ctypes.c_void_p]
+    c_lib.mods_intermode_len.argtypes = [ctypes.c_void_p]
     c_lib.mods_intermode_contains.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
     c_lib.mods_intermode_intersects.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
     c_lib.mods_intermode_legacy_clock_rate.argtypes = [ctypes.c_void_p]
@@ -102,6 +111,8 @@ def init_lib(path):
     c_lib.beatmap_convert.restype = ctypes.c_bool
     c_lib.beatmap_bpm.restype = ctypes.c_double
     c_lib.beatmap_total_break_time.restype = ctypes.c_double
+    c_lib.beatmap_mode.restype = ctypes.c_int
+    c_lib.beatmap_is_convert.restype = ctypes.c_bool
     c_lib.difficulty_destroy.restype = ctypes.c_int
     c_lib.difficulty_new.restype = ctypes.c_int
     c_lib.difficulty_s_mods.restype = ctypes.c_int
@@ -120,17 +131,21 @@ def init_lib(path):
     c_lib.string_is_init.restype = ctypes.c_bool
     c_lib.string_to_cstr.restype = ctypes.POINTER(ctypes.c_char)
     c_lib.mods_destroy.restype = ctypes.c_int
+    c_lib.mods_new.restype = ctypes.c_int
     c_lib.mods_from_acronyms.restype = ctypes.c_int
     c_lib.mods_from_bits.restype = ctypes.c_int
+    c_lib.mods_from_json.restype = ctypes.c_int
     c_lib.mods_bits.restype = ctypes.c_uint32
-    c_lib.mods_is_empty.restype = ctypes.c_bool
+    c_lib.mods_len.restype = ctypes.c_uint32
+    c_lib.mods_insert_json.restype = ctypes.c_bool
+    c_lib.mods_insert.restype = ctypes.c_bool
     c_lib.mods_contains.restype = ctypes.c_bool
     c_lib.mods_clock_rate.restype = Optionf32
     c_lib.mods_intermode_destroy.restype = ctypes.c_int
     c_lib.mods_intermode_from_acronyms.restype = ctypes.c_int
     c_lib.mods_intermode_from_bits.restype = ctypes.c_int
     c_lib.mods_intermode_bits.restype = ctypes.c_uint32
-    c_lib.mods_intermode_is_empty.restype = ctypes.c_bool
+    c_lib.mods_intermode_len.restype = ctypes.c_uint32
     c_lib.mods_intermode_contains.restype = ctypes.c_bool
     c_lib.mods_intermode_intersects.restype = ctypes.c_bool
     c_lib.mods_intermode_legacy_clock_rate.restype = ctypes.c_float
@@ -151,8 +166,10 @@ def init_lib(path):
     c_lib.string_from_c_str.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
     c_lib.string_empty.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
     c_lib.mods_destroy.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
+    c_lib.mods_new.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
     c_lib.mods_from_acronyms.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
     c_lib.mods_from_bits.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
+    c_lib.mods_from_json.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
     c_lib.mods_intermode_destroy.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
     c_lib.mods_intermode_from_acronyms.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
     c_lib.mods_intermode_from_bits.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
@@ -230,6 +247,7 @@ class FFIError:
     Panic = 200
     ParseError = 300
     InvalidString = 400
+    SerializeError = 500
     Unknown = 1000
 
 
@@ -453,6 +471,7 @@ class OsuDifficultyAttributes(ctypes.Structure):
         ("ar", ctypes.c_double),
         ("od", ctypes.c_double),
         ("hp", ctypes.c_double),
+        ("cs", ctypes.c_double),
         ("n_circles", ctypes.c_uint32),
         ("n_sliders", ctypes.c_uint32),
         ("n_spinners", ctypes.c_uint32),
@@ -460,7 +479,7 @@ class OsuDifficultyAttributes(ctypes.Structure):
         ("max_combo", ctypes.c_uint32),
     ]
 
-    def __init__(self, aim: float = None, speed: float = None, flashlight: float = None, slider_factor: float = None, speed_note_count: float = None, ar: float = None, od: float = None, hp: float = None, n_circles: int = None, n_sliders: int = None, n_spinners: int = None, stars: float = None, max_combo: int = None):
+    def __init__(self, aim: float = None, speed: float = None, flashlight: float = None, slider_factor: float = None, speed_note_count: float = None, ar: float = None, od: float = None, hp: float = None, cs: float = None, n_circles: int = None, n_sliders: int = None, n_spinners: int = None, stars: float = None, max_combo: int = None):
         if aim is not None:
             self.aim = aim
         if speed is not None:
@@ -477,6 +496,8 @@ class OsuDifficultyAttributes(ctypes.Structure):
             self.od = od
         if hp is not None:
             self.hp = hp
+        if cs is not None:
+            self.cs = cs
         if n_circles is not None:
             self.n_circles = n_circles
         if n_sliders is not None:
@@ -567,6 +588,16 @@ class OsuDifficultyAttributes(ctypes.Structure):
     def hp(self, value: float):
         """ The health drain rate."""
         return ctypes.Structure.__set__(self, "hp", value)
+
+    @property
+    def cs(self) -> float:
+        """ The circle size."""
+        return ctypes.Structure.__get__(self, "cs")
+
+    @cs.setter
+    def cs(self, value: float):
+        """ The circle size."""
+        return ctypes.Structure.__set__(self, "cs", value)
 
     @property
     def n_circles(self) -> int:
@@ -1732,6 +1763,14 @@ class Beatmap:
         """"""
         return c_lib.beatmap_total_break_time(self._ctx, )
 
+    def mode(self, ) -> ctypes.c_int:
+        """"""
+        return c_lib.beatmap_mode(self._ctx, )
+
+    def is_convert(self, ) -> bool:
+        """"""
+        return c_lib.beatmap_is_convert(self._ctx, )
+
 
 
 class Difficulty:
@@ -1902,6 +1941,10 @@ class Performance:
         """"""
         return c_lib.performance_n_katu(self._ctx, n_katu)
 
+    def n_geki(self, n_geki: int):
+        """"""
+        return c_lib.performance_n_geki(self._ctx, n_geki)
+
     def generate_state(self, beatmap: ctypes.c_void_p) -> ScoreState:
         """"""
         return c_lib.performance_generate_state(self._ctx, beatmap)
@@ -1974,6 +2017,14 @@ class Mods:
         return self._ctx
 
     @staticmethod
+    def new(mode: ctypes.c_int) -> Mods:
+        """"""
+        ctx = ctypes.c_void_p()
+        c_lib.mods_new(ctx, mode)
+        self = Mods(Mods.__api_lock, ctx)
+        return self
+
+    @staticmethod
     def from_acronyms(str: bytes, mode: ctypes.c_int) -> Mods:
         """"""
         ctx = ctypes.c_void_p()
@@ -1991,21 +2042,51 @@ class Mods:
         self = Mods(Mods.__api_lock, ctx)
         return self
 
+    @staticmethod
+    def from_json(str: bytes, mode: ctypes.c_int) -> Mods:
+        """"""
+        ctx = ctypes.c_void_p()
+        if not hasattr(str, "__ctypes_from_outparam__"):
+            str = ctypes.cast(str, ctypes.POINTER(ctypes.c_char))
+        c_lib.mods_from_json(ctx, str, mode)
+        self = Mods(Mods.__api_lock, ctx)
+        return self
+
     def __del__(self):
         c_lib.mods_destroy(self._ctx, )
     def bits(self, ) -> int:
         """"""
         return c_lib.mods_bits(self._ctx, )
 
-    def is_empty(self, ) -> bool:
+    def len(self, ) -> int:
         """"""
-        return c_lib.mods_is_empty(self._ctx, )
+        return c_lib.mods_len(self._ctx, )
+
+    def json(self, str: ctypes.c_void_p):
+        """"""
+        return c_lib.mods_json(self._ctx, str)
+
+    def insert_json(self, str: bytes) -> bool:
+        """"""
+        if not hasattr(str, "__ctypes_from_outparam__"):
+            str = ctypes.cast(str, ctypes.POINTER(ctypes.c_char))
+        return c_lib.mods_insert_json(self._ctx, str)
+
+    def insert(self, str: bytes) -> bool:
+        """"""
+        if not hasattr(str, "__ctypes_from_outparam__"):
+            str = ctypes.cast(str, ctypes.POINTER(ctypes.c_char))
+        return c_lib.mods_insert(self._ctx, str)
 
     def contains(self, str: bytes) -> bool:
         """"""
         if not hasattr(str, "__ctypes_from_outparam__"):
             str = ctypes.cast(str, ctypes.POINTER(ctypes.c_char))
         return c_lib.mods_contains(self._ctx, str)
+
+    def clear(self, ):
+        """"""
+        return c_lib.mods_clear(self._ctx, )
 
     def clock_rate(self, ) -> Optionf32:
         """"""
@@ -2048,9 +2129,9 @@ class ModsIntermode:
         """"""
         return c_lib.mods_intermode_bits(self._ctx, )
 
-    def is_empty(self, ) -> bool:
+    def len(self, ) -> int:
         """"""
-        return c_lib.mods_intermode_is_empty(self._ctx, )
+        return c_lib.mods_intermode_len(self._ctx, )
 
     def contains(self, str: bytes) -> bool:
         """"""

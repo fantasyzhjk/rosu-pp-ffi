@@ -7,10 +7,10 @@ fn bindings_c() -> Result<(), Error> {
 
     Generator::new(
         Config {
-            ifndef: "rosu_pp".to_string(),
+            ifndef: "sb_pp".to_string(),
             ..Config::default()
         },
-        rosu_pp_ffi::ffi_inventory(),
+        sb_pp_ffi::ffi_inventory(),
     )
     .write_file("bindings/bindings.h")?;
 

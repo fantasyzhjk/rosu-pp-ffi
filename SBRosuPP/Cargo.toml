@@ -1,5 +1,5 @@
 [package]
-name = "rosu-pp-ffi"
+name = "sb-pp-ffi"
 version = "0.1.0"
 edition = "2021"
 publish = false
@@ -11,7 +11,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 interoptopus = { version = "0.14.27", features = ["log"] }
-rosu-pp = "1.1.0"
+rosu-pp = { git = "https://github.com/ppy-sb/rosu-pp" }
 rosu-map = "0.1.2"
 rosu-mods = { version = "0.1.1", features = ["serde"] }
 thiserror = "1.0"

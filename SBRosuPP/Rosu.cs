@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
-using RosuPP;
+using SBRosuPP;
 
 #nullable enable
 
-namespace RosuPP;
+namespace SBRosuPP;
 
 public static class Utils
 {

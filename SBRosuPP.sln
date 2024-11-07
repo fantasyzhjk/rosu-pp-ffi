@@ -3,9 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RosuPP", "RosuPP\RosuPP.csproj", "{9B4FC9DA-150B-4FC9-A1B2-3697A7866374}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RosuPP.Tests", "RosuPP.Tests\RosuPP.Tests.csproj", "{1E800480-02EB-46C8-9DDC-FDAA9176C2E2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SBRosuPP", "SBRosuPP\SBRosuPP.csproj", "{9B4FC9DA-150B-4FC9-A1B2-3697A7866374}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

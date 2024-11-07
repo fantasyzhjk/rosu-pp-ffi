@@ -218,19 +218,9 @@ impl Performance {
         }
 
         if let Some(mods) = mods.as_ref() {
-            perf = match perf {
-                rosu_pp::Performance::Osu(o) => rosu_pp::Performance::Osu(o.mods(mods.clone())),
-                rosu_pp::Performance::Taiko(t) => rosu_pp::Performance::Taiko(t.mods(mods.clone())),
-                rosu_pp::Performance::Catch(f) => rosu_pp::Performance::Catch(f.mods(mods.clone())),
-                rosu_pp::Performance::Mania(m) => rosu_pp::Performance::Mania(m.mods(mods.clone())),
-            };
+            perf = perf.mods(mods.bits());
         } else if let Some(mods_intermode) = mods_intermode.as_ref() {
-            perf = match perf {
-                rosu_pp::Performance::Osu(o) => rosu_pp::Performance::Osu(o.mods(mods_intermode)),
-                rosu_pp::Performance::Taiko(t) => rosu_pp::Performance::Taiko(t.mods(mods_intermode)),
-                rosu_pp::Performance::Catch(f) => rosu_pp::Performance::Catch(f.mods(mods_intermode)),
-                rosu_pp::Performance::Mania(m) => rosu_pp::Performance::Mania(m.mods(mods_intermode)),
-            };
+            perf = perf.mods(mods_intermode.bits());
         }
 
         if let Some(passed_objects) = passed_objects.into_option() {
