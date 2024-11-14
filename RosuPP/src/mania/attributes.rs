@@ -1,7 +1,7 @@
 use interoptopus::ffi_type;
 
 /// The result of a difficulty calculation on an osu!mania map.
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 #[repr(C)]
 #[ffi_type]
 pub struct ManiaDifficultyAttributes {
@@ -11,6 +11,8 @@ pub struct ManiaDifficultyAttributes {
     pub hit_window: f64,
     /// The amount of hitobjects in the map.
     pub n_objects: u32,
+    /// The amount of hold notes in the map.
+    pub n_hold_notes: u32,
     /// The maximum achievable combo.
     pub max_combo: u32,
     /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
@@ -45,6 +47,7 @@ impl From<rosu_pp::mania::ManiaDifficultyAttributes> for ManiaDifficultyAttribut
             stars: attributes.stars,
             hit_window: attributes.hit_window,
             n_objects: attributes.n_objects,
+            n_hold_notes: attributes.n_hold_notes,
             max_combo: attributes.max_combo,
             is_convert: attributes.is_convert,
         }
@@ -57,6 +60,7 @@ impl From<ManiaDifficultyAttributes> for rosu_pp::mania::ManiaDifficultyAttribut
             stars: attributes.stars,
             hit_window: attributes.hit_window,
             n_objects: attributes.n_objects,
+            n_hold_notes: attributes.n_hold_notes,
             max_combo: attributes.max_combo,
             is_convert: attributes.is_convert,
         }

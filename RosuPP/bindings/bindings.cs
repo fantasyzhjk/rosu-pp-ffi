@@ -209,6 +209,9 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_slider_tick_hits")]
         public static extern void performance_slider_tick_hits(IntPtr context, uint slider_tick_hits);
 
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_slider_tick_misses")]
+        public static extern void performance_slider_tick_misses(IntPtr context, uint slider_tick_misses);
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_slider_end_hits")]
         public static extern void performance_slider_end_hits(IntPtr context, uint slider_end_hits);
 
@@ -303,7 +306,7 @@ namespace RosuPP
         public static extern void mods_clear(IntPtr context);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_clock_rate")]
-        public static extern Optionf32 mods_clock_rate(IntPtr context);
+        public static extern Optionf64 mods_clock_rate(IntPtr context);
 
         /// Destroys the given instance.
         ///
@@ -333,7 +336,7 @@ namespace RosuPP
         public static extern bool mods_intermode_intersects(IntPtr context, string str);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intermode_legacy_clock_rate")]
-        public static extern float mods_intermode_legacy_clock_rate(IntPtr context);
+        public static extern double mods_intermode_legacy_clock_rate(IntPtr context);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "debug_difficylty_attributes")]
         public static extern void debug_difficylty_attributes(ref DifficultyAttributes res, IntPtr str);
@@ -343,6 +346,9 @@ namespace RosuPP
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "debug_score_state")]
         public static extern void debug_score_state(ref ScoreState res, IntPtr str);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "calculate_accuacy")]
+        public static extern double calculate_accuacy(ref ScoreState state, ref DifficultyAttributes difficulty);
 
     }
 
@@ -453,6 +459,8 @@ namespace RosuPP
         public double hit_window;
         /// The amount of hitobjects in the map.
         public uint n_objects;
+        /// The amount of hold notes in the map.
+        public uint n_hold_notes;
         /// The maximum achievable combo.
         public uint max_combo;
         /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
@@ -563,6 +571,10 @@ namespace RosuPP
         ///
         /// Only relevant for osu!standard in lazer.
         public uint slider_tick_hits;
+        /// Amount of missed slider ticks and repeats.
+        ///
+        /// Only relevant for osu!standard in lazer.
+        public uint slider_tick_misses;
         /// Amount of successfully hit slider ends.
         ///
         /// Only relevant for osu!standard in lazer.
@@ -599,6 +611,9 @@ namespace RosuPP
         public double great_hit_window;
         /// The perceived hit window for an n100 inclusive of rate-adjusting mods (DT/HT/etc)
         public double ok_hit_window;
+        /// The ratio of stamina difficulty from mono-color (single color) streams to total
+        /// stamina difficulty.
+        public double mono_stamina_factor;
         /// The final star rating.
         public double stars;
         /// The maximum combo.
@@ -951,38 +966,6 @@ namespace RosuPP
         public TaikoPerformanceAttributes? ToNullable()
         {
             return this.is_some == 1 ? this.t : (TaikoPerformanceAttributes?)null;
-        }
-    }
-
-
-    ///Option type containing boolean flag and maybe valid data.
-    [Serializable]
-    [StructLayout(LayoutKind.Sequential)]
-    public partial struct Optionf32
-    {
-        ///Element that is maybe valid.
-        float t;
-        ///Byte where `1` means element `t` is valid.
-        byte is_some;
-    }
-
-    public partial struct Optionf32
-    {
-        public static Optionf32 FromNullable(float? nullable)
-        {
-            var result = new Optionf32();
-            if (nullable.HasValue)
-            {
-                result.is_some = 1;
-                result.t = nullable.Value;
-            }
-
-            return result;
-        }
-
-        public float? ToNullable()
-        {
-            return this.is_some == 1 ? this.t : (float?)null;
         }
     }
 
@@ -1390,6 +1373,11 @@ namespace RosuPP
             Rosu.performance_slider_tick_hits(_context, slider_tick_hits);
         }
 
+        public void SliderTickMisses(uint slider_tick_misses)
+        {
+            Rosu.performance_slider_tick_misses(_context, slider_tick_misses);
+        }
+
         public void SliderEndHits(uint slider_end_hits)
         {
             Rosu.performance_slider_end_hits(_context, slider_end_hits);
@@ -1590,7 +1578,7 @@ namespace RosuPP
             Rosu.mods_clear(_context);
         }
 
-        public Optionf32 ClockRate()
+        public Optionf64 ClockRate()
         {
             return Rosu.mods_clock_rate(_context);
         }
@@ -1656,7 +1644,7 @@ namespace RosuPP
             return Rosu.mods_intermode_intersects(_context, str);
         }
 
-        public float LegacyClockRate()
+        public double LegacyClockRate()
         {
             return Rosu.mods_intermode_legacy_clock_rate(_context);
         }

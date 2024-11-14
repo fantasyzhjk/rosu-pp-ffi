@@ -33,6 +33,7 @@ pub struct Performance {
     pub hitresult_priority: FFIOption<HitResultPriority>,
 
     pub slider_tick_hits: FFIOption<u32>,
+    pub slider_tick_misses: FFIOption<u32>,
     pub slider_end_hits: FFIOption<u32>,
     pub n300: FFIOption<u32>,
     pub n100: FFIOption<u32>,
@@ -139,6 +140,11 @@ impl Performance {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn slider_tick_misses(&mut self, slider_tick_misses: u32) {
+        self.slider_tick_misses = Some(slider_tick_misses).into();
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn slider_end_hits(&mut self, slider_end_hits: u32) {
         self.slider_end_hits = Some(slider_end_hits).into();
     }
@@ -206,11 +212,11 @@ impl Performance {
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn get_clock_rate(&mut self) -> f64 {
         if let Some(mods) = self.mods.as_ref() {
-            return f64::from(mods.clock_rate().unwrap_or(1.0));
+            return mods.clock_rate().unwrap_or(1.0);
         }
 
         if let Some(mods_intermode) = self.mods_intermode.as_ref() {
-            return f64::from(mods_intermode.legacy_clock_rate());
+            return mods_intermode.legacy_clock_rate();
         }
 
         1.0
@@ -236,6 +242,7 @@ impl Performance {
             hitresult_priority,
             lazer,
             slider_tick_hits,
+            slider_tick_misses,
             slider_end_hits,
             n300,
             n100,
@@ -249,25 +256,9 @@ impl Performance {
         }
 
         if let Some(mods) = mods.as_ref() {
-            perf = match perf {
-                rosu_pp::Performance::Osu(o) => rosu_pp::Performance::Osu(o.mods(mods.clone())),
-                rosu_pp::Performance::Taiko(t) => rosu_pp::Performance::Taiko(t.mods(mods.clone())),
-                rosu_pp::Performance::Catch(f) => rosu_pp::Performance::Catch(f.mods(mods.clone())),
-                rosu_pp::Performance::Mania(m) => rosu_pp::Performance::Mania(m.mods(mods.clone())),
-            };
+            perf = perf.mods(mods.clone());
         } else if let Some(mods_intermode) = mods_intermode.as_ref() {
-            perf = match perf {
-                rosu_pp::Performance::Osu(o) => rosu_pp::Performance::Osu(o.mods(mods_intermode)),
-                rosu_pp::Performance::Taiko(t) => {
-                    rosu_pp::Performance::Taiko(t.mods(mods_intermode))
-                }
-                rosu_pp::Performance::Catch(f) => {
-                    rosu_pp::Performance::Catch(f.mods(mods_intermode))
-                }
-                rosu_pp::Performance::Mania(m) => {
-                    rosu_pp::Performance::Mania(m.mods(mods_intermode))
-                }
-            };
+            perf = perf.mods(mods_intermode);
         }
 
         if let Some(passed_objects) = passed_objects.into_option() {
@@ -316,6 +307,14 @@ impl Performance {
 
         if let Some(lazer) = lazer.into_option() {
             perf = perf.lazer(lazer);
+        }
+
+        if let Some(slider_tick_misses) = slider_tick_misses.into_option() {
+            perf = if let rosu_pp::Performance::Osu(o) = perf {
+                rosu_pp::Performance::Osu(o.n_slider_ticks_misses(slider_tick_misses))
+            } else {
+                perf
+            };
         }
 
         if let Some(slider_tick_hits) = slider_tick_hits.into_option() {

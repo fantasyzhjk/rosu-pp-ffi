@@ -113,11 +113,11 @@ impl Difficulty {
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn get_clock_rate(&mut self) -> f64 {
         if let Some(mods) = self.mods.as_ref() {
-            return f64::from(mods.clock_rate().unwrap_or(1.0))
+            return mods.clock_rate().unwrap_or(1.0)
         }
         
         if let Some(mods_intermode) = self.mods_intermode.as_ref() {
-            return f64::from(mods_intermode.legacy_clock_rate())
+            return mods_intermode.legacy_clock_rate()
         }
 
         1.0

@@ -8,6 +8,12 @@ using RosuPP;
 
 namespace RosuPP;
 
+public static class Extensions {
+    public static double Acc(ref this ScoreState state, ref DifficultyAttributes attr) {
+        return Rosu.calculate_accuacy(ref state, ref attr);
+    }
+}
+
 public static class Utils
 {
     public enum Mods : uint
@@ -255,3 +261,4 @@ public partial class Mods
         this.Json(str.Context);
     }
 }
+

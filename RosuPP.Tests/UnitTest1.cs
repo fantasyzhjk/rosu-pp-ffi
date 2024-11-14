@@ -2,8 +2,9 @@ using System.Diagnostics;
 using System.Reflection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.ClientProtocol;
 using Xunit.Abstractions;
-using System.Text.Json;
-using System.Text.Json.Nodes;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using osu.Game.Rulesets.Taiko;
 
 namespace RosuPP.Tests;
 
@@ -18,58 +19,94 @@ public class UnitTest1
 
 
     [Fact]
-    public void TestPPNext()
+    public void TestPP()
     {
         var d = Assembly.GetExecutingAssembly().Location;
-        var beatmap = Beatmap.FromPath("../../../resources/657916.osu");
+        var b = File.ReadAllBytes("../../../resources/657916.osu");
+        var beatmap = Beatmap.FromBytes(b);
+        var mods = Mods.FromAcronyms("HDCL", beatmap.Mode());
+        var difficulty = Difficulty.New();
+        difficulty.Mods(mods);
+        var diff_attr = difficulty.Calculate(beatmap);
+
         var performance = Performance.New();
-        performance.Mods(["HDCL"]);
+        performance.Mods(mods);
         performance.N100(66);
         performance.N50(1);
         performance.Misses(1);
         performance.Combo(1786);
 
+        var state = performance.GenerateState(beatmap);
         var attr = performance.Calculate(beatmap);
         output.WriteLine("{0}", attr);
-        Assert.Equal(281.28736211196446, attr.osu.ToNullable()!.Value.pp);
+        var acc = state.Acc(ref diff_attr) * 100;
+        
+
+        var ruleset = OsuPP.Utils.ParseRuleset((int)beatmap.Mode())!;
+        var osubm = OsuPP.Calculater.New(ruleset, new OsuPP.CalculatorWorkingBeatmap(b));
+        var attr2 = osubm.Mods(mods).LoadState(state).Acc(acc).Calculate();
+
+        Assert.Equal(attr2.Total, attr.osu.ToNullable()!.Value.pp);
     }
 
     [Fact]
-    public void TestDiff()
+    public void TestDiffTaiko()
     {
         var d = Assembly.GetExecutingAssembly().Location;
-        var beatmap = Beatmap.FromPath("../../../resources/2785319.osu");
+        var b = File.ReadAllBytes("../../../resources/2785319.osu");
+        var beatmap = Beatmap.FromBytes(b);
         beatmap.Convert(Mode.Taiko);
+
         var difficulty = Difficulty.New();
-        var attr = difficulty.Calculate(beatmap.Context);
+        var attr = difficulty.Calculate(beatmap);
         output.WriteLine("{0}", attr);
-        Assert.Equal(5.6601490215152728, attr.taiko.ToNullable()!.Value.stars);
-    }
 
-
-    [Fact]
-    public void TestPerf()
-    {
-        var d = Assembly.GetExecutingAssembly().Location;
-        var beatmap = Beatmap.FromPath("../../../resources/2785319.osu");
-        var performance = Performance.New();
-        performance.Mods((uint)Utils.Mods.Hidden);
-        var attr = performance.Calculate(beatmap);
-        output.WriteLine("{0}", attr);
-        Assert.Equal(281.18902663807626, attr.osu.ToNullable()!.Value.pp);
+        var ruleset = OsuPP.Utils.ParseRuleset((int)beatmap.Mode())!;
+        var osubm = OsuPP.Calculater.New(ruleset, new OsuPP.CalculatorWorkingBeatmap(b));
+        var attr2 = osubm.CalculateDifficulty();
+        
+        output.WriteLine("{0}", JsonConvert.SerializeObject(attr2, Formatting.Indented));
+        Assert.Equal(attr2.StarRating, attr.taiko.ToNullable()!.Value.stars);
     }
 
     [Fact]
-    public void TestDiffPerf()
+    public void TestDiffFruit()
     {
         var d = Assembly.GetExecutingAssembly().Location;
-        var beatmap = Beatmap.FromPath("../../../resources/1028484.osu");
+        var b = File.ReadAllBytes("../../../resources/2785319.osu");
+        var beatmap = Beatmap.FromBytes(b);
+        beatmap.Convert(Mode.Catch);
+
         var difficulty = Difficulty.New();
-        var diff_attr = difficulty.Calculate(beatmap);
-        var performance = Performance.New();
-        var perf_attr = performance.CalculateFromDifficulty(diff_attr);
-        output.WriteLine("{0}", perf_attr);
-        Assert.Equal(45.722317618639458, perf_attr.taiko.ToNullable()!.Value.pp_acc);
+        var attr = difficulty.Calculate(beatmap);
+        output.WriteLine("{0}", attr);
+
+        var ruleset = OsuPP.Utils.ParseRuleset((int)beatmap.Mode())!;
+        var osubm = OsuPP.Calculater.New(ruleset, new OsuPP.CalculatorWorkingBeatmap(b));
+        var attr2 = osubm.CalculateDifficulty();
+        
+        output.WriteLine("{0}", JsonConvert.SerializeObject(attr2, Formatting.Indented));
+        Assert.Equal(attr2.StarRating, attr.fruit.ToNullable()!.Value.stars);
+    }
+
+    [Fact]
+    public void TestDiffMania()
+    {
+        var d = Assembly.GetExecutingAssembly().Location;
+        var b = File.ReadAllBytes("../../../resources/2785319.osu");
+        var beatmap = Beatmap.FromBytes(b);
+        beatmap.Convert(Mode.Mania);
+
+        var difficulty = Difficulty.New();
+        var attr = difficulty.Calculate(beatmap);
+        output.WriteLine("{0}", attr);
+
+        var ruleset = OsuPP.Utils.ParseRuleset((int)beatmap.Mode())!;
+        var osubm = OsuPP.Calculater.New(ruleset, new OsuPP.CalculatorWorkingBeatmap(b));
+        var attr2 = osubm.CalculateDifficulty();
+        
+        output.WriteLine("{0}", JsonConvert.SerializeObject(attr2, Formatting.Indented));
+        Assert.Equal(attr2.StarRating, attr.mania.ToNullable()!.Value.stars);
     }
 
     [Fact]
@@ -85,15 +122,12 @@ public class UnitTest1
         output.WriteLine("hp: {0}", bmattr.hp);
         output.WriteLine("ar: {0}", bmattr.ar);
         output.WriteLine("cr: {0}", bmattr.clock_rate);
-        var difficulty = Difficulty.New();
-        var diff_attr = difficulty.Calculate(beatmap);
-        var performance = Performance.New();
-        var perf_attr = performance.CalculateFromDifficulty(diff_attr);
-        output.WriteLine("{0}", perf_attr);
 
-        Assert.Equal(79.84500076626814, perf_attr.osu.ToNullable()!.Value.pp_acc);
-
-      
+        Assert.Equal(4.5, bmattr.cs);
+        Assert.Equal(10.311111238267687, bmattr.od);
+        Assert.Equal(5, bmattr.hp);
+        Assert.Equal(10.53333346048991, bmattr.ar);
+        Assert.Equal(1.5, bmattr.clock_rate);
     }
 
     [Fact]
@@ -118,12 +152,12 @@ public class UnitTest1
         var res = s.ToString();
         output.WriteLine(res);
 
-        var parsed_json = JsonSerializer.Deserialize<JsonArray>(res);
+        var parsed_json = JsonConvert.DeserializeObject<JArray>(res);
         Assert.NotNull(parsed_json);
         Assert.Equal(3, parsed_json!.Count);
         var dt_node = parsed_json.First(x => x?["acronym"]?.ToString() == "DT");
         Assert.NotNull(dt_node);
-        Assert.Equal(1.5, dt_node["settings"]?["speed_change"]?.GetValue<double>());
+        Assert.Equal(1.5, dt_node["settings"]?["speed_change"]?.ToObject<double>());
         
         mods.Insert("HR");
         Assert.Equal((uint)4, mods.Len());

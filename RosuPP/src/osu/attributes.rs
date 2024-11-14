@@ -1,7 +1,7 @@
 use interoptopus::ffi_type;
 
 /// The result of a difficulty calculation on an osu!standard map.
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 #[repr(C)]
 #[ffi_type]
 pub struct OsuDifficultyAttributes {

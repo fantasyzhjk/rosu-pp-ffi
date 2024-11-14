@@ -1,9 +1,9 @@
 use interoptopus::{ffi_function, ffi_type};
 
-use crate::{mode::Mode, owned_string::OwnedString};
+use crate::{attributes, mode::Mode, owned_string::OwnedString};
 
 /// Aggregation for a score's current state.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(C)]
 #[ffi_type]
 pub struct ScoreState {
@@ -19,6 +19,10 @@ pub struct ScoreState {
     ///
     /// Only relevant for osu!standard in lazer.
     pub slider_tick_hits: u32,
+    /// Amount of missed slider ticks and repeats.
+    ///
+    /// Only relevant for osu!standard in lazer.
+    pub slider_tick_misses: u32,
     /// Amount of successfully hit slider ends.
     ///
     /// Only relevant for osu!standard in lazer.
@@ -62,6 +66,7 @@ impl From<rosu_pp::any::ScoreState> for ScoreState {
         Self {
             max_combo: value.max_combo,
             slider_tick_hits: value.slider_tick_hits,
+            slider_tick_misses: value.slider_tick_misses,
             slider_end_hits: value.slider_end_hits,
             n_geki: value.n_geki,
             n_katu: value.n_katu,
@@ -78,6 +83,7 @@ impl From<ScoreState> for rosu_pp::any::ScoreState {
         Self {
             max_combo: value.max_combo,
             slider_tick_hits: value.slider_tick_hits,
+            slider_tick_misses: value.slider_tick_misses,
             slider_end_hits: value.slider_end_hits,
             n_geki: value.n_geki,
             n_katu: value.n_katu,
@@ -89,8 +95,34 @@ impl From<ScoreState> for rosu_pp::any::ScoreState {
     }
 }
 
+
 #[ffi_function]
 #[no_mangle]
 pub extern "C" fn debug_score_state(res: &ScoreState, str: &mut OwnedString) {
     str.replace(format!("{:#?}", res))
+}
+
+
+#[ffi_function]
+#[no_mangle]
+pub extern "C" fn calculate_accuacy(state: &ScoreState, difficulty: &attributes::DifficultyAttributes) -> f64 {
+    match difficulty.mode {
+        Mode::Osu => {
+            let attr: rosu_pp::osu::OsuDifficultyAttributes = difficulty.osu.into_option().unwrap().into();
+            let state: rosu_pp::osu::OsuScoreState = rosu_pp::any::ScoreState::from(*state).into();
+            state.accuracy(attr.n_slider_ticks, attr.n_sliders)
+        },
+        Mode::Taiko => {
+            let state: rosu_pp::taiko::TaikoScoreState = rosu_pp::any::ScoreState::from(*state).into();
+            state.accuracy()
+        },
+        Mode::Catch => {
+            let state: rosu_pp::catch::CatchScoreState = rosu_pp::any::ScoreState::from(*state).into();
+            state.accuracy()
+        },
+        Mode::Mania => {
+            let state: rosu_pp::mania::ManiaScoreState = rosu_pp::any::ScoreState::from(*state).into();
+            state.accuracy()
+        },
+    }
 }
