@@ -102,7 +102,7 @@ impl Mods {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn clock_rate(&mut self) -> FFIOption<f32> {
+    pub fn clock_rate(&mut self) -> FFIOption<f64> {
         self.mods.clock_rate().into()
     }
 }

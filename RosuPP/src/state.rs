@@ -1,9 +1,9 @@
 use interoptopus::{ffi_function, ffi_type};
 
-use crate::{mode::Mode, owned_string::OwnedString};
+use crate::{attributes, mode::Mode, owned_string::OwnedString};
 
 /// Aggregation for a score's current state.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(C)]
 #[ffi_type]
 pub struct ScoreState {
@@ -15,6 +15,18 @@ pub struct ScoreState {
     ///
     /// Irrelevant for osu!mania.
     pub max_combo: u32,
+    /// Amount of successfully hit slider ticks and repeats.
+    ///
+    /// Only relevant for osu!standard in lazer.
+    pub slider_tick_hits: u32,
+    /// Amount of missed slider ticks and repeats.
+    ///
+    /// Only relevant for osu!standard in lazer.
+    pub slider_tick_misses: u32,
+    /// Amount of successfully hit slider ends.
+    ///
+    /// Only relevant for osu!standard in lazer.
+    pub slider_end_hits: u32,
     /// Amount of current gekis (n320 for osu!mania).
     pub n_geki: u32,
     /// Amount of current katus (tiny droplet misses for osu!catch / n200 for
@@ -53,6 +65,9 @@ impl From<rosu_pp::any::ScoreState> for ScoreState {
     fn from(value: rosu_pp::any::ScoreState) -> Self {
         Self {
             max_combo: value.max_combo,
+            slider_tick_hits: value.slider_tick_hits,
+            slider_tick_misses: value.slider_tick_misses,
+            slider_end_hits: value.slider_end_hits,
             n_geki: value.n_geki,
             n_katu: value.n_katu,
             n300: value.n300,
@@ -67,6 +82,9 @@ impl From<ScoreState> for rosu_pp::any::ScoreState {
     fn from(value: ScoreState) -> Self {
         Self {
             max_combo: value.max_combo,
+            slider_tick_hits: value.slider_tick_hits,
+            slider_tick_misses: value.slider_tick_misses,
+            slider_end_hits: value.slider_end_hits,
             n_geki: value.n_geki,
             n_katu: value.n_katu,
             n300: value.n300,
@@ -77,8 +95,34 @@ impl From<ScoreState> for rosu_pp::any::ScoreState {
     }
 }
 
+
 #[ffi_function]
 #[no_mangle]
 pub extern "C" fn debug_score_state(res: &ScoreState, str: &mut OwnedString) {
     str.replace(format!("{:#?}", res))
+}
+
+
+#[ffi_function]
+#[no_mangle]
+pub extern "C" fn calculate_accuacy(state: &ScoreState, difficulty: &attributes::DifficultyAttributes) -> f64 {
+    match difficulty.mode {
+        Mode::Osu => {
+            let attr: rosu_pp::osu::OsuDifficultyAttributes = difficulty.osu.into_option().unwrap().into();
+            let state: rosu_pp::osu::OsuScoreState = rosu_pp::any::ScoreState::from(*state).into();
+            state.accuracy(attr.n_slider_ticks, attr.n_sliders)
+        },
+        Mode::Taiko => {
+            let state: rosu_pp::taiko::TaikoScoreState = rosu_pp::any::ScoreState::from(*state).into();
+            state.accuracy()
+        },
+        Mode::Catch => {
+            let state: rosu_pp::catch::CatchScoreState = rosu_pp::any::ScoreState::from(*state).into();
+            state.accuracy()
+        },
+        Mode::Mania => {
+            let state: rosu_pp::mania::ManiaScoreState = rosu_pp::any::ScoreState::from(*state).into();
+            state.accuracy()
+        },
+    }
 }

@@ -9,7 +9,7 @@ use mode::Mode;
 use rosu_mods::{GameMods, GameModsIntermode};
 
 /// Summary struct for a [`Beatmap`]'s attributes.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 #[repr(C)]
 #[ffi_type]
 pub struct BeatmapAttributes {
@@ -48,14 +48,19 @@ pub struct HitWindows {
     /// Hit window for approach rate i.e. `TimePreempt` in milliseconds.
     pub ar: f64,
     /// Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds.
-    pub od: f64,
+    pub od_great: f64,
+    /// Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
+    ///
+    /// `None` for osu!mania.
+    pub od_ok: FFIOption<f64>,
 }
 
 impl From<rosu_pp::model::beatmap::HitWindows> for HitWindows {
     fn from(attributes: rosu_pp::model::beatmap::HitWindows) -> Self {
         Self {
             ar: attributes.ar,
-            od: attributes.od,
+            od_great: attributes.od_great,
+            od_ok: attributes.od_ok.into(),
         }
     }
 }
@@ -134,11 +139,11 @@ impl BeatmapAttributesBuilder {
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn get_clock_rate(&mut self) -> f64 {
         if let Some(mods) = self.mods.as_ref() {
-            return f64::from(mods.clock_rate().unwrap_or(1.0))
+            return mods.clock_rate().unwrap_or(1.0)
         }
         
         if let Some(mods_intermode) = self.mods_intermode.as_ref() {
-            return f64::from(mods_intermode.legacy_clock_rate())
+            return mods_intermode.legacy_clock_rate()
         }
 
         1.0

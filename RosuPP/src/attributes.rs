@@ -6,7 +6,7 @@ use interoptopus::{
 
 #[ffi_type]
 #[repr(C)]
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct DifficultyAttributes {
     pub osu: FFIOption<crate::osu::attributes::OsuDifficultyAttributes>,
     pub taiko: FFIOption<crate::taiko::attributes::TaikoDifficultyAttributes>,

@@ -51,6 +51,7 @@ pub fn ffi_inventory() -> Inventory {
         .register(function!(attributes::debug_difficylty_attributes))
         .register(function!(attributes::debug_performance_attributes))
         .register(function!(state::debug_score_state))
+        .register(function!(state::calculate_accuacy))
         .inventory()
 
 }

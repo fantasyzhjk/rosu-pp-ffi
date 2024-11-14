@@ -1,7 +1,7 @@
 use interoptopus::ffi_type;
 
 /// The result of a difficulty calculation on an osu!standard map.
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 #[repr(C)]
 #[ffi_type]
 pub struct OsuDifficultyAttributes {
@@ -15,6 +15,10 @@ pub struct OsuDifficultyAttributes {
     pub slider_factor: f64,
     /// The number of clickable objects weighted by difficulty.
     pub speed_note_count: f64,
+    /// Weighted sum of aim strains.
+    pub aim_difficult_strain_count: f64,
+    /// Weighted sum of speed strains.
+    pub speed_difficult_strain_count: f64,
     /// The approach rate.
     pub ar: f64,
     /// The overall difficulty
@@ -25,6 +29,8 @@ pub struct OsuDifficultyAttributes {
     pub n_circles: u32,
     /// The amount of sliders.
     pub n_sliders: u32,
+    /// The amount of slider ticks and repeat points.
+    pub n_slider_ticks: u32,
     /// The amount of spinners.
     pub n_spinners: u32,
     /// The final star rating
@@ -53,11 +59,14 @@ impl From<rosu_pp::osu::OsuDifficultyAttributes> for OsuDifficultyAttributes {
             flashlight: attributes.flashlight,
             slider_factor: attributes.slider_factor,
             speed_note_count: attributes.speed_note_count,
+            aim_difficult_strain_count: attributes.aim_difficult_strain_count,
+            speed_difficult_strain_count: attributes.speed_difficult_strain_count,
             ar: attributes.ar,
             od: attributes.od,
             hp: attributes.hp,
             n_circles: attributes.n_circles,
             n_sliders: attributes.n_sliders,
+            n_slider_ticks: attributes.n_slider_ticks,
             n_spinners: attributes.n_spinners,
             stars: attributes.stars,
             max_combo: attributes.max_combo,
@@ -73,11 +82,14 @@ impl From<OsuDifficultyAttributes> for rosu_pp::osu::OsuDifficultyAttributes {
             flashlight: attributes.flashlight,
             slider_factor: attributes.slider_factor,
             speed_note_count: attributes.speed_note_count,
+            aim_difficult_strain_count: attributes.aim_difficult_strain_count,
+            speed_difficult_strain_count: attributes.speed_difficult_strain_count,
             ar: attributes.ar,
             od: attributes.od,
             hp: attributes.hp,
             n_circles: attributes.n_circles,
             n_sliders: attributes.n_sliders,
+            n_slider_ticks: attributes.n_slider_ticks,
             n_spinners: attributes.n_spinners,
             stars: attributes.stars,
             max_combo: attributes.max_combo,

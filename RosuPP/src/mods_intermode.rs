@@ -55,7 +55,7 @@ impl ModsIntermode {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn legacy_clock_rate(&mut self) -> f32 {
+    pub fn legacy_clock_rate(&mut self) -> f64 {
         self.inner.legacy_clock_rate()
     }
 }
