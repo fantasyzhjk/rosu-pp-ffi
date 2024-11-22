@@ -63,7 +63,7 @@ impl Mods {
         let mut mods = GameModsSeed::Mode(mode.into()).deserialize(&mut d)?;
         mods.sanitize();
         Ok(Self {
-            mods: mods.into_iter().filter(|m| m.kind() == UnknownMod::kind()).collect(),
+            mods: mods.into_iter().filter(|m| m.kind() != UnknownMod::kind()).collect(),
             mode
         })
     }
@@ -71,7 +71,7 @@ impl Mods {
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn remove_incompatible_mods(&mut self) {
         self.mods.sanitize();
-        self.mods = self.mods.clone().into_iter().filter(|m| m.kind() == UnknownMod::kind()).collect();
+        self.mods = self.mods.clone().into_iter().filter(|m| m.kind() != UnknownMod::kind()).collect();
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
