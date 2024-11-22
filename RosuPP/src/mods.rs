@@ -5,7 +5,7 @@ use interoptopus::{
 };
 use mode::Mode;
 use owned_string::OwnedString;
-use rosu_mods::{serde::{GameModSeed, GameModsSeed}, Acronym, GameMod};
+use rosu_mods::{generated_mods::UnknownMod, serde::{GameModSeed, GameModsSeed}, Acronym, GameMod};
 use serde::de::DeserializeSeed;
 
 #[ffi_type(opaque)]
@@ -44,6 +44,7 @@ impl Mods {
         })
     }
 
+
     #[ffi_service_ctor]
     pub fn from_json(str: AsciiPointer, mode: Mode) -> Result<Self, Error> {
         let s = str.as_str().map_err(|_e| Error::InvalidString(None))?;
@@ -53,6 +54,24 @@ impl Mods {
             mods,
             mode
         })
+    }
+    
+    #[ffi_service_ctor]
+    pub fn from_json_sanitize(str: AsciiPointer, mode: Mode) -> Result<Self, Error> {
+        let s = str.as_str().map_err(|_e| Error::InvalidString(None))?;
+        let mut d = serde_json::Deserializer::from_str(s);
+        let mut mods = GameModsSeed::Mode(mode.into()).deserialize(&mut d)?;
+        mods.sanitize();
+        Ok(Self {
+            mods: mods.into_iter().filter(|m| m.kind() == UnknownMod::kind()).collect(),
+            mode
+        })
+    }
+    
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn remove_incompatible_mods(&mut self) {
+        self.mods.sanitize();
+        self.mods = self.mods.clone().into_iter().filter(|m| m.kind() == UnknownMod::kind()).collect();
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
