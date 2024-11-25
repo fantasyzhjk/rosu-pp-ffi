@@ -1,7 +1,6 @@
 import java.lang.ref.Cleaner;
 import java.util.Optional;
 
-import com.sun.jna.Library;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
@@ -36,10 +35,14 @@ public class RosuFFI {
         int Unknown = 1000;
     }
 
-    public interface RosuPPLib extends Library {
+    public class RosuPPLib {
 
         // JNA 为 dll 名称
-        RosuPPLib INSTANCE = Native.load("rosu_pp_ffi", RosuPPLib.class);
+        // RosuPPLib INSTANCE = Native.load("rosu_pp_ffi", RosuPPLib.class);
+    
+        static {
+            Native.register("rosu_pp_ffi");
+        }
 
         /// Destroys the given instance.
         ///
@@ -47,31 +50,31 @@ public class RosuFFI {
         ///
         /// The passed parameter MUST have been created with the corresponding init function;
         /// passing any other value results in undefined behavior.
-        int beatmap_attributes_destroy(PointerByReference context);
+        public static native int beatmap_attributes_destroy(PointerByReference context);
 
-        int beatmap_attributes_new(PointerByReference context);
+        public static native int beatmap_attributes_new(PointerByReference context);
 
-        void beatmap_attributes_mode(Pointer context, int mode);
+        public static native void beatmap_attributes_mode(Pointer context, int mode);
 
-        void beatmap_attributes_p_mods(Pointer context, Pointer mods);
+        public static native void beatmap_attributes_p_mods(Pointer context, Pointer mods);
 
-        void beatmap_attributes_i_mods(Pointer context, long mods);
+        public static native void beatmap_attributes_i_mods(Pointer context, long mods);
 
-        int beatmap_attributes_s_mods(Pointer context, String str);
+        public static native int beatmap_attributes_s_mods(Pointer context, String str);
 
-        void beatmap_attributes_clock_rate(Pointer context, double clock_rate);
+        public static native void beatmap_attributes_clock_rate(Pointer context, double clock_rate);
 
-        void beatmap_attributes_ar(Pointer context, float ar);
+        public static native void beatmap_attributes_ar(Pointer context, float ar);
 
-        void beatmap_attributes_cs(Pointer context, float cs);
+        public static native void beatmap_attributes_cs(Pointer context, float cs);
 
-        void beatmap_attributes_hp(Pointer context, float hp);
+        public static native void beatmap_attributes_hp(Pointer context, float hp);
 
-        void beatmap_attributes_od(Pointer context, float od);
+        public static native void beatmap_attributes_od(Pointer context, float od);
 
-        double beatmap_attributes_get_clock_rate(Pointer context);
+        public static native double beatmap_attributes_get_clock_rate(Pointer context);
 
-        BeatmapAttributes.ByValue beatmap_attributes_build(Pointer context, Pointer beatmap);
+        public static native BeatmapAttributes.ByValue beatmap_attributes_build(Pointer context, Pointer beatmap);
 
         /// Destroys the given instance.
         ///
@@ -79,58 +82,22 @@ public class RosuFFI {
         ///
         /// The passed parameter MUST have been created with the corresponding init function;
         /// passing any other value results in undefined behavior.
-        int beatmap_destroy(PointerByReference context);
+        public static native int beatmap_destroy(PointerByReference context);
 
-        int beatmap_from_bytes(PointerByReference context, Sliceu8 data);
+        public static native int beatmap_from_bytes(PointerByReference context, Sliceu8 data);
 
-        int beatmap_from_path(PointerByReference context, String path);
+        public static native int beatmap_from_path(PointerByReference context, String path);
 
         /// Convert a Beatmap to the specified mode
-        boolean beatmap_convert(Pointer context, int mode);
+        public static native boolean beatmap_convert(Pointer context, int mode);
 
-        double beatmap_bpm(Pointer context);
+        public static native double beatmap_bpm(Pointer context);
 
-        double beatmap_total_break_time(Pointer context);
+        public static native double beatmap_total_break_time(Pointer context);
 
-        int beatmap_mode(Pointer context);
+        public static native int beatmap_mode(Pointer context);
 
-        boolean beatmap_is_convert(Pointer context);
-
-        /// Destroys the given instance.
-        ///
-        /// # Safety
-        ///
-        /// The passed parameter MUST have been created with the corresponding init function;
-        /// passing any other value results in undefined behavior.
-        int difficulty_destroy(PointerByReference context);
-
-        int difficulty_new(PointerByReference context);
-
-        void difficulty_p_mods(Pointer context, Pointer mods);
-
-        void difficulty_i_mods(Pointer context, long mods);
-
-        int difficulty_s_mods(Pointer context, String str);
-
-        void difficulty_passed_objects(Pointer context, long passed_objects);
-
-        void difficulty_clock_rate(Pointer context, double clock_rate);
-
-        void difficulty_ar(Pointer context, float ar);
-
-        void difficulty_cs(Pointer context, float cs);
-
-        void difficulty_hp(Pointer context, float hp);
-
-        void difficulty_od(Pointer context, float od);
-
-        void difficulty_hardrock_offsets(Pointer context, boolean hardrock_offsets);
-
-        void difficulty_lazer(Pointer context, boolean lazer);
-
-        DifficultyAttributes.ByValue difficulty_calculate(Pointer context, Pointer beatmap);
-
-        double difficulty_get_clock_rate(Pointer context);
+        public static native boolean beatmap_is_convert(Pointer context);
 
         /// Destroys the given instance.
         ///
@@ -138,65 +105,35 @@ public class RosuFFI {
         ///
         /// The passed parameter MUST have been created with the corresponding init function;
         /// passing any other value results in undefined behavior.
-        int performance_destroy(PointerByReference context);
+        public static native int difficulty_destroy(PointerByReference context);
 
-        int performance_new(PointerByReference context);
+        public static native int difficulty_new(PointerByReference context);
 
-        void performance_mode(Pointer context, int mode);
+        public static native void difficulty_p_mods(Pointer context, Pointer mods);
 
-        void performance_p_mods(Pointer context, Pointer mods);
+        public static native void difficulty_i_mods(Pointer context, long mods);
 
-        void performance_i_mods(Pointer context, long mods);
+        public static native int difficulty_s_mods(Pointer context, String str);
 
-        int performance_s_mods(Pointer context, String str);
+        public static native void difficulty_passed_objects(Pointer context, long passed_objects);
 
-        void performance_passed_objects(Pointer context, long passed_objects);
+        public static native void difficulty_clock_rate(Pointer context, double clock_rate);
 
-        void performance_clock_rate(Pointer context, double clock_rate);
+        public static native void difficulty_ar(Pointer context, float ar);
 
-        void performance_ar(Pointer context, float ar);
+        public static native void difficulty_cs(Pointer context, float cs);
 
-        void performance_cs(Pointer context, float cs);
+        public static native void difficulty_hp(Pointer context, float hp);
 
-        void performance_hp(Pointer context, float hp);
+        public static native void difficulty_od(Pointer context, float od);
 
-        void performance_od(Pointer context, float od);
+        public static native void difficulty_hardrock_offsets(Pointer context, boolean hardrock_offsets);
 
-        void performance_hardrock_offsets(Pointer context, boolean hardrock_offsets);
+        public static native void difficulty_lazer(Pointer context, boolean lazer);
 
-        void performance_accuracy(Pointer context, double accuracy);
+        public static native DifficultyAttributes.ByValue difficulty_calculate(Pointer context, Pointer beatmap);
 
-        void performance_misses(Pointer context, long misses);
-
-        void performance_combo(Pointer context, long combo);
-
-        void performance_hitresult_priority(Pointer context, int hitresult_priority);
-
-        void performance_lazer(Pointer context, boolean lazer);
-
-        void performance_slider_tick_hits(Pointer context, long slider_tick_hits);
-
-        void performance_slider_tick_misses(Pointer context, long slider_tick_misses);
-
-        void performance_slider_end_hits(Pointer context, long slider_end_hits);
-
-        void performance_n300(Pointer context, long n300);
-
-        void performance_n100(Pointer context, long n100);
-
-        void performance_n50(Pointer context, long n50);
-
-        void performance_n_katu(Pointer context, long n_katu);
-
-        void performance_n_geki(Pointer context, long n_geki);
-
-        ScoreState.ByValue performance_generate_state(Pointer context, Pointer beatmap);
-
-        PerformanceAttributes.ByValue performance_calculate(Pointer context, Pointer beatmap);
-
-        PerformanceAttributes.ByValue performance_calculate_from_difficulty(Pointer context, DifficultyAttributes.ByValue difficulty_attr);
-
-        double performance_get_clock_rate(Pointer context);
+        public static native double difficulty_get_clock_rate(Pointer context);
 
         /// Destroys the given instance.
         ///
@@ -204,15 +141,65 @@ public class RosuFFI {
         ///
         /// The passed parameter MUST have been created with the corresponding init function;
         /// passing any other value results in undefined behavior.
-        int string_destroy(PointerByReference context);
+        public static native int performance_destroy(PointerByReference context);
 
-        int string_from_c_str(PointerByReference context, String str);
+        public static native int performance_new(PointerByReference context);
 
-        int string_empty(PointerByReference context);
+        public static native void performance_mode(Pointer context, int mode);
 
-        boolean string_is_init(Pointer context);
+        public static native void performance_p_mods(Pointer context, Pointer mods);
 
-        String string_to_cstr(Pointer context);
+        public static native void performance_i_mods(Pointer context, long mods);
+
+        public static native int performance_s_mods(Pointer context, String str);
+
+        public static native void performance_passed_objects(Pointer context, long passed_objects);
+
+        public static native void performance_clock_rate(Pointer context, double clock_rate);
+
+        public static native void performance_ar(Pointer context, float ar);
+
+        public static native void performance_cs(Pointer context, float cs);
+
+        public static native void performance_hp(Pointer context, float hp);
+
+        public static native void performance_od(Pointer context, float od);
+
+        public static native void performance_hardrock_offsets(Pointer context, boolean hardrock_offsets);
+
+        public static native void performance_accuracy(Pointer context, double accuracy);
+
+        public static native void performance_misses(Pointer context, long misses);
+
+        public static native void performance_combo(Pointer context, long combo);
+
+        public static native void performance_hitresult_priority(Pointer context, int hitresult_priority);
+
+        public static native void performance_lazer(Pointer context, boolean lazer);
+
+        public static native void performance_slider_tick_hits(Pointer context, long slider_tick_hits);
+
+        public static native void performance_slider_tick_misses(Pointer context, long slider_tick_misses);
+
+        public static native void performance_slider_end_hits(Pointer context, long slider_end_hits);
+
+        public static native void performance_n300(Pointer context, long n300);
+
+        public static native void performance_n100(Pointer context, long n100);
+
+        public static native void performance_n50(Pointer context, long n50);
+
+        public static native void performance_n_katu(Pointer context, long n_katu);
+
+        public static native void performance_n_geki(Pointer context, long n_geki);
+
+        public static native ScoreState.ByValue performance_generate_state(Pointer context, Pointer beatmap);
+
+        public static native PerformanceAttributes.ByValue performance_calculate(Pointer context, Pointer beatmap);
+
+        public static native PerformanceAttributes.ByValue performance_calculate_from_difficulty(Pointer context, DifficultyAttributes.ByValue difficulty_attr);
+
+        public static native double performance_get_clock_rate(Pointer context);
 
         /// Destroys the given instance.
         ///
@@ -220,35 +207,15 @@ public class RosuFFI {
         ///
         /// The passed parameter MUST have been created with the corresponding init function;
         /// passing any other value results in undefined behavior.
-        int mods_destroy(PointerByReference context);
+        public static native int string_destroy(PointerByReference context);
 
-        int mods_new(PointerByReference context, int mode);
+        public static native int string_from_c_str(PointerByReference context, String str);
 
-        int mods_from_acronyms(PointerByReference context, String str, int mode);
+        public static native int string_empty(PointerByReference context);
 
-        int mods_from_bits(PointerByReference context, long bits, int mode);
+        public static native boolean string_is_init(Pointer context);
 
-        int mods_from_json(PointerByReference context, String str, int mode);
-
-        int mods_from_json_sanitize(PointerByReference context, String str, int mode);
-
-        void mods_remove_incompatible_mods(Pointer context);
-
-        long mods_bits(Pointer context);
-
-        long mods_len(Pointer context);
-
-        void mods_json(Pointer context, Pointer str);
-
-        boolean mods_insert_json(Pointer context, String str);
-
-        boolean mods_insert(Pointer context, String str);
-
-        boolean mods_contains(Pointer context, String str);
-
-        void mods_clear(Pointer context);
-
-        Optionf64 mods_clock_rate(Pointer context);
+        public static native String string_to_cstr(Pointer context);
 
         /// Destroys the given instance.
         ///
@@ -256,29 +223,65 @@ public class RosuFFI {
         ///
         /// The passed parameter MUST have been created with the corresponding init function;
         /// passing any other value results in undefined behavior.
-        int mods_intermode_destroy(PointerByReference context);
+        public static native int mods_destroy(PointerByReference context);
 
-        int mods_intermode_from_acronyms(PointerByReference context, String str);
+        public static native int mods_new(PointerByReference context, int mode);
 
-        int mods_intermode_from_bits(PointerByReference context, long bits);
+        public static native int mods_from_acronyms(PointerByReference context, String str, int mode);
 
-        long mods_intermode_bits(Pointer context);
+        public static native int mods_from_bits(PointerByReference context, long bits, int mode);
 
-        long mods_intermode_len(Pointer context);
+        public static native int mods_from_json(PointerByReference context, String str, int mode);
 
-        boolean mods_intermode_contains(Pointer context, String str);
+        public static native int mods_from_json_sanitize(PointerByReference context, String str, int mode);
 
-        boolean mods_intermode_intersects(Pointer context, String str);
+        public static native void mods_remove_incompatible_mods(Pointer context);
 
-        double mods_intermode_legacy_clock_rate(Pointer context);
+        public static native long mods_bits(Pointer context);
 
-        void debug_difficylty_attributes(DifficultyAttributes res, Pointer str);
+        public static native long mods_len(Pointer context);
 
-        void debug_performance_attributes(PerformanceAttributes res, Pointer str);
+        public static native void mods_json(Pointer context, Pointer str);
 
-        void debug_score_state(ScoreState res, Pointer str);
+        public static native boolean mods_insert_json(Pointer context, String str);
 
-        double calculate_accuacy(ScoreState state, DifficultyAttributes difficulty);
+        public static native boolean mods_insert(Pointer context, String str);
+
+        public static native boolean mods_contains(Pointer context, String str);
+
+        public static native void mods_clear(Pointer context);
+
+        public static native Optionf64 mods_clock_rate(Pointer context);
+
+        /// Destroys the given instance.
+        ///
+        /// # Safety
+        ///
+        /// The passed parameter MUST have been created with the corresponding init function;
+        /// passing any other value results in undefined behavior.
+        public static native int mods_intermode_destroy(PointerByReference context);
+
+        public static native int mods_intermode_from_acronyms(PointerByReference context, String str);
+
+        public static native int mods_intermode_from_bits(PointerByReference context, long bits);
+
+        public static native long mods_intermode_bits(Pointer context);
+
+        public static native long mods_intermode_len(Pointer context);
+
+        public static native boolean mods_intermode_contains(Pointer context, String str);
+
+        public static native boolean mods_intermode_intersects(Pointer context, String str);
+
+        public static native double mods_intermode_legacy_clock_rate(Pointer context);
+
+        public static native void debug_difficylty_attributes(DifficultyAttributes res, Pointer str);
+
+        public static native void debug_performance_attributes(PerformanceAttributes res, Pointer str);
+
+        public static native void debug_score_state(ScoreState res, Pointer str);
+
+        public static native double calculate_accuacy(ScoreState state, DifficultyAttributes difficulty);
 
         @Structure.FieldOrder({"data", "len"})
         public static class Sliceu8 extends Structure {
@@ -315,7 +318,7 @@ public class RosuFFI {
                     "ar", "od", "hp",
                     "n_circles", "n_sliders", "n_slider_ticks", "n_spinners",
                     "stars", "max_combo" })
-        public class OsuDifficultyAttributes extends Structure {
+        public static class OsuDifficultyAttributes extends Structure {
             public double aim;                           // Difficulty of the aim skill
             public double speed;                         // Difficulty of the speed skill
             public double flashlight;                   // Difficulty of the flashlight skill
@@ -339,7 +342,7 @@ public class RosuFFI {
 
         @Structure.FieldOrder({ "difficulty", "pp", "pp_acc", "pp_aim",
                     "pp_flashlight", "pp_speed", "effective_miss_count" })
-        public class OsuPerformanceAttributes extends Structure {
+        public static class OsuPerformanceAttributes extends Structure {
             public OsuDifficultyAttributes difficulty; // Nested structure for difficulty attributes
             public double pp;                          // Final performance points
             public double pp_acc;                      // Accuracy portion of the final pp
@@ -355,7 +358,7 @@ public class RosuFFI {
         @Structure.FieldOrder({ "stamina", "rhythm", "color", "peak", 
                     "great_hit_window", "ok_hit_window", "mono_stamina_factor", 
                     "stars", "max_combo", "is_convert" })
-        public class TaikoDifficultyAttributes extends Structure {
+        public static class TaikoDifficultyAttributes extends Structure {
             public double stamina;               // Difficulty of the stamina skill
             public double rhythm;                // Difficulty of the rhythm skill
             public double color;                 // Difficulty of the color skill
@@ -373,7 +376,7 @@ public class RosuFFI {
 
         @Structure.FieldOrder({ "difficulty", "pp", "pp_acc", "pp_difficulty", 
                     "effective_miss_count", "estimated_unstable_rate" })
-        public class TaikoPerformanceAttributes extends Structure {
+        public static class TaikoPerformanceAttributes extends Structure {
             public TaikoDifficultyAttributes difficulty;   // Difficulty attributes used for performance calculation
             public double pp;                              // Final performance points
             public double pp_acc;                          // Accuracy portion of the final pp
@@ -386,7 +389,7 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "stars", "ar", "n_fruits", "n_droplets", "n_tiny_droplets", "is_convert" })
-        public class CatchDifficultyAttributes extends Structure {
+        public static class CatchDifficultyAttributes extends Structure {
             public double stars;        // Final star rating
             public double ar;           // Approach rate
             public int n_fruits;        // Number of fruits (unsigned int -> use int in Java)
@@ -399,7 +402,7 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "difficulty", "pp" })
-        public class CatchPerformanceAttributes extends Structure {
+        public static class CatchPerformanceAttributes extends Structure {
             public CatchDifficultyAttributes difficulty; // Nested CatchDifficultyAttributes structure
             public double pp;                            // Final performance points
         
@@ -408,7 +411,7 @@ public class RosuFFI {
         }
         
         @Structure.FieldOrder({ "stars", "hit_window", "n_objects", "n_hold_notes", "max_combo", "is_convert" })
-        public class ManiaDifficultyAttributes extends Structure {
+        public static class ManiaDifficultyAttributes extends Structure {
             public double stars;        // Final star rating
             public double hit_window;   // Perceived hit window for n300 inclusive of rate-adjusting mods
             public int n_objects;       // Number of hit objects (unsigned int -> int in Java)
@@ -421,7 +424,7 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "difficulty", "pp", "pp_difficulty" })
-        public class ManiaPerformanceAttributes extends Structure {
+        public static class ManiaPerformanceAttributes extends Structure {
             public ManiaDifficultyAttributes difficulty; // Nested ManiaDifficultyAttributes structure
             public double pp;                            // Final performance points
             public double pp_difficulty;                 // Difficulty portion of the final pp
@@ -431,7 +434,7 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "t", "is_some" })
-        public class OptionOsuDifficultyAttributes extends Structure {
+        public static class OptionOsuDifficultyAttributes extends Structure {
             public OsuDifficultyAttributes t;     // Element that is maybe valid
             public byte is_some;                  // 1 means element t is valid
         
@@ -444,7 +447,7 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "t", "is_some" })
-        public class OptionTaikoDifficultyAttributes extends Structure {
+        public static class OptionTaikoDifficultyAttributes extends Structure {
             public TaikoDifficultyAttributes t;     // Element that is maybe valid
             public byte is_some;                  // 1 means element t is valid
 
@@ -457,7 +460,7 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "t", "is_some" })
-        public class OptionCatchDifficultyAttributes extends Structure {
+        public static class OptionCatchDifficultyAttributes extends Structure {
             public CatchDifficultyAttributes t;     // Element that is maybe valid
             public byte is_some;                  // 1 means element t is valid
         
@@ -470,7 +473,7 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "t", "is_some" })
-        public class OptionManiaDifficultyAttributes extends Structure {
+        public static class OptionManiaDifficultyAttributes extends Structure {
             public ManiaDifficultyAttributes t;     // Element that is maybe valid
             public byte is_some;                  // 1 means element t is valid
         
@@ -483,7 +486,7 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "osu", "taiko", "fruit", "mania", "mode" })
-        public class DifficultyAttributes extends Structure {
+        public static class DifficultyAttributes extends Structure {
             public OptionOsuDifficultyAttributes osu;   // Option for osu!difficulty attributes
             public OptionTaikoDifficultyAttributes taiko; // Option for taiko difficulty attributes
             public OptionCatchDifficultyAttributes fruit; // Option for catch difficulty attributes
@@ -495,7 +498,7 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "t", "is_some" })
-        public class OptionOsuPerformanceAttributes extends Structure {
+        public static class OptionOsuPerformanceAttributes extends Structure {
             public OsuPerformanceAttributes t;     // Element that is maybe valid
             public byte is_some;                  // 1 means element t is valid
         
@@ -508,7 +511,7 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "t", "is_some" })
-        public class OptionTaikoPerformanceAttributes extends Structure {
+        public static class OptionTaikoPerformanceAttributes extends Structure {
             public TaikoPerformanceAttributes t;     // Element that is maybe valid
             public byte is_some;                  // 1 means element t is valid
         
@@ -521,7 +524,7 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "t", "is_some" })
-        public class OptionCatchPerformanceAttributes extends Structure {
+        public static class OptionCatchPerformanceAttributes extends Structure {
             public CatchPerformanceAttributes t;     // Element that is maybe valid
             public byte is_some;                  // 1 means element t is valid
         
@@ -534,7 +537,7 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "t", "is_some" })
-        public class OptionManiaPerformanceAttributes extends Structure {
+        public static class OptionManiaPerformanceAttributes extends Structure {
             public ManiaPerformanceAttributes t;     // Element that is maybe valid
             public byte is_some;                  // 1 means element t is valid
         
@@ -547,7 +550,7 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "osu", "taiko", "fruit", "mania", "mode" })
-        public class PerformanceAttributes extends Structure {
+        public static class PerformanceAttributes extends Structure {
             public OptionOsuPerformanceAttributes osu;   // Option for osu!difficulty attributes
             public OptionTaikoPerformanceAttributes taiko; // Option for taiko difficulty attributes
             public OptionCatchPerformanceAttributes fruit; // Option for catch difficulty attributes
@@ -588,7 +591,7 @@ public class RosuFFI {
 
         @Structure.FieldOrder({ "max_combo", "slider_tick_hits", "slider_tick_misses", "slider_end_hits",
                     "n_geki", "n_katu", "n300", "n100", "n50", "misses" })
-        public class ScoreState extends Structure {
+        public static class ScoreState extends Structure {
             public int max_combo;            // Maximum combo (unsigned int -> int)
             public int slider_tick_hits;     // Hits on slider ticks (unsigned int -> int)
             public int slider_tick_misses;   // Misses on slider ticks (unsigned int -> int)
@@ -612,7 +615,7 @@ public class RosuFFI {
         public Beatmap(byte[] data) {
             _context = new PointerByReference();  // Initialize _context to a valid Pointer
             var sliceu8 = new RosuPPLib.Sliceu8(data);
-            int rval = RosuPPLib.INSTANCE.beatmap_from_bytes(_context, sliceu8);
+            int rval = RosuPPLib.beatmap_from_bytes(_context, sliceu8);
             if (rval != FFIError.Ok) {
                 throw new RuntimeException("Error loading beatmap from bytes");
             }
@@ -620,7 +623,7 @@ public class RosuFFI {
         
         public Beatmap(RosuPPLib.Sliceu8 data) {
             _context = new PointerByReference();  // Initialize _context to a valid Pointer
-            int rval = RosuPPLib.INSTANCE.beatmap_from_bytes(_context, data);
+            int rval = RosuPPLib.beatmap_from_bytes(_context, data);
             if (rval != FFIError.Ok) {
                 throw new RuntimeException("Error loading beatmap from bytes");
             }
@@ -630,7 +633,7 @@ public class RosuFFI {
         // Load the Beatmap from a file path
         public Beatmap(String path) {
             _context = new PointerByReference();  // Initialize _context to a valid Pointer
-            int rval = RosuPPLib.INSTANCE.beatmap_from_path(_context, path);
+            int rval = RosuPPLib.beatmap_from_path(_context, path);
             if (rval != FFIError.Ok) {
                 throw new RuntimeException("Error loading beatmap from path");
             }
@@ -638,27 +641,27 @@ public class RosuFFI {
 
         // Convert the Beatmap to the specified mode
         public boolean convert(Mode mode) {
-            return RosuPPLib.INSTANCE.beatmap_convert(getContext(), mode.getValue());
+            return RosuPPLib.beatmap_convert(getContext(), mode.getValue());
         }
 
         // Get the BPM of the Beatmap
         public double bpm() {
-            return RosuPPLib.INSTANCE.beatmap_bpm(getContext());
+            return RosuPPLib.beatmap_bpm(getContext());
         }
 
         // Get the total break time of the Beatmap
         public double totalBreakTime() {
-            return RosuPPLib.INSTANCE.beatmap_total_break_time(getContext());
+            return RosuPPLib.beatmap_total_break_time(getContext());
         }
 
         // Get the mode of the Beatmap
         public Mode mode() {
-            return Mode.fromValue(RosuPPLib.INSTANCE.beatmap_mode(getContext()));
+            return Mode.fromValue(RosuPPLib.beatmap_mode(getContext()));
         }
 
         // Check if the Beatmap is a converted map
         public boolean isConvert() {
-            return RosuPPLib.INSTANCE.beatmap_is_convert(getContext());
+            return RosuPPLib.beatmap_is_convert(getContext());
         }
 
         // Getter for the context
@@ -669,7 +672,7 @@ public class RosuFFI {
         // Dispose method (releases the resources)
         @Override
         public void close() {
-            int rval = RosuPPLib.INSTANCE.beatmap_destroy(_context);
+            int rval = RosuPPLib.beatmap_destroy(_context);
             if (rval != 0) {
                 throw new RuntimeException("Error destroying beatmap");
             }
@@ -681,7 +684,7 @@ public class RosuFFI {
     
         public BeatmapAttributesBuilder() {
             _context = new PointerByReference();
-            int rval = RosuPPLib.INSTANCE.beatmap_attributes_new(_context);
+            int rval = RosuPPLib.beatmap_attributes_new(_context);
             if (rval != FFIError.Ok) {
                 throw new RuntimeException("Error creating BeatmapAttributesBuilder");
             }
@@ -690,7 +693,7 @@ public class RosuFFI {
         // Method to dispose of the builder
         @Override
         public void close() {
-            int rval = RosuPPLib.INSTANCE.beatmap_attributes_destroy(_context);
+            int rval = RosuPPLib.beatmap_attributes_destroy(_context);
             if (rval != FFIError.Ok) {
                 throw new RuntimeException("Error destroying BeatmapAttributesBuilder");
             }
@@ -698,22 +701,22 @@ public class RosuFFI {
     
         // Method to set the mode
         public void setMode(Mode mode) {
-            RosuPPLib.INSTANCE.beatmap_attributes_mode(getContext(), mode.getValue());
+            RosuPPLib.beatmap_attributes_mode(getContext(), mode.getValue());
         }
     
         // Method to set mods (using IntPtr)
         public void setMods(Mods mods) {
-            RosuPPLib.INSTANCE.beatmap_attributes_p_mods(getContext(), mods.getContext());
+            RosuPPLib.beatmap_attributes_p_mods(getContext(), mods.getContext());
         }
     
         // Method to set mods (using uint)
         public void setMods(int mods) {
-            RosuPPLib.INSTANCE.beatmap_attributes_i_mods(getContext(), mods);
+            RosuPPLib.beatmap_attributes_i_mods(getContext(), mods);
         }
     
         // Method to set mods (using string)
         public void setMods(String str) {
-            int rval = RosuPPLib.INSTANCE.beatmap_attributes_s_mods(getContext(), str);
+            int rval = RosuPPLib.beatmap_attributes_s_mods(getContext(), str);
             if (rval != FFIError.Ok) {
                 throw new RuntimeException("Error setting string mods");
             }
@@ -721,37 +724,37 @@ public class RosuFFI {
     
         // Method to set clock rate
         public void setClockRate(double clockRate) {
-            RosuPPLib.INSTANCE.beatmap_attributes_clock_rate(getContext(), clockRate);
+            RosuPPLib.beatmap_attributes_clock_rate(getContext(), clockRate);
         }
     
         // Method to set AR (approach rate)
         public void setAr(float ar) {
-            RosuPPLib.INSTANCE.beatmap_attributes_ar(getContext(), ar);
+            RosuPPLib.beatmap_attributes_ar(getContext(), ar);
         }
     
         // Method to set CS (circle size)
         public void setCs(float cs) {
-            RosuPPLib.INSTANCE.beatmap_attributes_cs(getContext(), cs);
+            RosuPPLib.beatmap_attributes_cs(getContext(), cs);
         }
     
         // Method to set HP (health drain rate)
         public void setHp(float hp) {
-            RosuPPLib.INSTANCE.beatmap_attributes_hp(getContext(), hp);
+            RosuPPLib.beatmap_attributes_hp(getContext(), hp);
         }
     
         // Method to set OD (overall difficulty)
         public void setOd(float od) {
-            RosuPPLib.INSTANCE.beatmap_attributes_od(getContext(), od);
+            RosuPPLib.beatmap_attributes_od(getContext(), od);
         }
     
         // Method to get the clock rate
         public double getClockRate() {
-            return RosuPPLib.INSTANCE.beatmap_attributes_get_clock_rate(getContext());
+            return RosuPPLib.beatmap_attributes_get_clock_rate(getContext());
         }
     
         // Method to build BeatmapAttributes
         public RosuPPLib.BeatmapAttributes build(Beatmap beatmap) {
-            return RosuPPLib.INSTANCE.beatmap_attributes_build(getContext(), beatmap.getContext());
+            return RosuPPLib.beatmap_attributes_build(getContext(), beatmap.getContext());
         }
     
         // Getter for the context
@@ -765,7 +768,7 @@ public class RosuFFI {
     
         public Difficulty() {
             _context = new PointerByReference();
-            int rval = RosuPPLib.INSTANCE.difficulty_new(_context);
+            int rval = RosuPPLib.difficulty_new(_context);
             if (rval != 0) {
                 throw new RuntimeException("Error creating Difficulty");
             }
@@ -774,7 +777,7 @@ public class RosuFFI {
         // Method to dispose of the Difficulty
         @Override
         public void close() {
-            int rval = RosuPPLib.INSTANCE.difficulty_destroy(_context);
+            int rval = RosuPPLib.difficulty_destroy(_context);
             if (rval != 0) {
                 throw new RuntimeException("Error destroying Difficulty");
             }
@@ -782,17 +785,17 @@ public class RosuFFI {
     
         // Method to set p_mods (using Pointer)
         public void setMods(Mods mods) {
-            RosuPPLib.INSTANCE.difficulty_p_mods(getContext(), mods.getContext());
+            RosuPPLib.difficulty_p_mods(getContext(), mods.getContext());
         }
     
         // Method to set i_mods (using uint)
         public void setMods(int mods) {
-            RosuPPLib.INSTANCE.difficulty_i_mods(getContext(), mods);
+            RosuPPLib.difficulty_i_mods(getContext(), mods);
         }
     
         // Method to set s_mods (using string)
         public void setMods(String str) {
-            int rval = RosuPPLib.INSTANCE.difficulty_s_mods(getContext(), str);
+            int rval = RosuPPLib.difficulty_s_mods(getContext(), str);
             if (rval != 0) {
                 throw new RuntimeException("Error setting string mods");
             }
@@ -800,52 +803,52 @@ public class RosuFFI {
     
         // Method to set passed objects (using uint)
         public void setPassedObjects(int passedObjects) {
-            RosuPPLib.INSTANCE.difficulty_passed_objects(getContext(), passedObjects);
+            RosuPPLib.difficulty_passed_objects(getContext(), passedObjects);
         }
     
         // Method to set clock rate
         public void setClockRate(double clockRate) {
-            RosuPPLib.INSTANCE.difficulty_clock_rate(getContext(), clockRate);
+            RosuPPLib.difficulty_clock_rate(getContext(), clockRate);
         }
     
         // Method to set AR (approach rate)
         public void setAr(float ar) {
-            RosuPPLib.INSTANCE.difficulty_ar(getContext(), ar);
+            RosuPPLib.difficulty_ar(getContext(), ar);
         }
     
         // Method to set CS (circle size)
         public void setCs(float cs) {
-            RosuPPLib.INSTANCE.difficulty_cs(getContext(), cs);
+            RosuPPLib.difficulty_cs(getContext(), cs);
         }
     
         // Method to set HP (health drain)
         public void setHp(float hp) {
-            RosuPPLib.INSTANCE.difficulty_hp(getContext(), hp);
+            RosuPPLib.difficulty_hp(getContext(), hp);
         }
     
         // Method to set OD (overall difficulty)
         public void setOd(float od) {
-            RosuPPLib.INSTANCE.difficulty_od(getContext(), od);
+            RosuPPLib.difficulty_od(getContext(), od);
         }
     
         // Method to set hardrock offsets
         public void setHardrockOffsets(boolean hardrockOffsets) {
-            RosuPPLib.INSTANCE.difficulty_hardrock_offsets(getContext(), hardrockOffsets);
+            RosuPPLib.difficulty_hardrock_offsets(getContext(), hardrockOffsets);
         }
     
         // Method to set lazer
         public void setLazer(boolean lazer) {
-            RosuPPLib.INSTANCE.difficulty_lazer(getContext(), lazer);
+            RosuPPLib.difficulty_lazer(getContext(), lazer);
         }
     
         // Method to calculate DifficultyAttributes from beatmap
         public RosuPPLib.DifficultyAttributes calculate(Beatmap beatmap) {
-            return RosuPPLib.INSTANCE.difficulty_calculate(getContext(), beatmap.getContext());
+            return RosuPPLib.difficulty_calculate(getContext(), beatmap.getContext());
         }
     
         // Method to get clock rate
         public double getClockRate() {
-            return RosuPPLib.INSTANCE.difficulty_get_clock_rate(getContext());
+            return RosuPPLib.difficulty_get_clock_rate(getContext());
         }
     
         // Getter for context
@@ -859,7 +862,7 @@ public class RosuFFI {
     
         public Performance() {
             _context = new PointerByReference();
-            int rval = RosuPPLib.INSTANCE.performance_new(_context);
+            int rval = RosuPPLib.performance_new(_context);
             if (rval != 0) {
                 throw new RuntimeException("Error creating Performance");
             }
@@ -868,7 +871,7 @@ public class RosuFFI {
         // Method to dispose of the Performance
         @Override
         public void close() {
-            int rval = RosuPPLib.INSTANCE.performance_destroy(_context);
+            int rval = RosuPPLib.performance_destroy(_context);
             if (rval != 0) {
                 throw new RuntimeException("Error destroying Performance");
             }
@@ -876,22 +879,22 @@ public class RosuFFI {
     
         // Method to set mode
         public void setMode(Mode mode) {
-            RosuPPLib.INSTANCE.performance_mode(getContext(), mode.getValue());
+            RosuPPLib.performance_mode(getContext(), mode.getValue());
         }
     
         // Method to set p_mods (using Pointer)
         public void setMods(Mods mods) {
-            RosuPPLib.INSTANCE.performance_p_mods(getContext(), mods.getContext());
+            RosuPPLib.performance_p_mods(getContext(), mods.getContext());
         }
     
         // Method to set i_mods (using uint)
         public void setMods(int mods) {
-            RosuPPLib.INSTANCE.performance_i_mods(getContext(), mods);
+            RosuPPLib.performance_i_mods(getContext(), mods);
         }
     
         // Method to set s_mods (using string)
         public void setMods(String str) {
-            int rval = RosuPPLib.INSTANCE.performance_s_mods(getContext(), str);
+            int rval = RosuPPLib.performance_s_mods(getContext(), str);
             if (rval != 0) {
                 throw new RuntimeException("Error setting string mods");
             }
@@ -899,106 +902,106 @@ public class RosuFFI {
     
         // Method to set passed objects (using uint)
         public void setPassedObjects(int passedObjects) {
-            RosuPPLib.INSTANCE.performance_passed_objects(getContext(), passedObjects);
+            RosuPPLib.performance_passed_objects(getContext(), passedObjects);
         }
     
         // Method to set clock rate
         public void setClockRate(double clockRate) {
-            RosuPPLib.INSTANCE.performance_clock_rate(getContext(), clockRate);
+            RosuPPLib.performance_clock_rate(getContext(), clockRate);
         }
     
         // Method to set AR (approach rate)
         public void setAr(float ar) {
-            RosuPPLib.INSTANCE.performance_ar(getContext(), ar);
+            RosuPPLib.performance_ar(getContext(), ar);
         }
     
         // Method to set CS (circle size)
         public void setCs(float cs) {
-            RosuPPLib.INSTANCE.performance_cs(getContext(), cs);
+            RosuPPLib.performance_cs(getContext(), cs);
         }
     
         // Method to set HP (health drain)
         public void setHp(float hp) {
-            RosuPPLib.INSTANCE.performance_hp(getContext(), hp);
+            RosuPPLib.performance_hp(getContext(), hp);
         }
     
         // Method to set OD (overall difficulty)
         public void setOd(float od) {
-            RosuPPLib.INSTANCE.performance_od(getContext(), od);
+            RosuPPLib.performance_od(getContext(), od);
         }
     
         // Method to set hardrock offsets
         public void setHardrockOffsets(boolean hardrockOffsets) {
-            RosuPPLib.INSTANCE.performance_hardrock_offsets(getContext(), hardrockOffsets);
+            RosuPPLib.performance_hardrock_offsets(getContext(), hardrockOffsets);
         }
 
         // Method to set hardrock offsets
         public void setHitResultPriority(int hitresult_priority) {
-            RosuPPLib.INSTANCE.performance_hitresult_priority(getContext(), hitresult_priority);
+            RosuPPLib.performance_hitresult_priority(getContext(), hitresult_priority);
         }
 
         public void setAccuracy(double accuracy) {
-            RosuPPLib.INSTANCE.performance_accuracy(getContext(), accuracy);
+            RosuPPLib.performance_accuracy(getContext(), accuracy);
         }
 
         public void setMisses(long misses) {
-            RosuPPLib.INSTANCE.performance_misses(getContext(), misses);
+            RosuPPLib.performance_misses(getContext(), misses);
         }
 
         public void setSliderTickHits(long sliderTickHits) {
-            RosuPPLib.INSTANCE.performance_slider_tick_hits(getContext(), sliderTickHits);
+            RosuPPLib.performance_slider_tick_hits(getContext(), sliderTickHits);
         }
         
         public void setSliderTickMisses(long sliderTickMisses) {
-            RosuPPLib.INSTANCE.performance_slider_tick_misses(getContext(), sliderTickMisses);
+            RosuPPLib.performance_slider_tick_misses(getContext(), sliderTickMisses);
         }
         
         public void setSliderEndHits(long sliderEndHits) {
-            RosuPPLib.INSTANCE.performance_slider_end_hits(getContext(), sliderEndHits);
+            RosuPPLib.performance_slider_end_hits(getContext(), sliderEndHits);
         }
         
         public void setN300(long n300) {
-            RosuPPLib.INSTANCE.performance_n300(getContext(), n300);
+            RosuPPLib.performance_n300(getContext(), n300);
         }
         
         public void setN100(long n100) {
-            RosuPPLib.INSTANCE.performance_n100(getContext(), n100);
+            RosuPPLib.performance_n100(getContext(), n100);
         }
         
         public void setN50(long n50) {
-            RosuPPLib.INSTANCE.performance_n50(getContext(), n50);
+            RosuPPLib.performance_n50(getContext(), n50);
         }
         
         public void setNKatu(long nKatu) {
-            RosuPPLib.INSTANCE.performance_n_katu(getContext(), nKatu);
+            RosuPPLib.performance_n_katu(getContext(), nKatu);
         }
         
         public void setNGeki(long nGeki) {
-            RosuPPLib.INSTANCE.performance_n_geki(getContext(), nGeki);
+            RosuPPLib.performance_n_geki(getContext(), nGeki);
         }
 
         // Method to set lazer
         public void setLazer(boolean lazer) {
-            RosuPPLib.INSTANCE.performance_lazer(getContext(), lazer);
+            RosuPPLib.performance_lazer(getContext(), lazer);
         }
 
         public RosuPPLib.ScoreState GenerateState(Beatmap beatmap) {
-            return RosuPPLib.INSTANCE.performance_generate_state(getContext(), beatmap.getContext());
+            return RosuPPLib.performance_generate_state(getContext(), beatmap.getContext());
         }
     
         // Method to calculate PerformanceAttributes from beatmap
         public RosuPPLib.PerformanceAttributes calculate(Beatmap beatmap) {
-            return RosuPPLib.INSTANCE.performance_calculate(getContext(), beatmap.getContext());
+            return RosuPPLib.performance_calculate(getContext(), beatmap.getContext());
         }
     
         // Method to calculate PerformanceAttributes from DifficultyAttributes
         public RosuPPLib.PerformanceAttributes calculateFromDifficulty(RosuPPLib.DifficultyAttributes difficultyAttributes) {
-            return RosuPPLib.INSTANCE.performance_calculate_from_difficulty(getContext(), (RosuPPLib.DifficultyAttributes.ByValue)difficultyAttributes);
+            return RosuPPLib.performance_calculate_from_difficulty(getContext(), (RosuPPLib.DifficultyAttributes.ByValue)difficultyAttributes);
         }
     
         // Method to get clock rate
         public double getClockRate() {
-            return RosuPPLib.INSTANCE.performance_get_clock_rate(getContext());
+            return RosuPPLib.performance_get_clock_rate(getContext());
         }
     
         // Getter for context
@@ -1021,7 +1024,7 @@ public class RosuFFI {
 
         private static Runnable cleanAction(final PointerByReference context) {
             return () -> {
-                int rval = RosuPPLib.INSTANCE.mods_destroy(context);
+                int rval = RosuPPLib.mods_destroy(context);
                 if (rval != FFIError.Ok) {
                     throw new RuntimeException("Error destroying Mods");
                 }
@@ -1031,7 +1034,7 @@ public class RosuFFI {
         /// new
         public static Mods New(Mode mode) {
             var m = new Mods();
-            int rval = RosuPPLib.INSTANCE.mods_new(m._context, mode.getValue());
+            int rval = RosuPPLib.mods_new(m._context, mode.getValue());
             if (rval != FFIError.Ok) {
                 throw new RuntimeException("Error creating Mods");
             }
@@ -1041,7 +1044,7 @@ public class RosuFFI {
         /// from acronyms
         public static Mods FromAcronyms(String mods, Mode mode) {
             var m = new Mods();
-            int rval = RosuPPLib.INSTANCE.mods_from_acronyms(m._context, mods, mode.getValue());
+            int rval = RosuPPLib.mods_from_acronyms(m._context, mods, mode.getValue());
             if (rval != FFIError.Ok) {
                 throw new RuntimeException("Error creating Mods");
             }
@@ -1051,7 +1054,7 @@ public class RosuFFI {
         /// from bits
         public static Mods FromBits(long mods, Mode mode) {
             var m = new Mods();
-            int rval = RosuPPLib.INSTANCE.mods_from_bits(m._context, mods, mode.getValue());
+            int rval = RosuPPLib.mods_from_bits(m._context, mods, mode.getValue());
             if (rval != FFIError.Ok) {
                 throw new RuntimeException("Error creating Mods");
             }
@@ -1061,7 +1064,7 @@ public class RosuFFI {
         /// from json
         public static Mods FromJson(String mods, Mode mode) {
             var m = new Mods();
-            int rval = RosuPPLib.INSTANCE.mods_from_json(m._context, mods, mode.getValue());
+            int rval = RosuPPLib.mods_from_json(m._context, mods, mode.getValue());
             if (rval != FFIError.Ok) {
                 throw new RuntimeException("Error creating Mods");
             }
@@ -1071,7 +1074,7 @@ public class RosuFFI {
         /// from json sanitize
         public static Mods FromJsonSanitize(String mods, Mode mode) {
             var m = new Mods();
-            int rval = RosuPPLib.INSTANCE.mods_from_json_sanitize(m._context, mods, mode.getValue());
+            int rval = RosuPPLib.mods_from_json_sanitize(m._context, mods, mode.getValue());
             if (rval != FFIError.Ok) {
                 throw new RuntimeException("Error creating Mods");
             }
@@ -1079,41 +1082,41 @@ public class RosuFFI {
         }
 
         public void RemoveIncompatibleMods() {
-            RosuPPLib.INSTANCE.mods_remove_incompatible_mods(getContext());
+            RosuPPLib.mods_remove_incompatible_mods(getContext());
         } 
         
         public long getBits() {
-            return RosuPPLib.INSTANCE.mods_bits(getContext());
+            return RosuPPLib.mods_bits(getContext());
         } 
 
         public long getLength() {
-            return RosuPPLib.INSTANCE.mods_len(getContext());
+            return RosuPPLib.mods_len(getContext());
         }
 
         public OwnedString toJson() {
             var s = new OwnedString();
-            RosuPPLib.INSTANCE.mods_json(getContext(), s.getContext());
+            RosuPPLib.mods_json(getContext(), s.getContext());
             return s;
         }
 
         public boolean InsertJson(String mod) {
-            return RosuPPLib.INSTANCE.mods_insert_json(getContext(), mod);
+            return RosuPPLib.mods_insert_json(getContext(), mod);
         }
 
         public boolean Insert(String mod) {
-            return RosuPPLib.INSTANCE.mods_insert(getContext(), mod);
+            return RosuPPLib.mods_insert(getContext(), mod);
         }
 
         public boolean Contains(String mod) {
-            return RosuPPLib.INSTANCE.mods_contains(getContext(), mod);
+            return RosuPPLib.mods_contains(getContext(), mod);
         }
 
         public void Clear() {
-            RosuPPLib.INSTANCE.mods_clear(getContext());
+            RosuPPLib.mods_clear(getContext());
         }
 
         public RosuPPLib.Optionf64 getClockRate() {
-            return RosuPPLib.INSTANCE.mods_clock_rate(getContext());
+            return RosuPPLib.mods_clock_rate(getContext());
         }
 
         // Getter for the context
@@ -1132,7 +1135,7 @@ public class RosuFFI {
     
         public OwnedString() {
             _context = new PointerByReference();
-            int rval = RosuPPLib.INSTANCE.string_empty(_context);
+            int rval = RosuPPLib.string_empty(_context);
             if (rval != FFIError.Ok) {
                 throw new RuntimeException("Error creating OwnedString");
             }
@@ -1141,7 +1144,7 @@ public class RosuFFI {
 
         public OwnedString(String str) {
             _context = new PointerByReference();
-            int rval = RosuPPLib.INSTANCE.string_from_c_str(_context, str);
+            int rval = RosuPPLib.string_from_c_str(_context, str);
             if (rval != FFIError.Ok) {
                 throw new RuntimeException("Error creating OwnedString");
             }
@@ -1150,7 +1153,7 @@ public class RosuFFI {
 
         private static Runnable cleanAction(final PointerByReference context) {
             return () -> {
-                int rval = RosuPPLib.INSTANCE.string_destroy(context);
+                int rval = RosuPPLib.string_destroy(context);
                 if (rval != FFIError.Ok) {
                     throw new RuntimeException("Error destroying Mods");
                 }
@@ -1158,11 +1161,11 @@ public class RosuFFI {
         }
     
         public String toCstr() {
-            return RosuPPLib.INSTANCE.string_to_cstr(getContext());
+            return RosuPPLib.string_to_cstr(getContext());
         } 
         
         public boolean isInit() {
-            return RosuPPLib.INSTANCE.string_is_init(getContext());
+            return RosuPPLib.string_is_init(getContext());
         } 
         
         public String toString() {
@@ -1178,21 +1181,21 @@ public class RosuFFI {
     public static OwnedString DebugDifficyltyAttributes(RosuPPLib.DifficultyAttributes attr) {
         if (attr == null) return null;
         var s = new OwnedString();
-        RosuPPLib.INSTANCE.debug_difficylty_attributes(attr, s.getContext());
+        RosuPPLib.debug_difficylty_attributes(attr, s.getContext());
         return s;
     }
 
     public static OwnedString DebugPerformanceAttributes(RosuPPLib.PerformanceAttributes attr) {
         if (attr == null) return null;
         var s = new OwnedString();
-        RosuPPLib.INSTANCE.debug_performance_attributes(attr, s.getContext());
+        RosuPPLib.debug_performance_attributes(attr, s.getContext());
         return s;
     }
 
     public static OwnedString DebugScoreState(RosuPPLib.ScoreState attr) {
         if (attr == null) return null;
         var s = new OwnedString();
-        RosuPPLib.INSTANCE.debug_score_state(attr, s.getContext());
+        RosuPPLib.debug_score_state(attr, s.getContext());
         return s;
     }
 
