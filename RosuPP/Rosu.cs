@@ -187,11 +187,6 @@ public partial class Performance
         return GenerateState(beatmap.Context);
     }
 
-    public ScoreState GenerateState(Beatmap beatmap)
-    {
-        return GenerateState(beatmap.Context);
-    }
-
     public void Mods(uint mods)
     {
         IMods(mods);
