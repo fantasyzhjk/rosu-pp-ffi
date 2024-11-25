@@ -940,6 +940,10 @@ public class RosuFFI {
             RosuPPLib.performance_hitresult_priority(getContext(), hitresult_priority);
         }
 
+        public void setCombo(long combo) {
+            RosuPPLib.performance_combo(getContext(), combo);
+        }
+
         public void setAccuracy(double accuracy) {
             RosuPPLib.performance_accuracy(getContext(), accuracy);
         }
