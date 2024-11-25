@@ -284,6 +284,12 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_from_json")]
         public static extern FFIError mods_from_json(ref IntPtr context, string str, Mode mode);
 
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_from_json_sanitize")]
+        public static extern FFIError mods_from_json_sanitize(ref IntPtr context, string str, Mode mode);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_remove_incompatible_mods")]
+        public static extern void mods_remove_incompatible_mods(IntPtr context);
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_bits")]
         public static extern uint mods_bits(IntPtr context);
 
@@ -1534,6 +1540,17 @@ namespace RosuPP
             return self;
         }
 
+        public static Mods FromJsonSanitize(string str, Mode mode)
+        {
+            var self = new Mods();
+            var rval = Rosu.mods_from_json_sanitize(ref self._context, str, mode);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+            return self;
+        }
+
         public void Dispose()
         {
             var rval = Rosu.mods_destroy(ref _context);
@@ -1541,6 +1558,11 @@ namespace RosuPP
             {
                 throw new InteropException<FFIError>(rval);
             }
+        }
+
+        public void RemoveIncompatibleMods()
+        {
+            Rosu.mods_remove_incompatible_mods(_context);
         }
 
         public uint Bits()
