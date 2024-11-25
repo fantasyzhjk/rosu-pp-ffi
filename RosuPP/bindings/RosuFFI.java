@@ -1016,7 +1016,16 @@ public class RosuFFI {
 
         private Mods() {
             _context = new PointerByReference();
-            this.cleanable = cleaner.register(this, new CleanupAction(_context));
+            this.cleanable = cleaner.register(this, cleanAction(_context));
+        }
+
+        private static Runnable cleanAction(final PointerByReference context) {
+            return () -> {
+                int rval = RosuPPLib.INSTANCE.mods_destroy(context);
+                if (rval != FFIError.Ok) {
+                    throw new RuntimeException("Error destroying Mods");
+                }
+            };
         }
     
         /// new
@@ -1067,23 +1076,6 @@ public class RosuFFI {
                 throw new RuntimeException("Error creating Mods");
             }
             return m;
-        }
-    
-        // 定义清理动作
-        private static class CleanupAction implements Runnable {
-            private PointerByReference _context;
-
-            CleanupAction(PointerByReference context) {
-                this._context = context;
-            }
-
-            @Override
-            public void run() {
-                int rval = RosuPPLib.INSTANCE.mods_destroy(_context);
-                if (rval != FFIError.Ok) {
-                    throw new RuntimeException("Error destroying Mods");
-                }
-            }
         }
 
         public void RemoveIncompatibleMods() {
@@ -1144,7 +1136,7 @@ public class RosuFFI {
             if (rval != FFIError.Ok) {
                 throw new RuntimeException("Error creating OwnedString");
             }
-            this.cleanable = cleaner.register(this, new CleanupAction(_context));
+            this.cleanable = cleaner.register(this, cleanAction(_context));
         }
 
         public OwnedString(String str) {
@@ -1153,26 +1145,18 @@ public class RosuFFI {
             if (rval != FFIError.Ok) {
                 throw new RuntimeException("Error creating OwnedString");
             }
-            this.cleanable = cleaner.register(this, new CleanupAction(_context));
+            this.cleanable = cleaner.register(this, cleanAction(_context));
+        }
+
+        private static Runnable cleanAction(final PointerByReference context) {
+            return () -> {
+                int rval = RosuPPLib.INSTANCE.string_destroy(context);
+                if (rval != FFIError.Ok) {
+                    throw new RuntimeException("Error destroying Mods");
+                }
+            };
         }
     
-        // 定义清理动作
-        private static class CleanupAction implements Runnable {
-            private PointerByReference _context;
-
-            CleanupAction(PointerByReference context) {
-                this._context = context;
-            }
-
-            @Override
-            public void run() {
-                int rval = RosuPPLib.INSTANCE.string_destroy(_context);
-                if (rval != FFIError.Ok) {
-                    throw new RuntimeException("Error destroying OwnedString");
-                }
-            }
-        }
-
         public String toCstr() {
             return RosuPPLib.INSTANCE.string_to_cstr(getContext());
         } 
