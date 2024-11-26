@@ -263,10 +263,8 @@ public partial class Beatmap
 {
     public static Beatmap FromBytes(byte[] data)
     {
-        // 手动处理内存
-        var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-        var self = FromBytes(new Sliceu8(handle, (ulong)data.Length));
-        handle.Free();
+        var self = new Beatmap();
+        RosuLibrary.beatmap_from_bytes(ref self._context, data);
         return self;
     }
 

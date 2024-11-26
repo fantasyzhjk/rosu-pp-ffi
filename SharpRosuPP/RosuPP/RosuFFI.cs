@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using RosuPP;
 #pragma warning restore 0105
 
@@ -28,8 +29,32 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_destroy")]
         public static extern FFIError beatmap_attributes_destroy(ref IntPtr context);
 
+        /// Destroys the given instance.
+        ///
+        /// # Safety
+        ///
+        /// The passed parameter MUST have been created with the corresponding init function;
+        /// passing any other value results in undefined behavior.
+        public static void beatmap_attributes_destroy_checked(ref IntPtr context)
+        {
+            var rval = beatmap_attributes_destroy(ref context);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_new")]
         public static extern FFIError beatmap_attributes_new(ref IntPtr context);
+
+        public static void beatmap_attributes_new_checked(ref IntPtr context)
+        {
+            var rval = beatmap_attributes_new(ref context);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_mode")]
         public static extern void beatmap_attributes_mode(IntPtr context, Mode mode);
@@ -42,6 +67,15 @@ namespace RosuPP
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_s_mods")]
         public static extern FFIError beatmap_attributes_s_mods(IntPtr context, string str);
+
+        public static void beatmap_attributes_s_mods_checked(IntPtr context, string str)
+        {
+            var rval = beatmap_attributes_s_mods(context, str);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_attributes_clock_rate")]
         public static extern void beatmap_attributes_clock_rate(IntPtr context, double clock_rate);
@@ -73,11 +107,51 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_destroy")]
         public static extern FFIError beatmap_destroy(ref IntPtr context);
 
+        /// Destroys the given instance.
+        ///
+        /// # Safety
+        ///
+        /// The passed parameter MUST have been created with the corresponding init function;
+        /// passing any other value results in undefined behavior.
+        public static void beatmap_destroy_checked(ref IntPtr context)
+        {
+            var rval = beatmap_destroy(ref context);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_from_bytes")]
         public static extern FFIError beatmap_from_bytes(ref IntPtr context, Sliceu8 data);
 
+        public static void beatmap_from_bytes(ref IntPtr context, byte[] data)
+        {
+            unsafe
+            {
+                fixed (void* ptr_data = data)
+                {
+                    var data_slice = new Sliceu8(new IntPtr(ptr_data), (ulong) data.Length);
+                    var rval = beatmap_from_bytes(ref context, data_slice);;
+                    if (rval != FFIError.Ok)
+                    {
+                        throw new InteropException<FFIError>(rval);
+                    }
+                }
+            }
+        }
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_from_path")]
         public static extern FFIError beatmap_from_path(ref IntPtr context, string path);
+
+        public static void beatmap_from_path_checked(ref IntPtr context, string path)
+        {
+            var rval = beatmap_from_path(ref context, path);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
 
         /// Convert a Beatmap to the specified mode
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_convert")]
@@ -104,8 +178,32 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_destroy")]
         public static extern FFIError difficulty_destroy(ref IntPtr context);
 
+        /// Destroys the given instance.
+        ///
+        /// # Safety
+        ///
+        /// The passed parameter MUST have been created with the corresponding init function;
+        /// passing any other value results in undefined behavior.
+        public static void difficulty_destroy_checked(ref IntPtr context)
+        {
+            var rval = difficulty_destroy(ref context);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_new")]
         public static extern FFIError difficulty_new(ref IntPtr context);
+
+        public static void difficulty_new_checked(ref IntPtr context)
+        {
+            var rval = difficulty_new(ref context);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_p_mods")]
         public static extern void difficulty_p_mods(IntPtr context, IntPtr mods);
@@ -115,6 +213,15 @@ namespace RosuPP
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_s_mods")]
         public static extern FFIError difficulty_s_mods(IntPtr context, string str);
+
+        public static void difficulty_s_mods_checked(IntPtr context, string str)
+        {
+            var rval = difficulty_s_mods(context, str);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_passed_objects")]
         public static extern void difficulty_passed_objects(IntPtr context, uint passed_objects);
@@ -155,8 +262,32 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_destroy")]
         public static extern FFIError performance_destroy(ref IntPtr context);
 
+        /// Destroys the given instance.
+        ///
+        /// # Safety
+        ///
+        /// The passed parameter MUST have been created with the corresponding init function;
+        /// passing any other value results in undefined behavior.
+        public static void performance_destroy_checked(ref IntPtr context)
+        {
+            var rval = performance_destroy(ref context);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_new")]
         public static extern FFIError performance_new(ref IntPtr context);
+
+        public static void performance_new_checked(ref IntPtr context)
+        {
+            var rval = performance_new(ref context);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_mode")]
         public static extern void performance_mode(IntPtr context, Mode mode);
@@ -169,6 +300,15 @@ namespace RosuPP
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_s_mods")]
         public static extern FFIError performance_s_mods(IntPtr context, string str);
+
+        public static void performance_s_mods_checked(IntPtr context, string str)
+        {
+            var rval = performance_s_mods(context, str);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_passed_objects")]
         public static extern void performance_passed_objects(IntPtr context, uint passed_objects);
@@ -254,11 +394,44 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "string_destroy")]
         public static extern FFIError string_destroy(ref IntPtr context);
 
+        /// Destroys the given instance.
+        ///
+        /// # Safety
+        ///
+        /// The passed parameter MUST have been created with the corresponding init function;
+        /// passing any other value results in undefined behavior.
+        public static void string_destroy_checked(ref IntPtr context)
+        {
+            var rval = string_destroy(ref context);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "string_from_c_str")]
         public static extern FFIError string_from_c_str(ref IntPtr context, string str);
 
+        public static void string_from_c_str_checked(ref IntPtr context, string str)
+        {
+            var rval = string_from_c_str(ref context, str);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "string_empty")]
         public static extern FFIError string_empty(ref IntPtr context);
+
+        public static void string_empty_checked(ref IntPtr context)
+        {
+            var rval = string_empty(ref context);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "string_is_init")]
         public static extern Bool string_is_init(IntPtr context);
@@ -275,20 +448,80 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_destroy")]
         public static extern FFIError mods_destroy(ref IntPtr context);
 
+        /// Destroys the given instance.
+        ///
+        /// # Safety
+        ///
+        /// The passed parameter MUST have been created with the corresponding init function;
+        /// passing any other value results in undefined behavior.
+        public static void mods_destroy_checked(ref IntPtr context)
+        {
+            var rval = mods_destroy(ref context);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_new")]
         public static extern FFIError mods_new(ref IntPtr context, Mode mode);
+
+        public static void mods_new_checked(ref IntPtr context, Mode mode)
+        {
+            var rval = mods_new(ref context, mode);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_from_acronyms")]
         public static extern FFIError mods_from_acronyms(ref IntPtr context, string str, Mode mode);
 
+        public static void mods_from_acronyms_checked(ref IntPtr context, string str, Mode mode)
+        {
+            var rval = mods_from_acronyms(ref context, str, mode);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_from_bits")]
         public static extern FFIError mods_from_bits(ref IntPtr context, uint bits, Mode mode);
+
+        public static void mods_from_bits_checked(ref IntPtr context, uint bits, Mode mode)
+        {
+            var rval = mods_from_bits(ref context, bits, mode);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_from_json")]
         public static extern FFIError mods_from_json(ref IntPtr context, string str, Mode mode);
 
+        public static void mods_from_json_checked(ref IntPtr context, string str, Mode mode)
+        {
+            var rval = mods_from_json(ref context, str, mode);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_from_json_sanitize")]
         public static extern FFIError mods_from_json_sanitize(ref IntPtr context, string str, Mode mode);
+
+        public static void mods_from_json_sanitize_checked(ref IntPtr context, string str, Mode mode)
+        {
+            var rval = mods_from_json_sanitize(ref context, str, mode);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_remove_incompatible_mods")]
         public static extern void mods_remove_incompatible_mods(IntPtr context);
@@ -674,6 +907,18 @@ namespace RosuPP
             this.data = handle;
             this.len = count;
         }
+        #if (NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER || NETCOREAPP2_1_OR_GREATER)
+        public ReadOnlySpan<byte> ReadOnlySpan
+        {
+            get
+            {
+                unsafe
+                {
+                    return new ReadOnlySpan<byte>(this.data.ToPointer(), (int) this.len);
+                }
+            }
+        }
+        #endif
         public byte this[int i]
         {
             get
@@ -696,6 +941,8 @@ namespace RosuPP
                     fixed (void* dst = rval)
                     {
                         #if __INTEROPTOPUS_NEVER
+                        #elif NETCOREAPP
+                        Unsafe.CopyBlock(dst, data.ToPointer(), (uint) len * (uint) sizeof(byte));
                         #else
                         for (var i = 0; i < (int) len; i++) {
                             rval[i] = this[i];

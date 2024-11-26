@@ -1,6 +1,5 @@
 use interoptopus::util::NamespaceMappings;
 use interoptopus::{Error, Interop};
-use interoptopus_backend_csharp::Unsafe;
 
 // By adding the interop generation logic into a `build.rs` that depends on
 // our `core_library_ffi` we ensure that upon `cargo build` both the `.dll`
@@ -16,7 +15,8 @@ fn main() {
 }
 
 fn bindings_csharp() -> Result<(), Error> {
-    use interoptopus_backend_csharp::{Config, Generator};
+    use interoptopus_backend_csharp::{Config, Generator, Unsafe};
+    use interoptopus_backend_csharp::overloads::DotNet;
 
     Generator::new(
         Config {
@@ -28,6 +28,7 @@ fn bindings_csharp() -> Result<(), Error> {
         },
         rosu_pp_ffi::ffi_inventory(),
     )
+    .add_overload_writer(DotNet::new())
     .write_file("../bindings/RosuFFI.cs")?;
 
     Ok(())
