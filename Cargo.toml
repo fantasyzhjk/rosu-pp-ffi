@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "rosu-pp-ffi",
+    "rosu-pp-ffi-build",
+]
+resolver = "2"
