@@ -28,33 +28,28 @@ internal static unsafe partial class NativeMethods
 
     static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
     {
-        if (libraryName == Rosu.NativeLib)
+        var path = "native/";
+        var extension = "";
+        string name;
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            var path = "native/";
-            var extension = "";
-            string name;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                extension = ".dll";
-                name = Rosu.NativeLib;
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                extension = ".dylib";
-                name = "lib" + Rosu.NativeLib;
-            }
-            else
-            {
-                extension = ".so";
-                name = "lib" + Rosu.NativeLib;
-            }
-
-            path += name + extension;
-
-            return NativeLibrary.Load(Path.Combine(AppContext.BaseDirectory, path), assembly, searchPath);
+            extension = ".dll";
+            name = libraryName;
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            extension = ".dylib";
+            name = "lib" + libraryName;
+        }
+        else
+        {
+            extension = ".so";
+            name = "lib" + libraryName;
         }
 
-        return IntPtr.Zero;
+        path += name + extension;
+
+        return NativeLibrary.Load(Path.Combine(AppContext.BaseDirectory, path), assembly, searchPath);
     }
 }
