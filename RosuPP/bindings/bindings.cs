@@ -191,6 +191,9 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_hardrock_offsets")]
         public static extern void performance_hardrock_offsets(IntPtr context, Bool hardrock_offsets);
 
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_state")]
+        public static extern void performance_state(IntPtr context, ScoreState state);
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_accuracy")]
         public static extern void performance_accuracy(IntPtr context, double accuracy);
 
@@ -229,6 +232,9 @@ namespace RosuPP
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_generate_state")]
         public static extern ScoreState performance_generate_state(IntPtr context, IntPtr beatmap);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_generate_state_from_difficulty")]
+        public static extern ScoreState performance_generate_state_from_difficulty(IntPtr context, DifficultyAttributes difficulty_attr);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_calculate")]
         public static extern PerformanceAttributes performance_calculate(IntPtr context, IntPtr beatmap);
@@ -638,9 +644,10 @@ namespace RosuPP
         Ok = 0,
         Null = 100,
         Panic = 200,
-        ParseError = 300,
-        InvalidString = 400,
-        SerializeError = 500,
+        IoError = 300,
+        Utf8Error = 400,
+        InvalidString = 500,
+        SerializeError = 600,
         Unknown = 1000,
     }
 
@@ -1362,6 +1369,11 @@ namespace RosuPP
             Rosu.performance_hardrock_offsets(_context, hardrock_offsets);
         }
 
+        public void State(ScoreState state)
+        {
+            Rosu.performance_state(_context, state);
+        }
+
         public void Accuracy(double accuracy)
         {
             Rosu.performance_accuracy(_context, accuracy);
@@ -1425,6 +1437,11 @@ namespace RosuPP
         public ScoreState GenerateState(IntPtr beatmap)
         {
             return Rosu.performance_generate_state(_context, beatmap);
+        }
+
+        public ScoreState GenerateStateFromDifficulty(DifficultyAttributes difficulty_attr)
+        {
+            return Rosu.performance_generate_state_from_difficulty(_context, difficulty_attr);
         }
 
         public PerformanceAttributes Calculate(IntPtr beatmap)

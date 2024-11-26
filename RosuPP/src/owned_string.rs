@@ -18,7 +18,7 @@ impl OwnedString {
     #[ffi_service_ctor]
     pub fn from_c_str(str: AsciiPointer) -> Result<Self, Error> {
         Ok(Self {
-            inner: MaybeUninit::new(str.as_c_str().ok_or(Error::InvalidString(None))?.to_owned()),
+            inner: MaybeUninit::new(str.as_c_str().ok_or(Error::Null)?.to_owned()),
             is_init: true
         })
     }

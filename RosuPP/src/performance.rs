@@ -9,6 +9,7 @@ use interoptopus::{
 use mode::Mode;
 use mods::Mods;
 use rosu_mods::{GameMods, GameModsIntermode};
+use state::ScoreState;
 
 #[ffi_type(opaque)]
 #[repr(C)]
@@ -39,6 +40,7 @@ pub struct Performance {
     pub n50: FFIOption<u32>,
     pub n_katu: FFIOption<u32>,
     pub n_geki: FFIOption<u32>,
+    pub state: FFIOption<ScoreState>
 }
 
 // Regular implementation of methods.
@@ -66,7 +68,7 @@ impl Performance {
 
     pub fn s_mods(&mut self, str: AsciiPointer) -> Result<(), Error> {
         self.mods_intermode = Some(GameModsIntermode::from_acronyms(
-            str.as_str().map_err(|_e| Error::InvalidString(None))?,
+            str.as_str()?,
         ))
         .into();
         Ok(())
@@ -105,6 +107,11 @@ impl Performance {
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn hardrock_offsets(&mut self, hardrock_offsets: FFIBool) {
         self.hardrock_offsets = Some(hardrock_offsets).into();
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn state(&mut self, state: ScoreState) {
+        self.state = Some(state).into();
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
@@ -168,25 +175,24 @@ impl Performance {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn generate_state(&self, beatmap: *const Beatmap) -> state::ScoreState {
-        let beatmap = unsafe {
-            beatmap
-                .as_ref()
-                .unwrap_or_else(|| panic!("beatmap: {beatmap:?}"))
-        };
-
+    pub fn generate_state(&self, beatmap: &Beatmap) -> state::ScoreState {
         let mut performance = self.apply(rosu_pp::Performance::new(&beatmap.inner));
         performance.generate_state().into()
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn calculate(&self, beatmap: *const Beatmap) -> attributes::PerformanceAttributes {
-        let beatmap = unsafe {
-            beatmap
-                .as_ref()
-                .unwrap_or_else(|| panic!("beatmap: {beatmap:?}"))
-        };
+    pub fn generate_state_from_difficulty(
+        &self,
+        difficulty_attr: DifficultyAttributes,
+    ) -> state::ScoreState {
+        let mut performance = self.apply(rosu_pp::Performance::new(
+            rosu_pp::any::DifficultyAttributes::from(difficulty_attr),
+        ));
+        performance.generate_state().into()
+    }
 
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn calculate(&self, beatmap: &Beatmap) -> attributes::PerformanceAttributes {
         let performance = self.apply(rosu_pp::Performance::new(&beatmap.inner));
         performance.calculate().into()
     }
@@ -241,6 +247,7 @@ impl Performance {
             n50,
             n_katu,
             n_geki,
+            state
         } = self;
 
         if let Some(mode) = mode.into_option() {
@@ -279,6 +286,10 @@ impl Performance {
 
         if let Some(hardrock_offsets) = hardrock_offsets.into_option() {
             perf = perf.hardrock_offsets(hardrock_offsets.is());
+        }
+
+        if let Some(state) = state.into_option() {
+            perf = perf.state(state.into());
         }
 
         if let Some(accuracy) = accuracy.into_option() {

@@ -53,7 +53,7 @@ impl Difficulty {
     #[ffi_service_method(on_panic = "ffi_error")]
     pub fn s_mods(&mut self, str: AsciiPointer) -> Result<(), Error> {
         self.mods_intermode = Some(GameModsIntermode::from_acronyms(
-            str.as_str().map_err(|_e| Error::InvalidString(None))?,
+            str.as_str()?,
         ))
         .into();
         Ok(())
@@ -100,13 +100,7 @@ impl Difficulty {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn calculate(&self, beatmap: *const Beatmap) -> attributes::DifficultyAttributes {
-        let beatmap = unsafe {
-            beatmap
-                .as_ref()
-                .unwrap_or_else(|| panic!("beatmap: {beatmap:?}"))
-        };
-
+    pub fn calculate(&self, beatmap: &Beatmap) -> attributes::DifficultyAttributes {
         self.construct().calculate(&beatmap.inner).into()
     }
 

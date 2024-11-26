@@ -72,6 +72,7 @@ def init_lib(path):
     c_lib.performance_n_katu.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_n_geki.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_generate_state.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    c_lib.performance_generate_state_from_difficulty.argtypes = [ctypes.c_void_p, DifficultyAttributes]
     c_lib.performance_calculate.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
     c_lib.performance_calculate_from_difficulty.argtypes = [ctypes.c_void_p, DifficultyAttributes]
     c_lib.performance_get_clock_rate.argtypes = [ctypes.c_void_p]
@@ -122,6 +123,7 @@ def init_lib(path):
     c_lib.performance_new.restype = ctypes.c_int
     c_lib.performance_s_mods.restype = ctypes.c_int
     c_lib.performance_generate_state.restype = ScoreState
+    c_lib.performance_generate_state_from_difficulty.restype = ScoreState
     c_lib.performance_calculate.restype = PerformanceAttributes
     c_lib.performance_calculate_from_difficulty.restype = PerformanceAttributes
     c_lib.performance_get_clock_rate.restype = ctypes.c_double
@@ -250,9 +252,10 @@ class FFIError:
     Ok = 0
     Null = 100
     Panic = 200
-    ParseError = 300
-    InvalidString = 400
-    SerializeError = 500
+    IoError = 300
+    Utf8Error = 400
+    InvalidString = 500
+    SerializeError = 600
     Unknown = 1000
 
 
@@ -2128,6 +2131,10 @@ class Performance:
     def generate_state(self, beatmap: ctypes.c_void_p) -> ScoreState:
         """"""
         return c_lib.performance_generate_state(self._ctx, beatmap)
+
+    def generate_state_from_difficulty(self, difficulty_attr: DifficultyAttributes) -> ScoreState:
+        """"""
+        return c_lib.performance_generate_state_from_difficulty(self._ctx, difficulty_attr)
 
     def calculate(self, beatmap: ctypes.c_void_p) -> PerformanceAttributes:
         """"""

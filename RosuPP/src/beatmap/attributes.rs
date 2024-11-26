@@ -102,10 +102,9 @@ impl BeatmapAttributesBuilder {
         self.mods_intermode = Some(GameModsIntermode::from_bits(mods)).into();
     }
 
-    #[ffi_service_method(on_panic = "ffi_error")]
     pub fn s_mods(&mut self, str: AsciiPointer) -> Result<(), Error> {
         self.mods_intermode = Some(GameModsIntermode::from_acronyms(
-            str.as_str().map_err(|_e| Error::InvalidString(None))?,
+            str.as_str()?,
         ))
         .into();
         Ok(())

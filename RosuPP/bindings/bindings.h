@@ -59,9 +59,10 @@ typedef enum ffierror
     FFIERROR_OK = 0,
     FFIERROR_NULL = 100,
     FFIERROR_PANIC = 200,
-    FFIERROR_PARSEERROR = 300,
-    FFIERROR_INVALIDSTRING = 400,
-    FFIERROR_SERIALIZEERROR = 500,
+    FFIERROR_IOERROR = 300,
+    FFIERROR_UTF8ERROR = 400,
+    FFIERROR_INVALIDSTRING = 500,
+    FFIERROR_SERIALIZEERROR = 600,
     FFIERROR_UNKNOWN = 1000,
     } ffierror;
 
@@ -557,6 +558,8 @@ void performance_n_katu(performance* context, uint32_t n_katu);
 void performance_n_geki(performance* context, uint32_t n_geki);
 
 scorestate performance_generate_state(const performance* context, const beatmap* beatmap);
+
+scorestate performance_generate_state_from_difficulty(const performance* context, difficultyattributes difficulty_attr);
 
 performanceattributes performance_calculate(const performance* context, const beatmap* beatmap);
 

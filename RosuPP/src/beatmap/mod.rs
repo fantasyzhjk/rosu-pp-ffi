@@ -28,7 +28,7 @@ impl Beatmap {
     pub fn from_path(path: AsciiPointer) -> Result<Self, Error> {
         Ok(Self {
             inner: rosu_pp::Beatmap::from_path(
-                path.as_str().map_err(|_e| Error::InvalidString(None))?,
+                path.as_str()?,
             )?,
         })
     }

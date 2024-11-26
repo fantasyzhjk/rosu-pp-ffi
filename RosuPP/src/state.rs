@@ -34,7 +34,7 @@ impl OsuScoreOrigin {
 
 
 /// Aggregation for a score's current state.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Default, Debug, Eq, PartialEq)]
 #[repr(C)]
 #[ffi_type]
 pub struct ScoreState {

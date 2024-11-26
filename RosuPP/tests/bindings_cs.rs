@@ -1,6 +1,6 @@
 use interoptopus::util::NamespaceMappings;
 use interoptopus::{Error, Interop};
-use interoptopus_backend_csharp::{ParamSliceType, Unsafe};
+use interoptopus_backend_csharp::Unsafe;
 
 #[test]
 #[cfg_attr(miri, ignore)]
@@ -13,7 +13,6 @@ fn bindings_csharp() -> Result<(), Error> {
             dll_name: "rosu_pp_ffi".to_string(),
             namespace_mappings: NamespaceMappings::new("RosuPP"),
             use_unsafe: Unsafe::UnsafePlatformMemCpy,
-            param_slice_type: ParamSliceType::Array,
             ..Config::default()
         },
         rosu_pp_ffi::ffi_inventory(),

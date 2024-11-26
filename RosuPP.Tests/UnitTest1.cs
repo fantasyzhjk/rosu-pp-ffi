@@ -26,31 +26,55 @@ public class UnitTest1
         var beatmap = Beatmap.FromBytes(b);
         var mods = Mods.FromAcronyms("HDCL", beatmap.Mode());
         var difficulty = Difficulty.New();
+        difficulty.Lazer(Bool.False);
         difficulty.Mods(mods);
-        var diff_attr = difficulty.Calculate(beatmap);
+        var dattr = difficulty.Calculate(beatmap);
 
         var performance = Performance.New();
-        performance.Lazer(Bool.True);
+        performance.Lazer(Bool.False);
         performance.Mods(mods);
-        performance.Accuracy(97.0);
-        // performance.N100(66);
-        // performance.N50(1);
-        // performance.Misses(1);
-        // performance.Combo(1786);
+        performance.N100(66);
+        performance.N50(1);
+        performance.Misses(1);
+        performance.Combo(1786);
 
-        var state = performance.GenerateState(beatmap);
-        var attr = performance.CalculateFromDifficulty(diff_attr);
-        output.WriteLine("{0}", state);
+        var state = performance.GenerateStateFromDifficulty(dattr);
+        var attr = performance.CalculateFromDifficulty(dattr);
+        var acc = state.Acc(ref dattr, OsuScoreOrigin.Stable) * 100;
         output.WriteLine("{0}", attr);
-        var acc = state.Acc(ref diff_attr, OsuScoreOrigin.WithSliderAcc) * 100;
+        output.WriteLine("{0}", state);
         output.WriteLine("{0}", acc);
         
         var ruleset = OsuPP.Utils.ParseRuleset((int)beatmap.Mode())!;
         var osubm = OsuPP.Calculater.New(ruleset, new OsuPP.CalculatorWorkingBeatmap(b));
-        var sliderTickMiss = diff_attr.osu.ToNullable()!.Value.n_large_ticks - state.osu_large_tick_hits;
+        var sliderTickMiss = dattr.osu.ToNullable()!.Value.n_large_ticks - state.osu_large_tick_hits;
         var attr2 = osubm.Mods(mods).LoadState(state, sliderTickMiss).Acc(acc).Calculate();
 
         Assert.Equal(attr2.Total, attr.osu.ToNullable()!.Value.pp);
+    }
+
+    [Fact]
+    public void TestState()
+    {
+        var d = Assembly.GetExecutingAssembly().Location;
+        var b = File.ReadAllBytes("../../../resources/657916.osu");
+        var beatmap = Beatmap.FromBytes(b);
+        var difficulty = Difficulty.New();
+        var dattr = difficulty.Calculate(beatmap);
+
+        var performance = Performance.New();
+        performance.Accuracy(97.35);
+        performance.Misses(1);
+
+        var state = performance.GenerateStateFromDifficulty(dattr);
+        var attr = performance.CalculateFromDifficulty(dattr);
+        output.WriteLine("{0}", state);
+
+        var performance2 = Performance.New();
+        performance2.State(state);
+        var attr2 = performance.CalculateFromDifficulty(dattr);
+
+        Assert.Equal(attr2.osu.ToNullable()!.Value.pp, attr.osu.ToNullable()!.Value.pp);
     }
 
     [Fact]

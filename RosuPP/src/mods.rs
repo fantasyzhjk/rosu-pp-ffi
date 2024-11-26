@@ -30,7 +30,7 @@ impl Mods {
     pub fn from_acronyms(str: AsciiPointer, mode: Mode) -> Result<Self, Error> {
         Ok(Self {
             mods: rosu_mods::GameMods::from_intermode(&rosu_mods::GameModsIntermode::from_acronyms(
-                str.as_str().map_err(|_e| Error::InvalidString(None))?,
+                str.as_str()?,
             ), mode.into()),
             mode
         })
@@ -47,7 +47,7 @@ impl Mods {
 
     #[ffi_service_ctor]
     pub fn from_json(str: AsciiPointer, mode: Mode) -> Result<Self, Error> {
-        let s = str.as_str().map_err(|_e| Error::InvalidString(None))?;
+        let s = str.as_str()?;
         let mut d = serde_json::Deserializer::from_str(s);
         let mods = GameModsSeed::Mode(mode.into()).deserialize(&mut d)?;
         Ok(Self {
@@ -58,7 +58,7 @@ impl Mods {
     
     #[ffi_service_ctor]
     pub fn from_json_sanitize(str: AsciiPointer, mode: Mode) -> Result<Self, Error> {
-        let s = str.as_str().map_err(|_e| Error::InvalidString(None))?;
+        let s = str.as_str()?;
         let mut d = serde_json::Deserializer::from_str(s);
         let mut mods = GameModsSeed::Mode(mode.into()).deserialize(&mut d)?;
         mods.sanitize();
@@ -110,9 +110,14 @@ impl Mods {
         FFIBool::FALSE
     }
 
-    #[ffi_service_method(on_panic = "return_default")]
+    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn contains(&mut self, str: AsciiPointer) -> FFIBool {
-        self.mods.contains_acronym(str.as_str().unwrap().parse::<Acronym>().unwrap()).into()
+        if let Ok(s) = str.as_str() {
+            if let Ok(m) = s.parse::<Acronym>(){
+                return self.mods.contains_acronym(m).into();
+            }
+        }
+        FFIBool::FALSE
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
