@@ -53,12 +53,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 
 [[package]]
-name = "heck"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
-
-[[package]]
 name = "ident_case"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -73,35 +67,6 @@ dependencies = [
  "interoptopus_proc",
  "log",
  "serde",
-]
-
-[[package]]
-name = "interoptopus_backend_c"
-version = "0.14.25"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0cf73c4c48805b45496e628087e6356a0e704eb54ccd436413d8b1bb2eeaf8c"
-dependencies = [
- "heck",
- "interoptopus",
-]
-
-[[package]]
-name = "interoptopus_backend_cpython"
-version = "0.14.25"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd9b764d43b632370293b0bd9239c16c053b3a5cf3c0626796b7c8d30631e7a8"
-dependencies = [
- "interoptopus",
-]
-
-[[package]]
-name = "interoptopus_backend_csharp"
-version = "0.14.25"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f746c517c72248f246406572aae024ebf2c328c914685c9572119d320120621"
-dependencies = [
- "heck",
- "interoptopus",
 ]
 
 [[package]]
@@ -211,9 +176,6 @@ name = "rosu-pp-ffi"
 version = "0.1.0"
 dependencies = [
  "interoptopus",
- "interoptopus_backend_c",
- "interoptopus_backend_cpython",
- "interoptopus_backend_csharp",
  "rosu-map",
  "rosu-mods",
  "rosu-pp",

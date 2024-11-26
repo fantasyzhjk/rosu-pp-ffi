@@ -533,6 +533,8 @@ void performance_od(performance* context, float od);
 
 void performance_hardrock_offsets(performance* context, uint8_t hardrock_offsets);
 
+void performance_state(performance* context, scorestate state);
+
 void performance_accuracy(performance* context, double accuracy);
 
 void performance_misses(performance* context, uint32_t misses);

@@ -59,6 +59,7 @@ def init_lib(path):
     c_lib.performance_hp.argtypes = [ctypes.c_void_p, ctypes.c_float]
     c_lib.performance_od.argtypes = [ctypes.c_void_p, ctypes.c_float]
     c_lib.performance_hardrock_offsets.argtypes = [ctypes.c_void_p, ctypes.c_uint8]
+    c_lib.performance_state.argtypes = [ctypes.c_void_p, ScoreState]
     c_lib.performance_accuracy.argtypes = [ctypes.c_void_p, ctypes.c_double]
     c_lib.performance_misses.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_combo.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
@@ -2079,6 +2080,10 @@ class Performance:
     def hardrock_offsets(self, hardrock_offsets):
         """"""
         return c_lib.performance_hardrock_offsets(self._ctx, hardrock_offsets)
+
+    def state(self, state: ScoreState):
+        """"""
+        return c_lib.performance_state(self._ctx, state)
 
     def accuracy(self, accuracy: float):
         """"""

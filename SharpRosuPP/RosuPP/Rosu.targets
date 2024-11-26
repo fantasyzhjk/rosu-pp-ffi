@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <CargoPackage>rosu_pp_ffi</CargoPackage>
-        <CargoWorkspacePath>$(MSBuildThisFileDirectory)</CargoWorkspacePath>
+        <CargoWorkspacePath>$(MSBuildThisFileDirectory)/../../</CargoWorkspacePath>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(AotBuild)' == 'true' ">
@@ -34,7 +34,7 @@
 
     <!-- Cargo configuration -->
     <PropertyGroup>
-        <CargoTargetPath>$(MSBuildThisFileDirectory)/../target</CargoTargetPath>
+        <CargoTargetPath>$(MSBuildThisFileDirectory)/../../target</CargoTargetPath>
 
         <CargoConfiguration>release</CargoConfiguration>
 
@@ -54,7 +54,7 @@
         <CargoArtifact Condition=" '$(IsLinux)' == 'true' ">lib$(CargoPackage).$(CargoExtension)</CargoArtifact>
         <CargoArtifact Condition=" '$(IsMacOS)' == 'true' ">lib$(CargoPackage).$(CargoExtension)</CargoArtifact>
 
-        <CargoArtifactPath>$(CargoWorkspacePath)/target/$(CargoTarget)/$(CargoConfiguration)/$(CargoArtifact)</CargoArtifactPath>
+        <CargoArtifactPath>$(CargoTargetPath)/$(CargoTarget)/$(CargoConfiguration)/$(CargoArtifact)</CargoArtifactPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -65,7 +65,6 @@
 
     <Target Name="Cargo" BeforeTargets="BeforeBuild">
         <Exec Command="cargo @(CargoChannelArg, ' ') build @(CargoBuildArg, ' ')" WorkingDirectory="$(CargoWorkspacePath)" />
-        <Exec Command="cargo @(CargoChannelArg, ' ') test --test bindings_cs @(CargoBuildArg, ' ')" WorkingDirectory="$(CargoWorkspacePath)" />
     </Target>
 
     <!-- In AOT builds, add a reference to the IL compiler and link the static native artifact -->
@@ -84,7 +83,6 @@
     </ItemGroup>
 
     <Target Name="CargoBuildCopy" DependsOnTargets="Cargo" BeforeTargets="BeforeBuild" Condition=" '$(IsAotBuild)' == 'false' ">
-        <!-- <Copy Condition=" '$(TargetDir)' != '' " SourceFiles="@(CargoLibrary)" DestinationFolder="$(TargetDir)/native/" /> -->
         <Message Text="Copy native libs" Importance="high" />
         <ItemGroup>
 			<Content Include="@(CargoLibrary)">
