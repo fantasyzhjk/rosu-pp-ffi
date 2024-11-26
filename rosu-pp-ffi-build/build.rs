@@ -28,7 +28,7 @@ fn bindings_csharp() -> Result<(), Error> {
         },
         rosu_pp_ffi::ffi_inventory(),
     )
-    .write_file("./bindings/bindings.cs")?;
+    .write_file("../bindings/RosuFFI.cs")?;
 
     Ok(())
 }
@@ -43,7 +43,7 @@ fn bindings_c() -> Result<(), Error> {
         },
         rosu_pp_ffi::ffi_inventory(),
     )
-    .write_file("bindings/bindings.h")?;
+    .write_file("../bindings/RosuFFI.h")?;
 
     Ok(())
 }
@@ -52,7 +52,7 @@ fn bindings_python() -> Result<(), Error> {
     use interoptopus_backend_cpython::{Config, Generator};
 
     let library = rosu_pp_ffi::ffi_inventory();
-    Generator::new(Config::default(), library).write_file("bindings/bindings.py")?;
+    Generator::new(Config::default(), library).write_file("../bindings/RosuFFI.py")?;
 
     Ok(())
 }

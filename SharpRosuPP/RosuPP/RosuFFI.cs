@@ -10,11 +10,11 @@ using RosuPP;
 
 namespace RosuPP
 {
-    public static partial class Rosu
+    public static partial class RosuLibrary
     {
         public const string NativeLib = "rosu_pp_ffi";
 
-        static Rosu()
+        static RosuLibrary()
         {
         }
 
@@ -1038,7 +1038,7 @@ namespace RosuPP
         public static BeatmapAttributesBuilder New()
         {
             var self = new BeatmapAttributesBuilder();
-            var rval = Rosu.beatmap_attributes_new(ref self._context);
+            var rval = RosuLibrary.beatmap_attributes_new(ref self._context);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1048,7 +1048,7 @@ namespace RosuPP
 
         public void Dispose()
         {
-            var rval = Rosu.beatmap_attributes_destroy(ref _context);
+            var rval = RosuLibrary.beatmap_attributes_destroy(ref _context);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1057,22 +1057,22 @@ namespace RosuPP
 
         public void Mode(Mode mode)
         {
-            Rosu.beatmap_attributes_mode(_context, mode);
+            RosuLibrary.beatmap_attributes_mode(_context, mode);
         }
 
         public void PMods(IntPtr mods)
         {
-            Rosu.beatmap_attributes_p_mods(_context, mods);
+            RosuLibrary.beatmap_attributes_p_mods(_context, mods);
         }
 
         public void IMods(uint mods)
         {
-            Rosu.beatmap_attributes_i_mods(_context, mods);
+            RosuLibrary.beatmap_attributes_i_mods(_context, mods);
         }
 
         public void SMods(string str)
         {
-            var rval = Rosu.beatmap_attributes_s_mods(_context, str);
+            var rval = RosuLibrary.beatmap_attributes_s_mods(_context, str);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1081,37 +1081,37 @@ namespace RosuPP
 
         public void ClockRate(double clock_rate)
         {
-            Rosu.beatmap_attributes_clock_rate(_context, clock_rate);
+            RosuLibrary.beatmap_attributes_clock_rate(_context, clock_rate);
         }
 
         public void Ar(float ar)
         {
-            Rosu.beatmap_attributes_ar(_context, ar);
+            RosuLibrary.beatmap_attributes_ar(_context, ar);
         }
 
         public void Cs(float cs)
         {
-            Rosu.beatmap_attributes_cs(_context, cs);
+            RosuLibrary.beatmap_attributes_cs(_context, cs);
         }
 
         public void Hp(float hp)
         {
-            Rosu.beatmap_attributes_hp(_context, hp);
+            RosuLibrary.beatmap_attributes_hp(_context, hp);
         }
 
         public void Od(float od)
         {
-            Rosu.beatmap_attributes_od(_context, od);
+            RosuLibrary.beatmap_attributes_od(_context, od);
         }
 
         public double GetClockRate()
         {
-            return Rosu.beatmap_attributes_get_clock_rate(_context);
+            return RosuLibrary.beatmap_attributes_get_clock_rate(_context);
         }
 
         public BeatmapAttributes Build(IntPtr beatmap)
         {
-            return Rosu.beatmap_attributes_build(_context, beatmap);
+            return RosuLibrary.beatmap_attributes_build(_context, beatmap);
         }
 
         public IntPtr Context => _context;
@@ -1127,7 +1127,7 @@ namespace RosuPP
         public static Beatmap FromBytes(Sliceu8 data)
         {
             var self = new Beatmap();
-            var rval = Rosu.beatmap_from_bytes(ref self._context, data);
+            var rval = RosuLibrary.beatmap_from_bytes(ref self._context, data);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1138,7 +1138,7 @@ namespace RosuPP
         public static Beatmap FromPath(string path)
         {
             var self = new Beatmap();
-            var rval = Rosu.beatmap_from_path(ref self._context, path);
+            var rval = RosuLibrary.beatmap_from_path(ref self._context, path);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1148,7 +1148,7 @@ namespace RosuPP
 
         public void Dispose()
         {
-            var rval = Rosu.beatmap_destroy(ref _context);
+            var rval = RosuLibrary.beatmap_destroy(ref _context);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1158,27 +1158,27 @@ namespace RosuPP
         /// Convert a Beatmap to the specified mode
         public Bool Convert(Mode mode, IntPtr mods)
         {
-            return Rosu.beatmap_convert(_context, mode, mods);
+            return RosuLibrary.beatmap_convert(_context, mode, mods);
         }
 
         public double Bpm()
         {
-            return Rosu.beatmap_bpm(_context);
+            return RosuLibrary.beatmap_bpm(_context);
         }
 
         public double TotalBreakTime()
         {
-            return Rosu.beatmap_total_break_time(_context);
+            return RosuLibrary.beatmap_total_break_time(_context);
         }
 
         public Mode Mode()
         {
-            return Rosu.beatmap_mode(_context);
+            return RosuLibrary.beatmap_mode(_context);
         }
 
         public Bool IsConvert()
         {
-            return Rosu.beatmap_is_convert(_context);
+            return RosuLibrary.beatmap_is_convert(_context);
         }
 
         public IntPtr Context => _context;
@@ -1194,7 +1194,7 @@ namespace RosuPP
         public static Difficulty New()
         {
             var self = new Difficulty();
-            var rval = Rosu.difficulty_new(ref self._context);
+            var rval = RosuLibrary.difficulty_new(ref self._context);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1204,7 +1204,7 @@ namespace RosuPP
 
         public void Dispose()
         {
-            var rval = Rosu.difficulty_destroy(ref _context);
+            var rval = RosuLibrary.difficulty_destroy(ref _context);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1213,17 +1213,17 @@ namespace RosuPP
 
         public void PMods(IntPtr mods)
         {
-            Rosu.difficulty_p_mods(_context, mods);
+            RosuLibrary.difficulty_p_mods(_context, mods);
         }
 
         public void IMods(uint mods)
         {
-            Rosu.difficulty_i_mods(_context, mods);
+            RosuLibrary.difficulty_i_mods(_context, mods);
         }
 
         public void SMods(string str)
         {
-            var rval = Rosu.difficulty_s_mods(_context, str);
+            var rval = RosuLibrary.difficulty_s_mods(_context, str);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1232,52 +1232,52 @@ namespace RosuPP
 
         public void PassedObjects(uint passed_objects)
         {
-            Rosu.difficulty_passed_objects(_context, passed_objects);
+            RosuLibrary.difficulty_passed_objects(_context, passed_objects);
         }
 
         public void ClockRate(double clock_rate)
         {
-            Rosu.difficulty_clock_rate(_context, clock_rate);
+            RosuLibrary.difficulty_clock_rate(_context, clock_rate);
         }
 
         public void Ar(float ar)
         {
-            Rosu.difficulty_ar(_context, ar);
+            RosuLibrary.difficulty_ar(_context, ar);
         }
 
         public void Cs(float cs)
         {
-            Rosu.difficulty_cs(_context, cs);
+            RosuLibrary.difficulty_cs(_context, cs);
         }
 
         public void Hp(float hp)
         {
-            Rosu.difficulty_hp(_context, hp);
+            RosuLibrary.difficulty_hp(_context, hp);
         }
 
         public void Od(float od)
         {
-            Rosu.difficulty_od(_context, od);
+            RosuLibrary.difficulty_od(_context, od);
         }
 
         public void HardrockOffsets(Bool hardrock_offsets)
         {
-            Rosu.difficulty_hardrock_offsets(_context, hardrock_offsets);
+            RosuLibrary.difficulty_hardrock_offsets(_context, hardrock_offsets);
         }
 
         public void Lazer(Bool lazer)
         {
-            Rosu.difficulty_lazer(_context, lazer);
+            RosuLibrary.difficulty_lazer(_context, lazer);
         }
 
         public DifficultyAttributes Calculate(IntPtr beatmap)
         {
-            return Rosu.difficulty_calculate(_context, beatmap);
+            return RosuLibrary.difficulty_calculate(_context, beatmap);
         }
 
         public double GetClockRate()
         {
-            return Rosu.difficulty_get_clock_rate(_context);
+            return RosuLibrary.difficulty_get_clock_rate(_context);
         }
 
         public IntPtr Context => _context;
@@ -1293,7 +1293,7 @@ namespace RosuPP
         public static Performance New()
         {
             var self = new Performance();
-            var rval = Rosu.performance_new(ref self._context);
+            var rval = RosuLibrary.performance_new(ref self._context);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1303,7 +1303,7 @@ namespace RosuPP
 
         public void Dispose()
         {
-            var rval = Rosu.performance_destroy(ref _context);
+            var rval = RosuLibrary.performance_destroy(ref _context);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1312,22 +1312,22 @@ namespace RosuPP
 
         public void Mode(Mode mode)
         {
-            Rosu.performance_mode(_context, mode);
+            RosuLibrary.performance_mode(_context, mode);
         }
 
         public void PMods(IntPtr mods)
         {
-            Rosu.performance_p_mods(_context, mods);
+            RosuLibrary.performance_p_mods(_context, mods);
         }
 
         public void IMods(uint mods)
         {
-            Rosu.performance_i_mods(_context, mods);
+            RosuLibrary.performance_i_mods(_context, mods);
         }
 
         public void SMods(string str)
         {
-            var rval = Rosu.performance_s_mods(_context, str);
+            var rval = RosuLibrary.performance_s_mods(_context, str);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1336,127 +1336,127 @@ namespace RosuPP
 
         public void PassedObjects(uint passed_objects)
         {
-            Rosu.performance_passed_objects(_context, passed_objects);
+            RosuLibrary.performance_passed_objects(_context, passed_objects);
         }
 
         public void ClockRate(double clock_rate)
         {
-            Rosu.performance_clock_rate(_context, clock_rate);
+            RosuLibrary.performance_clock_rate(_context, clock_rate);
         }
 
         public void Ar(float ar)
         {
-            Rosu.performance_ar(_context, ar);
+            RosuLibrary.performance_ar(_context, ar);
         }
 
         public void Cs(float cs)
         {
-            Rosu.performance_cs(_context, cs);
+            RosuLibrary.performance_cs(_context, cs);
         }
 
         public void Hp(float hp)
         {
-            Rosu.performance_hp(_context, hp);
+            RosuLibrary.performance_hp(_context, hp);
         }
 
         public void Od(float od)
         {
-            Rosu.performance_od(_context, od);
+            RosuLibrary.performance_od(_context, od);
         }
 
         public void HardrockOffsets(Bool hardrock_offsets)
         {
-            Rosu.performance_hardrock_offsets(_context, hardrock_offsets);
+            RosuLibrary.performance_hardrock_offsets(_context, hardrock_offsets);
         }
 
         public void State(ScoreState state)
         {
-            Rosu.performance_state(_context, state);
+            RosuLibrary.performance_state(_context, state);
         }
 
         public void Accuracy(double accuracy)
         {
-            Rosu.performance_accuracy(_context, accuracy);
+            RosuLibrary.performance_accuracy(_context, accuracy);
         }
 
         public void Misses(uint misses)
         {
-            Rosu.performance_misses(_context, misses);
+            RosuLibrary.performance_misses(_context, misses);
         }
 
         public void Combo(uint combo)
         {
-            Rosu.performance_combo(_context, combo);
+            RosuLibrary.performance_combo(_context, combo);
         }
 
         public void HitresultPriority(HitResultPriority hitresult_priority)
         {
-            Rosu.performance_hitresult_priority(_context, hitresult_priority);
+            RosuLibrary.performance_hitresult_priority(_context, hitresult_priority);
         }
 
         public void Lazer(Bool lazer)
         {
-            Rosu.performance_lazer(_context, lazer);
+            RosuLibrary.performance_lazer(_context, lazer);
         }
 
         public void SliderTickHits(uint slider_tick_hits)
         {
-            Rosu.performance_slider_tick_hits(_context, slider_tick_hits);
+            RosuLibrary.performance_slider_tick_hits(_context, slider_tick_hits);
         }
 
         public void SliderEndHits(uint slider_end_hits)
         {
-            Rosu.performance_slider_end_hits(_context, slider_end_hits);
+            RosuLibrary.performance_slider_end_hits(_context, slider_end_hits);
         }
 
         public void N300(uint n300)
         {
-            Rosu.performance_n300(_context, n300);
+            RosuLibrary.performance_n300(_context, n300);
         }
 
         public void N100(uint n100)
         {
-            Rosu.performance_n100(_context, n100);
+            RosuLibrary.performance_n100(_context, n100);
         }
 
         public void N50(uint n50)
         {
-            Rosu.performance_n50(_context, n50);
+            RosuLibrary.performance_n50(_context, n50);
         }
 
         public void NKatu(uint n_katu)
         {
-            Rosu.performance_n_katu(_context, n_katu);
+            RosuLibrary.performance_n_katu(_context, n_katu);
         }
 
         public void NGeki(uint n_geki)
         {
-            Rosu.performance_n_geki(_context, n_geki);
+            RosuLibrary.performance_n_geki(_context, n_geki);
         }
 
         public ScoreState GenerateState(IntPtr beatmap)
         {
-            return Rosu.performance_generate_state(_context, beatmap);
+            return RosuLibrary.performance_generate_state(_context, beatmap);
         }
 
         public ScoreState GenerateStateFromDifficulty(DifficultyAttributes difficulty_attr)
         {
-            return Rosu.performance_generate_state_from_difficulty(_context, difficulty_attr);
+            return RosuLibrary.performance_generate_state_from_difficulty(_context, difficulty_attr);
         }
 
         public PerformanceAttributes Calculate(IntPtr beatmap)
         {
-            return Rosu.performance_calculate(_context, beatmap);
+            return RosuLibrary.performance_calculate(_context, beatmap);
         }
 
         public PerformanceAttributes CalculateFromDifficulty(DifficultyAttributes difficulty_attr)
         {
-            return Rosu.performance_calculate_from_difficulty(_context, difficulty_attr);
+            return RosuLibrary.performance_calculate_from_difficulty(_context, difficulty_attr);
         }
 
         public double GetClockRate()
         {
-            return Rosu.performance_get_clock_rate(_context);
+            return RosuLibrary.performance_get_clock_rate(_context);
         }
 
         public IntPtr Context => _context;
@@ -1472,7 +1472,7 @@ namespace RosuPP
         public static OwnedString FromCStr(string str)
         {
             var self = new OwnedString();
-            var rval = Rosu.string_from_c_str(ref self._context, str);
+            var rval = RosuLibrary.string_from_c_str(ref self._context, str);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1483,7 +1483,7 @@ namespace RosuPP
         public static OwnedString Empty()
         {
             var self = new OwnedString();
-            var rval = Rosu.string_empty(ref self._context);
+            var rval = RosuLibrary.string_empty(ref self._context);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1493,7 +1493,7 @@ namespace RosuPP
 
         public void Dispose()
         {
-            var rval = Rosu.string_destroy(ref _context);
+            var rval = RosuLibrary.string_destroy(ref _context);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1502,12 +1502,12 @@ namespace RosuPP
 
         public Bool IsInit()
         {
-            return Rosu.string_is_init(_context);
+            return RosuLibrary.string_is_init(_context);
         }
 
         public string ToCstr()
         {
-            var s = Rosu.string_to_cstr(_context);
+            var s = RosuLibrary.string_to_cstr(_context);
             return Marshal.PtrToStringAnsi(s);
         }
 
@@ -1524,7 +1524,7 @@ namespace RosuPP
         public static Mods New(Mode mode)
         {
             var self = new Mods();
-            var rval = Rosu.mods_new(ref self._context, mode);
+            var rval = RosuLibrary.mods_new(ref self._context, mode);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1535,7 +1535,7 @@ namespace RosuPP
         public static Mods FromAcronyms(string str, Mode mode)
         {
             var self = new Mods();
-            var rval = Rosu.mods_from_acronyms(ref self._context, str, mode);
+            var rval = RosuLibrary.mods_from_acronyms(ref self._context, str, mode);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1546,7 +1546,7 @@ namespace RosuPP
         public static Mods FromBits(uint bits, Mode mode)
         {
             var self = new Mods();
-            var rval = Rosu.mods_from_bits(ref self._context, bits, mode);
+            var rval = RosuLibrary.mods_from_bits(ref self._context, bits, mode);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1557,7 +1557,7 @@ namespace RosuPP
         public static Mods FromJson(string str, Mode mode)
         {
             var self = new Mods();
-            var rval = Rosu.mods_from_json(ref self._context, str, mode);
+            var rval = RosuLibrary.mods_from_json(ref self._context, str, mode);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1568,7 +1568,7 @@ namespace RosuPP
         public static Mods FromJsonSanitize(string str, Mode mode)
         {
             var self = new Mods();
-            var rval = Rosu.mods_from_json_sanitize(ref self._context, str, mode);
+            var rval = RosuLibrary.mods_from_json_sanitize(ref self._context, str, mode);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1578,7 +1578,7 @@ namespace RosuPP
 
         public void Dispose()
         {
-            var rval = Rosu.mods_destroy(ref _context);
+            var rval = RosuLibrary.mods_destroy(ref _context);
             if (rval != FFIError.Ok)
             {
                 throw new InteropException<FFIError>(rval);
@@ -1587,47 +1587,47 @@ namespace RosuPP
 
         public void RemoveIncompatibleMods()
         {
-            Rosu.mods_remove_incompatible_mods(_context);
+            RosuLibrary.mods_remove_incompatible_mods(_context);
         }
 
         public uint Bits()
         {
-            return Rosu.mods_bits(_context);
+            return RosuLibrary.mods_bits(_context);
         }
 
         public uint Len()
         {
-            return Rosu.mods_len(_context);
+            return RosuLibrary.mods_len(_context);
         }
 
         public void Json(IntPtr str)
         {
-            Rosu.mods_json(_context, str);
+            RosuLibrary.mods_json(_context, str);
         }
 
         public Bool InsertJson(string str)
         {
-            return Rosu.mods_insert_json(_context, str);
+            return RosuLibrary.mods_insert_json(_context, str);
         }
 
         public Bool Insert(string str)
         {
-            return Rosu.mods_insert(_context, str);
+            return RosuLibrary.mods_insert(_context, str);
         }
 
         public Bool Contains(string str)
         {
-            return Rosu.mods_contains(_context, str);
+            return RosuLibrary.mods_contains(_context, str);
         }
 
         public void Clear()
         {
-            Rosu.mods_clear(_context);
+            RosuLibrary.mods_clear(_context);
         }
 
         public Optionf64 ClockRate()
         {
-            return Rosu.mods_clock_rate(_context);
+            return RosuLibrary.mods_clock_rate(_context);
         }
 
         public IntPtr Context => _context;

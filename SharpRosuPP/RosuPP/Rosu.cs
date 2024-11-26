@@ -11,11 +11,11 @@ namespace RosuPP;
 
 public static class Extensions {
     public static double Acc(ref this ScoreState state, ref DifficultyAttributes attr, OsuScoreOrigin origin) {
-        return Rosu.calculate_accuacy(ref state, ref attr, origin);
+        return RosuLibrary.calculate_accuacy(ref state, ref attr, origin);
     }
 
     public static double Acc(ref this ScoreState state, ref DifficultyAttributes attr) {
-        return Rosu.calculate_accuacy(ref state, ref attr, OsuScoreOrigin.WithSliderAcc);
+        return RosuLibrary.calculate_accuacy(ref state, ref attr, OsuScoreOrigin.WithSliderAcc);
     }
 }
 
@@ -137,7 +137,7 @@ public partial struct DifficultyAttributes
     public override string ToString()
     {
         var str = OwnedString.Empty();
-        Rosu.debug_difficylty_attributes(ref this, str.Context);
+        RosuLibrary.debug_difficylty_attributes(ref this, str.Context);
         return str.ToString();
     }
 }
@@ -147,7 +147,7 @@ public partial struct PerformanceAttributes
     public override string ToString()
     {
         var str = OwnedString.Empty();
-        Rosu.debug_performance_attributes(ref this, str.Context);
+        RosuLibrary.debug_performance_attributes(ref this, str.Context);
         return str.ToString();
     }
 }
@@ -157,7 +157,7 @@ public partial struct ScoreState
     public override string ToString()
     {
         var str = OwnedString.Empty();
-        Rosu.debug_score_state(ref this, str.Context);
+        RosuLibrary.debug_score_state(ref this, str.Context);
         return str.ToString();
     }
 }
