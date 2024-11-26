@@ -1,4 +1,4 @@
-use interoptopus::ffi_type;
+use interoptopus::{ffi_type, patterns::primitives::FFIBool};
 
 /// The result of a difficulty calculation on an osu!mania map.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
@@ -18,7 +18,7 @@ pub struct ManiaDifficultyAttributes {
     /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
     ///
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
-    pub is_convert: bool,
+    pub is_convert: FFIBool,
 }
 
 
@@ -36,8 +36,8 @@ impl ManiaDifficultyAttributes {
     /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
     ///
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
-    pub const fn is_convert(&self) -> bool {
-        self.is_convert
+    pub fn is_convert(&self) -> bool {
+        self.is_convert.is()
     }
 }
 
@@ -49,7 +49,7 @@ impl From<rosu_pp::mania::ManiaDifficultyAttributes> for ManiaDifficultyAttribut
             n_objects: attributes.n_objects,
             n_hold_notes: attributes.n_hold_notes,
             max_combo: attributes.max_combo,
-            is_convert: attributes.is_convert,
+            is_convert: attributes.is_convert.into(),
         }
     }
 }
@@ -62,7 +62,7 @@ impl From<ManiaDifficultyAttributes> for rosu_pp::mania::ManiaDifficultyAttribut
             n_objects: attributes.n_objects,
             n_hold_notes: attributes.n_hold_notes,
             max_combo: attributes.max_combo,
-            is_convert: attributes.is_convert,
+            is_convert: attributes.is_convert.is(),
         }
     }
 }
@@ -104,8 +104,8 @@ impl ManiaPerformanceAttributes {
     /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
     ///
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
-    pub const fn is_convert(&self) -> bool {
-        self.difficulty.is_convert
+    pub fn is_convert(&self) -> bool {
+        self.difficulty.is_convert.is()
     }
 
 }

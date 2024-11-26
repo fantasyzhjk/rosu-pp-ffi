@@ -30,21 +30,25 @@ public class UnitTest1
         var diff_attr = difficulty.Calculate(beatmap);
 
         var performance = Performance.New();
+        performance.Lazer(Bool.True);
         performance.Mods(mods);
-        performance.N100(66);
-        performance.N50(1);
-        performance.Misses(1);
-        performance.Combo(1786);
+        performance.Accuracy(97.0);
+        // performance.N100(66);
+        // performance.N50(1);
+        // performance.Misses(1);
+        // performance.Combo(1786);
 
         var state = performance.GenerateState(beatmap);
-        var attr = performance.Calculate(beatmap);
+        var attr = performance.CalculateFromDifficulty(diff_attr);
+        output.WriteLine("{0}", state);
         output.WriteLine("{0}", attr);
-        var acc = state.Acc(ref diff_attr) * 100;
+        var acc = state.Acc(ref diff_attr, OsuScoreOrigin.WithSliderAcc) * 100;
+        output.WriteLine("{0}", acc);
         
-
         var ruleset = OsuPP.Utils.ParseRuleset((int)beatmap.Mode())!;
         var osubm = OsuPP.Calculater.New(ruleset, new OsuPP.CalculatorWorkingBeatmap(b));
-        var attr2 = osubm.Mods(mods).LoadState(state).Acc(acc).Calculate();
+        var sliderTickMiss = diff_attr.osu.ToNullable()!.Value.n_large_ticks - state.osu_large_tick_hits;
+        var attr2 = osubm.Mods(mods).LoadState(state, sliderTickMiss).Acc(acc).Calculate();
 
         Assert.Equal(attr2.Total, attr.osu.ToNullable()!.Value.pp);
     }
@@ -75,7 +79,7 @@ public class UnitTest1
         var d = Assembly.GetExecutingAssembly().Location;
         var b = File.ReadAllBytes("../../../resources/2785319.osu");
         var beatmap = Beatmap.FromBytes(b);
-        beatmap.Convert(Mode.Catch);
+        beatmap.Convert(Mode.Catch, Mods.New(Mode.Catch));
 
         var difficulty = Difficulty.New();
         var attr = difficulty.Calculate(beatmap);
@@ -144,7 +148,7 @@ public class UnitTest1
 
         var mods = Mods.FromJson(j, Mode.Taiko);
         Assert.Equal((uint)3, mods.Len());
-        Assert.True(mods.Contains("DT"));
+        Assert.True(mods.Contains("DT").Is);
 
         Assert.Equal((double?)1.5, mods.ClockRate().ToNullable());
 

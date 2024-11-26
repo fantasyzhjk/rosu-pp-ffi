@@ -2,7 +2,7 @@ use crate::beatmap::Beatmap;
 use crate::*;
 use interoptopus::{
     ffi_service, ffi_service_ctor, ffi_service_method, ffi_type,
-    patterns::{option::FFIOption, string::AsciiPointer},
+    patterns::{option::FFIOption, primitives::FFIBool, string::AsciiPointer},
 };
 use mods::Mods;
 use rosu_mods::{GameModsIntermode, GameMods};
@@ -28,8 +28,8 @@ pub struct Difficulty {
     pub hp: FFIOption<f32>,
     pub od: FFIOption<f32>,
 
-    pub hardrock_offsets: FFIOption<bool>,
-    pub lazer: FFIOption<bool>,
+    pub hardrock_offsets: FFIOption<FFIBool>,
+    pub lazer: FFIOption<FFIBool>,
 }
 
 // Regular implementation of methods.
@@ -90,12 +90,12 @@ impl Difficulty {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn hardrock_offsets(&mut self, hardrock_offsets: bool) {
+    pub fn hardrock_offsets(&mut self, hardrock_offsets: FFIBool) {
         self.hardrock_offsets = Some(hardrock_offsets).into();
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn lazer(&mut self, lazer: bool) {
+    pub fn lazer(&mut self, lazer: FFIBool) {
         self.lazer = Some(lazer).into();
     }
 
@@ -172,11 +172,11 @@ impl Difficulty {
         }
 
         if let Some(hardrock_offsets) = hardrock_offsets.into_option() {
-            diff = diff.hardrock_offsets(hardrock_offsets);
+            diff = diff.hardrock_offsets(hardrock_offsets.is());
         }
 
         if let Some(lazer) = lazer.into_option() {
-            diff = diff.lazer(lazer);
+            diff = diff.lazer(lazer.is());
         }
 
         diff

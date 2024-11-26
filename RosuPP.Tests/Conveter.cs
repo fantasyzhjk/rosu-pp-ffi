@@ -2,9 +2,9 @@ namespace RosuPP.Tests;
 
 public static class Extensions
 {
-    public static OsuPP.Calculater LoadState(this OsuPP.Calculater c, RosuPP.ScoreState state) {
+    public static OsuPP.Calculater LoadState(this OsuPP.Calculater c, RosuPP.ScoreState state, uint sliderTickMiss) {
         c.combo ??= state.max_combo;
-        c.SliderTickMiss ??= state.slider_tick_misses;
+        c.SliderTickMiss ??= sliderTickMiss;
         c.SliderTailHit ??= state.slider_end_hits;
         c.NGeki ??= state.n_geki;
         c.NKatu ??= state.n_katu;

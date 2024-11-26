@@ -31,6 +31,17 @@ typedef enum mode
     MODE_MANIA = 3,
     } mode;
 
+/// Type to pass [`OsuScoreState::accuracy`] and specify the origin of a score.
+typedef enum osuscoreorigin
+    {
+    /// For scores set on osu!stable
+    OSUSCOREORIGIN_STABLE = 0,
+    /// For scores set on osu!lazer with slider accuracy
+    OSUSCOREORIGIN_WITHSLIDERACC = 1,
+    /// For scores set on osu!lazer without slider accuracy
+    OSUSCOREORIGIN_WITHOUTSLIDERACC = 2,
+    } osuscoreorigin;
+
 typedef struct beatmap beatmap;
 
 typedef struct beatmapattributesbuilder beatmapattributesbuilder;
@@ -38,8 +49,6 @@ typedef struct beatmapattributesbuilder beatmapattributesbuilder;
 typedef struct difficulty difficulty;
 
 typedef struct mods mods;
-
-typedef struct modsintermode modsintermode;
 
 typedef struct ownedstring ownedstring;
 
@@ -72,7 +81,7 @@ typedef struct catchdifficultyattributes
     /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
     ///
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
-    bool is_convert;
+    uint8_t is_convert;
     } catchdifficultyattributes;
 
 /// The result of a difficulty calculation on an osu!mania map.
@@ -84,12 +93,14 @@ typedef struct maniadifficultyattributes
     double hit_window;
     /// The amount of hitobjects in the map.
     uint32_t n_objects;
+    /// The amount of hold notes in the map.
+    uint32_t n_hold_notes;
     /// The maximum achievable combo.
     uint32_t max_combo;
     /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
     ///
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
-    bool is_convert;
+    uint8_t is_convert;
     } maniadifficultyattributes;
 
 /// The result of a difficulty calculation on an osu!standard map.
@@ -119,8 +130,15 @@ typedef struct osudifficultyattributes
     uint32_t n_circles;
     /// The amount of sliders.
     uint32_t n_sliders;
-    /// The amount of slider ticks and repeat points.
-    uint32_t n_slider_ticks;
+    /// The amount of "large ticks".
+    ///
+    /// The meaning depends on the kind of score:
+    /// - if set on osu!stable, this value is irrelevant
+    /// - if set on osu!lazer *without* `CL`, this value is the amount of
+    ///   slider ticks and repeats
+    /// - if set on osu!lazer *with* `CL`, this value is the amount of slider
+    ///   heads, ticks, and repeats
+    uint32_t n_large_ticks;
     /// The amount of spinners.
     uint32_t n_spinners;
     /// The final star rating
@@ -140,10 +158,15 @@ typedef struct scorestate
     ///
     /// Irrelevant for osu!mania.
     uint32_t max_combo;
-    /// Amount of successfully hit slider ticks and repeats.
+    /// "Large tick" hits for osu!standard.
     ///
-    /// Only relevant for osu!standard in lazer.
-    uint32_t slider_tick_hits;
+    /// The meaning depends on the kind of score:
+    /// - if set on osu!stable, this field is irrelevant and can be `0`
+    /// - if set on osu!lazer *without* `CL`, this field is the amount of hit
+    ///   slider ticks and repeats
+    /// - if set on osu!lazer *with* `CL`, this field is the amount of hit
+    ///   slider heads, ticks, and repeats
+    uint32_t osu_large_tick_hits;
     /// Amount of successfully hit slider ends.
     ///
     /// Only relevant for osu!standard in lazer.
@@ -178,6 +201,9 @@ typedef struct taikodifficultyattributes
     double great_hit_window;
     /// The perceived hit window for an n100 inclusive of rate-adjusting mods (DT/HT/etc)
     double ok_hit_window;
+    /// The ratio of stamina difficulty from mono-color (single color) streams to total
+    /// stamina difficulty.
+    double mono_stamina_factor;
     /// The final star rating.
     double stars;
     /// The maximum combo.
@@ -185,17 +211,8 @@ typedef struct taikodifficultyattributes
     /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
     ///
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
-    bool is_convert;
+    uint8_t is_convert;
     } taikodifficultyattributes;
-
-///Option type containing boolean flag and maybe valid data.
-typedef struct optionf32
-    {
-    ///Element that is maybe valid.
-    float t;
-    ///Byte where `1` means element `t` is valid.
-    uint8_t is_some;
-    } optionf32;
 
 ///Option type containing boolean flag and maybe valid data.
 typedef struct optionf64
@@ -437,7 +454,7 @@ ffierror beatmap_from_bytes(beatmap** context, sliceu8 data);
 ffierror beatmap_from_path(beatmap** context, const char* path);
 
 /// Convert a Beatmap to the specified mode
-bool beatmap_convert(beatmap* context, mode mode);
+uint8_t beatmap_convert(beatmap* context, mode mode, const mods* mods);
 
 double beatmap_bpm(beatmap* context);
 
@@ -445,7 +462,7 @@ double beatmap_total_break_time(beatmap* context);
 
 mode beatmap_mode(beatmap* context);
 
-bool beatmap_is_convert(beatmap* context);
+uint8_t beatmap_is_convert(beatmap* context);
 
 /// Destroys the given instance.
 ///
@@ -475,9 +492,9 @@ void difficulty_hp(difficulty* context, float hp);
 
 void difficulty_od(difficulty* context, float od);
 
-void difficulty_hardrock_offsets(difficulty* context, bool hardrock_offsets);
+void difficulty_hardrock_offsets(difficulty* context, uint8_t hardrock_offsets);
 
-void difficulty_lazer(difficulty* context, bool lazer);
+void difficulty_lazer(difficulty* context, uint8_t lazer);
 
 difficultyattributes difficulty_calculate(const difficulty* context, const beatmap* beatmap);
 
@@ -513,7 +530,7 @@ void performance_hp(performance* context, float hp);
 
 void performance_od(performance* context, float od);
 
-void performance_hardrock_offsets(performance* context, bool hardrock_offsets);
+void performance_hardrock_offsets(performance* context, uint8_t hardrock_offsets);
 
 void performance_accuracy(performance* context, double accuracy);
 
@@ -523,7 +540,7 @@ void performance_combo(performance* context, uint32_t combo);
 
 void performance_hitresult_priority(performance* context, hitresultpriority hitresult_priority);
 
-void performance_lazer(performance* context, bool lazer);
+void performance_lazer(performance* context, uint8_t lazer);
 
 void performance_slider_tick_hits(performance* context, uint32_t slider_tick_hits);
 
@@ -536,6 +553,8 @@ void performance_n100(performance* context, uint32_t n100);
 void performance_n50(performance* context, uint32_t n50);
 
 void performance_n_katu(performance* context, uint32_t n_katu);
+
+void performance_n_geki(performance* context, uint32_t n_geki);
 
 scorestate performance_generate_state(const performance* context, const beatmap* beatmap);
 
@@ -557,7 +576,7 @@ ffierror string_from_c_str(ownedstring** context, const char* str);
 
 ffierror string_empty(ownedstring** context);
 
-bool string_is_init(const ownedstring* context);
+uint8_t string_is_init(const ownedstring* context);
 
 const char* string_to_cstr(const ownedstring* context);
 
@@ -577,49 +596,33 @@ ffierror mods_from_bits(mods** context, uint32_t bits, mode mode);
 
 ffierror mods_from_json(mods** context, const char* str, mode mode);
 
+ffierror mods_from_json_sanitize(mods** context, const char* str, mode mode);
+
+void mods_remove_incompatible_mods(mods* context);
+
 uint32_t mods_bits(mods* context);
 
 uint32_t mods_len(mods* context);
 
 void mods_json(mods* context, ownedstring* str);
 
-bool mods_insert_json(mods* context, const char* str);
+uint8_t mods_insert_json(mods* context, const char* str);
 
-bool mods_insert(mods* context, const char* str);
+uint8_t mods_insert(mods* context, const char* str);
 
-bool mods_contains(mods* context, const char* str);
+uint8_t mods_contains(mods* context, const char* str);
 
 void mods_clear(mods* context);
 
-optionf32 mods_clock_rate(mods* context);
-
-/// Destroys the given instance.
-///
-/// # Safety
-///
-/// The passed parameter MUST have been created with the corresponding init function;
-/// passing any other value results in undefined behavior.
-ffierror mods_intermode_destroy(modsintermode** context);
-
-ffierror mods_intermode_from_acronyms(modsintermode** context, const char* str);
-
-ffierror mods_intermode_from_bits(modsintermode** context, uint32_t bits);
-
-uint32_t mods_intermode_bits(modsintermode* context);
-
-uint32_t mods_intermode_len(modsintermode* context);
-
-bool mods_intermode_contains(modsintermode* context, const char* str);
-
-bool mods_intermode_intersects(modsintermode* context, const char* str);
-
-float mods_intermode_legacy_clock_rate(modsintermode* context);
+optionf64 mods_clock_rate(mods* context);
 
 void debug_difficylty_attributes(const difficultyattributes* res, ownedstring* str);
 
 void debug_performance_attributes(const performanceattributes* res, ownedstring* str);
 
 void debug_score_state(const scorestate* res, ownedstring* str);
+
+double calculate_accuacy(const scorestate* state, const difficultyattributes* difficulty, osuscoreorigin origin);
 
 
 #ifdef __cplusplus

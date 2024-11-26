@@ -1,7 +1,7 @@
 use crate::*;
 use interoptopus::{
     ffi_service, ffi_service_ctor, ffi_service_method, ffi_type,
-    patterns::{option::FFIOption, string::AsciiPointer},
+    patterns::{option::FFIOption, primitives::FFIBool, string::AsciiPointer},
 };
 use mode::Mode;
 use owned_string::OwnedString;
@@ -90,29 +90,29 @@ impl Mods {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn insert_json(&mut self, str: AsciiPointer) -> bool {
+    pub fn insert_json(&mut self, str: AsciiPointer) -> FFIBool {
         if let Ok(s) = str.as_str() {
             let mut d = serde_json::Deserializer::from_str(s);
             if let Ok(m) = GameModSeed::Mode(self.mode.into()).deserialize(&mut d) {
                 self.mods.insert(m);
-                return true;
+                return FFIBool::TRUE;
             }
         }
-        false
+        FFIBool::FALSE
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn insert(&mut self, str: AsciiPointer) -> bool {
+    pub fn insert(&mut self, str: AsciiPointer) -> FFIBool {
         if let Ok(s) = str.as_str() {
             self.mods.insert(GameMod::new(s, self.mode.into()));
-            return true;
+            return FFIBool::TRUE;
         }
-        false
+        FFIBool::FALSE
     }
 
     #[ffi_service_method(on_panic = "return_default")]
-    pub fn contains(&mut self, str: AsciiPointer) -> bool {
-        self.mods.contains_acronym(str.as_str().unwrap().parse::<Acronym>().unwrap())
+    pub fn contains(&mut self, str: AsciiPointer) -> FFIBool {
+        self.mods.contains_acronym(str.as_str().unwrap().parse::<Acronym>().unwrap()).into()
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]

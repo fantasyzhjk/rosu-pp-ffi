@@ -29,8 +29,15 @@ pub struct OsuDifficultyAttributes {
     pub n_circles: u32,
     /// The amount of sliders.
     pub n_sliders: u32,
-    /// The amount of slider ticks and repeat points.
-    pub n_slider_ticks: u32,
+    /// The amount of "large ticks".
+    ///
+    /// The meaning depends on the kind of score:
+    /// - if set on osu!stable, this value is irrelevant
+    /// - if set on osu!lazer *without* `CL`, this value is the amount of
+    ///   slider ticks and repeats
+    /// - if set on osu!lazer *with* `CL`, this value is the amount of slider
+    ///   heads, ticks, and repeats
+    pub n_large_ticks: u32,
     /// The amount of spinners.
     pub n_spinners: u32,
     /// The final star rating
@@ -66,7 +73,7 @@ impl From<rosu_pp::osu::OsuDifficultyAttributes> for OsuDifficultyAttributes {
             hp: attributes.hp,
             n_circles: attributes.n_circles,
             n_sliders: attributes.n_sliders,
-            n_slider_ticks: attributes.n_slider_ticks,
+            n_large_ticks: attributes.n_large_ticks,
             n_spinners: attributes.n_spinners,
             stars: attributes.stars,
             max_combo: attributes.max_combo,
@@ -89,7 +96,7 @@ impl From<OsuDifficultyAttributes> for rosu_pp::osu::OsuDifficultyAttributes {
             hp: attributes.hp,
             n_circles: attributes.n_circles,
             n_sliders: attributes.n_sliders,
-            n_slider_ticks: attributes.n_slider_ticks,
+            n_large_ticks: attributes.n_large_ticks,
             n_spinners: attributes.n_spinners,
             stars: attributes.stars,
             max_combo: attributes.max_combo,

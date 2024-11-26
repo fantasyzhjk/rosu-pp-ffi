@@ -4,7 +4,7 @@ use beatmap::Beatmap;
 use hitresult_priority::HitResultPriority;
 use interoptopus::{
     ffi_service, ffi_service_ctor, ffi_service_method, ffi_type,
-    patterns::{option::FFIOption, string::AsciiPointer},
+    patterns::{option::FFIOption, primitives::FFIBool, string::AsciiPointer},
 };
 use mode::Mode;
 use mods::Mods;
@@ -24,8 +24,8 @@ pub struct Performance {
     pub cs: FFIOption<f32>,
     pub hp: FFIOption<f32>,
     pub od: FFIOption<f32>,
-    pub hardrock_offsets: FFIOption<bool>,
-    pub lazer: FFIOption<bool>,
+    pub hardrock_offsets: FFIOption<FFIBool>,
+    pub lazer: FFIOption<FFIBool>,
 
     pub accuracy: FFIOption<f64>,
     pub misses: FFIOption<u32>,
@@ -33,7 +33,6 @@ pub struct Performance {
     pub hitresult_priority: FFIOption<HitResultPriority>,
 
     pub slider_tick_hits: FFIOption<u32>,
-    pub slider_tick_misses: FFIOption<u32>,
     pub slider_end_hits: FFIOption<u32>,
     pub n300: FFIOption<u32>,
     pub n100: FFIOption<u32>,
@@ -65,7 +64,6 @@ impl Performance {
         self.mods_intermode = Some(GameModsIntermode::from_bits(mods)).into();
     }
 
-    #[ffi_service_method(on_panic = "ffi_error")]
     pub fn s_mods(&mut self, str: AsciiPointer) -> Result<(), Error> {
         self.mods_intermode = Some(GameModsIntermode::from_acronyms(
             str.as_str().map_err(|_e| Error::InvalidString(None))?,
@@ -105,7 +103,7 @@ impl Performance {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn hardrock_offsets(&mut self, hardrock_offsets: bool) {
+    pub fn hardrock_offsets(&mut self, hardrock_offsets: FFIBool) {
         self.hardrock_offsets = Some(hardrock_offsets).into();
     }
 
@@ -130,18 +128,13 @@ impl Performance {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn lazer(&mut self, lazer: bool) {
+    pub fn lazer(&mut self, lazer: FFIBool) {
         self.lazer = Some(lazer).into();
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn slider_tick_hits(&mut self, slider_tick_hits: u32) {
         self.slider_tick_hits = Some(slider_tick_hits).into();
-    }
-
-    #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn slider_tick_misses(&mut self, slider_tick_misses: u32) {
-        self.slider_tick_misses = Some(slider_tick_misses).into();
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
@@ -242,7 +235,6 @@ impl Performance {
             hitresult_priority,
             lazer,
             slider_tick_hits,
-            slider_tick_misses,
             slider_end_hits,
             n300,
             n100,
@@ -286,7 +278,7 @@ impl Performance {
         }
 
         if let Some(hardrock_offsets) = hardrock_offsets.into_option() {
-            perf = perf.hardrock_offsets(hardrock_offsets);
+            perf = perf.hardrock_offsets(hardrock_offsets.is());
         }
 
         if let Some(accuracy) = accuracy.into_option() {
@@ -306,20 +298,12 @@ impl Performance {
         }
 
         if let Some(lazer) = lazer.into_option() {
-            perf = perf.lazer(lazer);
-        }
-
-        if let Some(slider_tick_misses) = slider_tick_misses.into_option() {
-            perf = if let rosu_pp::Performance::Osu(o) = perf {
-                rosu_pp::Performance::Osu(o.n_slider_ticks_misses(slider_tick_misses))
-            } else {
-                perf
-            };
+            perf = perf.lazer(lazer.is());
         }
 
         if let Some(slider_tick_hits) = slider_tick_hits.into_option() {
             perf = if let rosu_pp::Performance::Osu(o) = perf {
-                rosu_pp::Performance::Osu(o.n_slider_ticks(slider_tick_hits))
+                rosu_pp::Performance::Osu(o.n_large_ticks(slider_tick_hits))
             } else {
                 perf
             };

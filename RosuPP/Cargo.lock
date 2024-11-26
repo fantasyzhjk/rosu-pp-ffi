@@ -72,6 +72,7 @@ checksum = "5931cf9059c2a44f93302bf686125e5046eb0661b05d63d42a4d8a82f2367056"
 dependencies = [
  "interoptopus_proc",
  "log",
+ "serde",
 ]
 
 [[package]]
@@ -183,13 +184,15 @@ checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 
 [[package]]
 name = "rosu-map"
-version = "0.1.2"
-source = "git+https://github.com/MaxOhn/rosu-map?branch=pp-update#9648993aaeab590fd1df32b5d1b9936da82b1473"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "21de4f8c5cd2738e1c9a2ed477aad2579dacd5acf3845d80738fcec160d0bd8a"
 
 [[package]]
 name = "rosu-mods"
-version = "0.1.1"
-source = "git+https://github.com/MaxOhn/rosu-mods?branch=main#9e9169109bf696a08ef90403b277caa6ca8b96c5"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2a0fb1475e860c987673e8abc1df5d23f22c4e1ae62e9459e656cff4d82f603b"
 dependencies = [
  "serde",
 ]
@@ -197,7 +200,7 @@ dependencies = [
 [[package]]
 name = "rosu-pp"
 version = "1.1.0"
-source = "git+https://github.com/desu-life/rosu-pp?branch=kanon#bd95c3d2a33c574fb3f767173d3bec452f90a429"
+source = "git+https://github.com/MaxOhn/rosu-pp?branch=main#48414de0174bdc405819a205e8a8d32b67349756"
 dependencies = [
  "rosu-map",
  "rosu-mods",

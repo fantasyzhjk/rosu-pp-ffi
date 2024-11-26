@@ -28,16 +28,6 @@ using osu.Game.Rulesets.Mania;
 namespace OsuPP;
 
 public static class Utils {
-    public static double CalculateAccuracy(Dictionary<HitResult, int> statistics)
-    {
-        var countGreat = statistics[HitResult.Great];
-        var countOk = statistics[HitResult.Ok];
-        var countMeh = statistics[HitResult.Meh];
-        var countMiss = statistics[HitResult.Miss];
-        var total = countGreat + countOk + countMeh + countMiss;
-
-        return (double)((6 * countGreat) + (2 * countOk) + countMeh) / (6 * total);
-    }
 
     public static Ruleset? ParseRuleset(int id) {
         return id switch

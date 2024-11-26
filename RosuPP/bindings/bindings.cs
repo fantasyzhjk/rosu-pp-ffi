@@ -81,7 +81,7 @@ namespace RosuPP
 
         /// Convert a Beatmap to the specified mode
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_convert")]
-        public static extern bool beatmap_convert(IntPtr context, Mode mode);
+        public static extern Bool beatmap_convert(IntPtr context, Mode mode, IntPtr mods);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_bpm")]
         public static extern double beatmap_bpm(IntPtr context);
@@ -93,7 +93,7 @@ namespace RosuPP
         public static extern Mode beatmap_mode(IntPtr context);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_is_convert")]
-        public static extern bool beatmap_is_convert(IntPtr context);
+        public static extern Bool beatmap_is_convert(IntPtr context);
 
         /// Destroys the given instance.
         ///
@@ -135,10 +135,10 @@ namespace RosuPP
         public static extern void difficulty_od(IntPtr context, float od);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_hardrock_offsets")]
-        public static extern void difficulty_hardrock_offsets(IntPtr context, bool hardrock_offsets);
+        public static extern void difficulty_hardrock_offsets(IntPtr context, Bool hardrock_offsets);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_lazer")]
-        public static extern void difficulty_lazer(IntPtr context, bool lazer);
+        public static extern void difficulty_lazer(IntPtr context, Bool lazer);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_calculate")]
         public static extern DifficultyAttributes difficulty_calculate(IntPtr context, IntPtr beatmap);
@@ -189,7 +189,7 @@ namespace RosuPP
         public static extern void performance_od(IntPtr context, float od);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_hardrock_offsets")]
-        public static extern void performance_hardrock_offsets(IntPtr context, bool hardrock_offsets);
+        public static extern void performance_hardrock_offsets(IntPtr context, Bool hardrock_offsets);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_accuracy")]
         public static extern void performance_accuracy(IntPtr context, double accuracy);
@@ -204,13 +204,10 @@ namespace RosuPP
         public static extern void performance_hitresult_priority(IntPtr context, HitResultPriority hitresult_priority);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_lazer")]
-        public static extern void performance_lazer(IntPtr context, bool lazer);
+        public static extern void performance_lazer(IntPtr context, Bool lazer);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_slider_tick_hits")]
         public static extern void performance_slider_tick_hits(IntPtr context, uint slider_tick_hits);
-
-        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_slider_tick_misses")]
-        public static extern void performance_slider_tick_misses(IntPtr context, uint slider_tick_misses);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_slider_end_hits")]
         public static extern void performance_slider_end_hits(IntPtr context, uint slider_end_hits);
@@ -258,7 +255,7 @@ namespace RosuPP
         public static extern FFIError string_empty(ref IntPtr context);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "string_is_init")]
-        public static extern bool string_is_init(IntPtr context);
+        public static extern Bool string_is_init(IntPtr context);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "string_to_cstr")]
         public static extern IntPtr string_to_cstr(IntPtr context);
@@ -300,49 +297,19 @@ namespace RosuPP
         public static extern void mods_json(IntPtr context, IntPtr str);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_insert_json")]
-        public static extern bool mods_insert_json(IntPtr context, string str);
+        public static extern Bool mods_insert_json(IntPtr context, string str);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_insert")]
-        public static extern bool mods_insert(IntPtr context, string str);
+        public static extern Bool mods_insert(IntPtr context, string str);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_contains")]
-        public static extern bool mods_contains(IntPtr context, string str);
+        public static extern Bool mods_contains(IntPtr context, string str);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_clear")]
         public static extern void mods_clear(IntPtr context);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_clock_rate")]
         public static extern Optionf64 mods_clock_rate(IntPtr context);
-
-        /// Destroys the given instance.
-        ///
-        /// # Safety
-        ///
-        /// The passed parameter MUST have been created with the corresponding init function;
-        /// passing any other value results in undefined behavior.
-        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intermode_destroy")]
-        public static extern FFIError mods_intermode_destroy(ref IntPtr context);
-
-        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intermode_from_acronyms")]
-        public static extern FFIError mods_intermode_from_acronyms(ref IntPtr context, string str);
-
-        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intermode_from_bits")]
-        public static extern FFIError mods_intermode_from_bits(ref IntPtr context, uint bits);
-
-        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intermode_bits")]
-        public static extern uint mods_intermode_bits(IntPtr context);
-
-        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intermode_len")]
-        public static extern uint mods_intermode_len(IntPtr context);
-
-        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intermode_contains")]
-        public static extern bool mods_intermode_contains(IntPtr context, string str);
-
-        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intermode_intersects")]
-        public static extern bool mods_intermode_intersects(IntPtr context, string str);
-
-        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_intermode_legacy_clock_rate")]
-        public static extern double mods_intermode_legacy_clock_rate(IntPtr context);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "debug_difficylty_attributes")]
         public static extern void debug_difficylty_attributes(ref DifficultyAttributes res, IntPtr str);
@@ -354,7 +321,7 @@ namespace RosuPP
         public static extern void debug_score_state(ref ScoreState res, IntPtr str);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "calculate_accuacy")]
-        public static extern double calculate_accuacy(ref ScoreState state, ref DifficultyAttributes difficulty);
+        public static extern double calculate_accuacy(ref ScoreState state, ref DifficultyAttributes difficulty, OsuScoreOrigin origin);
 
     }
 
@@ -374,6 +341,17 @@ namespace RosuPP
         Catch = 2,
         /// osu!mania
         Mania = 3,
+    }
+
+    /// Type to pass [`OsuScoreState::accuracy`] and specify the origin of a score.
+    public enum OsuScoreOrigin
+    {
+        /// For scores set on osu!stable
+        Stable = 0,
+        /// For scores set on osu!lazer with slider accuracy
+        WithSliderAcc = 1,
+        /// For scores set on osu!lazer without slider accuracy
+        WithoutSliderAcc = 2,
     }
 
     /// Summary struct for a [`Beatmap`]'s attributes.
@@ -413,8 +391,7 @@ namespace RosuPP
         /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
         ///
         /// [`Beatmap`]: crate::model::beatmap::Beatmap
-        [MarshalAs(UnmanagedType.I1)]
-        public bool is_convert;
+        public Bool is_convert;
     }
 
     /// The result of a performance calculation on an osu!catch map.
@@ -472,8 +449,7 @@ namespace RosuPP
         /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
         ///
         /// [`Beatmap`]: crate::model::beatmap::Beatmap
-        [MarshalAs(UnmanagedType.I1)]
-        public bool is_convert;
+        public Bool is_convert;
     }
 
     /// The result of a performance calculation on an osu!mania map.
@@ -518,8 +494,15 @@ namespace RosuPP
         public uint n_circles;
         /// The amount of sliders.
         public uint n_sliders;
-        /// The amount of slider ticks and repeat points.
-        public uint n_slider_ticks;
+        /// The amount of "large ticks".
+        ///
+        /// The meaning depends on the kind of score:
+        /// - if set on osu!stable, this value is irrelevant
+        /// - if set on osu!lazer *without* `CL`, this value is the amount of
+        ///   slider ticks and repeats
+        /// - if set on osu!lazer *with* `CL`, this value is the amount of slider
+        ///   heads, ticks, and repeats
+        public uint n_large_ticks;
         /// The amount of spinners.
         public uint n_spinners;
         /// The final star rating
@@ -573,14 +556,15 @@ namespace RosuPP
         ///
         /// Irrelevant for osu!mania.
         public uint max_combo;
-        /// Amount of successfully hit slider ticks and repeats.
+        /// "Large tick" hits for osu!standard.
         ///
-        /// Only relevant for osu!standard in lazer.
-        public uint slider_tick_hits;
-        /// Amount of missed slider ticks and repeats.
-        ///
-        /// Only relevant for osu!standard in lazer.
-        public uint slider_tick_misses;
+        /// The meaning depends on the kind of score:
+        /// - if set on osu!stable, this field is irrelevant and can be `0`
+        /// - if set on osu!lazer *without* `CL`, this field is the amount of hit
+        ///   slider ticks and repeats
+        /// - if set on osu!lazer *with* `CL`, this field is the amount of hit
+        ///   slider heads, ticks, and repeats
+        public uint osu_large_tick_hits;
         /// Amount of successfully hit slider ends.
         ///
         /// Only relevant for osu!standard in lazer.
@@ -627,8 +611,7 @@ namespace RosuPP
         /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
         ///
         /// [`Beatmap`]: crate::model::beatmap::Beatmap
-        [MarshalAs(UnmanagedType.I1)]
-        public bool is_convert;
+        public Bool is_convert;
     }
 
     /// The result of a performance calculation on an osu!taiko map.
@@ -689,9 +672,11 @@ namespace RosuPP
             get
             {
                 if (i >= Count) throw new IndexOutOfRangeException();
-                var size = Marshal.SizeOf(typeof(byte));
-                var ptr = new IntPtr(data.ToInt64() + i * size);
-                return Marshal.PtrToStructure<byte>(ptr);
+                unsafe
+                {
+                    var d = (byte*) data.ToPointer();
+                    return d[i];
+                }
             }
         }
         public byte[] Copied
@@ -699,8 +684,17 @@ namespace RosuPP
             get
             {
                 var rval = new byte[len];
-                for (var i = 0; i < (int) len; i++) {
-                    rval[i] = this[i];
+                unsafe
+                {
+                    fixed (void* dst = rval)
+                    {
+                        #if __INTEROPTOPUS_NEVER
+                        #else
+                        for (var i = 0; i < (int) len; i++) {
+                            rval[i] = this[i];
+                        }
+                        #endif
+                    }
                 }
                 return rval;
             }
@@ -1008,6 +1002,25 @@ namespace RosuPP
     }
 
 
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
+    public partial struct Bool
+    {
+        byte value;
+    }
+
+    public partial struct Bool
+    {
+        public static readonly Bool True = new Bool { value =  1 };
+        public static readonly Bool False = new Bool { value =  0 };
+        public Bool(bool b)
+        {
+            value = (byte) (b ? 1 : 0);
+        }
+        public bool Is => value == 1;
+    }
+
+
 
     public partial class BeatmapAttributesBuilder : IDisposable
     {
@@ -1136,9 +1149,9 @@ namespace RosuPP
         }
 
         /// Convert a Beatmap to the specified mode
-        public bool Convert(Mode mode)
+        public Bool Convert(Mode mode, IntPtr mods)
         {
-            return Rosu.beatmap_convert(_context, mode);
+            return Rosu.beatmap_convert(_context, mode, mods);
         }
 
         public double Bpm()
@@ -1156,7 +1169,7 @@ namespace RosuPP
             return Rosu.beatmap_mode(_context);
         }
 
-        public bool IsConvert()
+        public Bool IsConvert()
         {
             return Rosu.beatmap_is_convert(_context);
         }
@@ -1240,12 +1253,12 @@ namespace RosuPP
             Rosu.difficulty_od(_context, od);
         }
 
-        public void HardrockOffsets(bool hardrock_offsets)
+        public void HardrockOffsets(Bool hardrock_offsets)
         {
             Rosu.difficulty_hardrock_offsets(_context, hardrock_offsets);
         }
 
-        public void Lazer(bool lazer)
+        public void Lazer(Bool lazer)
         {
             Rosu.difficulty_lazer(_context, lazer);
         }
@@ -1344,7 +1357,7 @@ namespace RosuPP
             Rosu.performance_od(_context, od);
         }
 
-        public void HardrockOffsets(bool hardrock_offsets)
+        public void HardrockOffsets(Bool hardrock_offsets)
         {
             Rosu.performance_hardrock_offsets(_context, hardrock_offsets);
         }
@@ -1369,7 +1382,7 @@ namespace RosuPP
             Rosu.performance_hitresult_priority(_context, hitresult_priority);
         }
 
-        public void Lazer(bool lazer)
+        public void Lazer(Bool lazer)
         {
             Rosu.performance_lazer(_context, lazer);
         }
@@ -1377,11 +1390,6 @@ namespace RosuPP
         public void SliderTickHits(uint slider_tick_hits)
         {
             Rosu.performance_slider_tick_hits(_context, slider_tick_hits);
-        }
-
-        public void SliderTickMisses(uint slider_tick_misses)
-        {
-            Rosu.performance_slider_tick_misses(_context, slider_tick_misses);
         }
 
         public void SliderEndHits(uint slider_end_hits)
@@ -1475,7 +1483,7 @@ namespace RosuPP
             }
         }
 
-        public bool IsInit()
+        public Bool IsInit()
         {
             return Rosu.string_is_init(_context);
         }
@@ -1580,17 +1588,17 @@ namespace RosuPP
             Rosu.mods_json(_context, str);
         }
 
-        public bool InsertJson(string str)
+        public Bool InsertJson(string str)
         {
             return Rosu.mods_insert_json(_context, str);
         }
 
-        public bool Insert(string str)
+        public Bool Insert(string str)
         {
             return Rosu.mods_insert(_context, str);
         }
 
-        public bool Contains(string str)
+        public Bool Contains(string str)
         {
             return Rosu.mods_contains(_context, str);
         }
@@ -1603,72 +1611,6 @@ namespace RosuPP
         public Optionf64 ClockRate()
         {
             return Rosu.mods_clock_rate(_context);
-        }
-
-        public IntPtr Context => _context;
-    }
-
-
-    public partial class ModsIntermode : IDisposable
-    {
-        private IntPtr _context;
-
-        private ModsIntermode() {}
-
-        public static ModsIntermode FromAcronyms(string str)
-        {
-            var self = new ModsIntermode();
-            var rval = Rosu.mods_intermode_from_acronyms(ref self._context, str);
-            if (rval != FFIError.Ok)
-            {
-                throw new InteropException<FFIError>(rval);
-            }
-            return self;
-        }
-
-        public static ModsIntermode FromBits(uint bits)
-        {
-            var self = new ModsIntermode();
-            var rval = Rosu.mods_intermode_from_bits(ref self._context, bits);
-            if (rval != FFIError.Ok)
-            {
-                throw new InteropException<FFIError>(rval);
-            }
-            return self;
-        }
-
-        public void Dispose()
-        {
-            var rval = Rosu.mods_intermode_destroy(ref _context);
-            if (rval != FFIError.Ok)
-            {
-                throw new InteropException<FFIError>(rval);
-            }
-        }
-
-        public uint Bits()
-        {
-            return Rosu.mods_intermode_bits(_context);
-        }
-
-        public uint Len()
-        {
-            return Rosu.mods_intermode_len(_context);
-        }
-
-        public bool Contains(string str)
-        {
-            return Rosu.mods_intermode_contains(_context, str);
-        }
-
-        public bool Intersects(string str)
-        {
-            return Rosu.mods_intermode_intersects(_context, str);
-        }
-
-        public double LegacyClockRate()
-        {
-            return Rosu.mods_intermode_legacy_clock_rate(_context);
         }
 
         public IntPtr Context => _context;

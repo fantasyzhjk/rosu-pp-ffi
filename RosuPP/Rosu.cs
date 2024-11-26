@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text.Json.Serialization;
 using RosuPP;
 
@@ -9,8 +10,12 @@ using RosuPP;
 namespace RosuPP;
 
 public static class Extensions {
+    public static double Acc(ref this ScoreState state, ref DifficultyAttributes attr, OsuScoreOrigin origin) {
+        return Rosu.calculate_accuacy(ref state, ref attr, origin);
+    }
+
     public static double Acc(ref this ScoreState state, ref DifficultyAttributes attr) {
-        return Rosu.calculate_accuacy(ref state, ref attr);
+        return Rosu.calculate_accuacy(ref state, ref attr, OsuScoreOrigin.WithSliderAcc);
     }
 }
 
@@ -105,7 +110,7 @@ public partial struct ManiaPerformanceAttributes
     public readonly double stars => difficulty.stars;
     public readonly uint max_combo => difficulty.max_combo;
     public readonly uint n_objects => difficulty.n_objects;
-    public readonly bool is_convert => difficulty.is_convert;
+    public readonly bool is_convert => difficulty.is_convert.Is;
 }
 
 public partial struct CatchDifficultyAttributes
@@ -117,14 +122,14 @@ public partial struct CatchPerformanceAttributes
 {
     public readonly double stars => difficulty.stars;
     public readonly uint max_combo => difficulty.max_combo;
-    public readonly bool is_convert => difficulty.is_convert;
+    public readonly bool is_convert => difficulty.is_convert.Is;
 }
 
 public partial struct TaikoPerformanceAttributes
 {
     public readonly double stars => difficulty.stars;
     public readonly uint max_combo => difficulty.max_combo;
-    public readonly bool is_convert => difficulty.is_convert;
+    public readonly bool is_convert => difficulty.is_convert.Is;
 }
 
 public partial struct DifficultyAttributes
@@ -143,6 +148,16 @@ public partial struct PerformanceAttributes
     {
         var str = OwnedString.Empty();
         Rosu.debug_performance_attributes(ref this, str.Context);
+        return str.ToString();
+    }
+}
+
+public partial struct ScoreState
+{
+    public override string ToString()
+    {
+        var str = OwnedString.Empty();
+        Rosu.debug_score_state(ref this, str.Context);
         return str.ToString();
     }
 }
@@ -254,6 +269,19 @@ public partial class Beatmap
         handle.Free();
         return self;
     }
+
+    /// Convert a Beatmap to the specified mode
+    public Bool Convert(Mode mode, Mods mods)
+    {
+        return Convert(mode, mods.Context);
+    }
+
+    /// Convert a Beatmap to the specified mode
+    public Bool Convert(Mode mode)
+    {
+        return Convert(mode, Mods.New(mode));
+    }
+
 }
 public partial class Mods
 {
