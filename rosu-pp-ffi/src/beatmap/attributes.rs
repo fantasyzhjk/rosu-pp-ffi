@@ -69,14 +69,14 @@ impl From<rosu_pp::model::beatmap::HitWindows> for HitWindows {
 #[derive(Default)]
 #[allow(non_snake_case)]
 pub struct BeatmapAttributesBuilder {
-    pub mode: FFIOption<Mode>,
-    pub mods: FFIOption<GameMods>,
-    pub mods_intermode: FFIOption<GameModsIntermode>,
-    pub clock_rate: FFIOption<f64>,
-    pub ar: FFIOption<f32>,
-    pub cs: FFIOption<f32>,
-    pub hp: FFIOption<f32>,
-    pub od: FFIOption<f32>,
+    pub mode: Option<Mode>,
+    pub mods: Option<GameMods>,
+    pub mods_intermode: Option<GameModsIntermode>,
+    pub clock_rate: Option<f64>,
+    pub ar: Option<f32>,
+    pub cs: Option<f32>,
+    pub hp: Option<f32>,
+    pub od: Option<f32>,
 }
 
 // Regular implementation of methods.
@@ -89,50 +89,49 @@ impl BeatmapAttributesBuilder {
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn mode(&mut self, mode: Mode) {
-        self.mode = Some(mode).into();
+        self.mode = Some(mode);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn p_mods(&mut self, mods: &Mods) {
-        self.mods = Some(mods.mods.clone()).into();
+        self.mods = Some(mods.mods.clone());
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn i_mods(&mut self, mods: u32) {
-        self.mods_intermode = Some(GameModsIntermode::from_bits(mods)).into();
+        self.mods_intermode = Some(GameModsIntermode::from_bits(mods));
     }
 
     pub fn s_mods(&mut self, str: AsciiPointer) -> Result<(), Error> {
         self.mods_intermode = Some(GameModsIntermode::from_acronyms(
             str.as_str()?,
-        ))
-        .into();
+        ));
         Ok(())
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn clock_rate(&mut self, clock_rate: f64) {
-        self.clock_rate = Some(clock_rate).into();
+        self.clock_rate = Some(clock_rate);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn ar(&mut self, ar: f32) {
-        self.ar = Some(ar).into();
+        self.ar = Some(ar);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn cs(&mut self, cs: f32) {
-        self.cs = Some(cs).into();
+        self.cs = Some(cs);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn hp(&mut self, hp: f32) {
-        self.hp = Some(hp).into();
+        self.hp = Some(hp);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn od(&mut self, od: f32) {
-        self.od = Some(od).into();
+        self.od = Some(od);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
@@ -168,33 +167,33 @@ impl BeatmapAttributesBuilder {
             od,
         } = self;
 
-        if let Some(mode) = mode.into_option() {
+        if let Some(mode) = *mode {
             builder = builder.mode(mode.into(), beatmap.inner.is_convert);
         }
 
-        if let Some(mods) = mods.as_ref() {
+        if let Some(mods) = mods {
             builder = builder.mods(mods.clone());
-        } else if let Some(mods_intermode) = mods_intermode.as_ref() {
+        } else if let Some(mods_intermode) = mods_intermode {
             builder = builder.mods(mods_intermode);
         }
 
-        if let Some(clock_rate) = clock_rate.into_option() {
+        if let Some(clock_rate) = *clock_rate {
             builder = builder.clock_rate(clock_rate);
         }
 
-        if let Some(ar) = ar.into_option() {
+        if let Some(ar) = *ar {
             builder = builder.ar(ar, false);
         }
 
-        if let Some(cs) = cs.into_option() {
+        if let Some(cs) = *cs {
             builder = builder.cs(cs, false);
         }
 
-        if let Some(hp) = hp.into_option() {
+        if let Some(hp) = *hp {
             builder = builder.hp(hp, false);
         }
 
-        if let Some(od) = od.into_option() {
+        if let Some(od) = *od {
             builder = builder.od(od, false);
         }
 

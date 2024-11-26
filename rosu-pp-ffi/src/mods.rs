@@ -12,7 +12,7 @@ use serde::de::DeserializeSeed;
 #[derive(Default)]
 pub struct Mods {
     pub mods: rosu_mods::GameMods,
-    pub mode: Mode,
+    pub mode: Option<Mode>,
 }
 
 // Regular implementation of methods.
@@ -22,7 +22,7 @@ impl Mods {
     pub fn new(mode: Mode) -> Result<Self, Error> {
         Ok(Self {
             mods: rosu_mods::GameMods::new(),
-            mode
+            mode: Some(mode)
         })
     }
 
@@ -32,7 +32,7 @@ impl Mods {
             mods: rosu_mods::GameMods::from_intermode(&rosu_mods::GameModsIntermode::from_acronyms(
                 str.as_str()?,
             ), mode.into()),
-            mode
+            mode: Some(mode)
         })
     }
 
@@ -40,7 +40,7 @@ impl Mods {
     pub fn from_bits(bits: u32, mode: Mode) -> Result<Self, Error> {
         Ok(Self {
             mods: rosu_mods::GameMods::from_intermode(&rosu_mods::GameModsIntermode::from_bits(bits), mode.into()),
-            mode
+            mode: Some(mode)
         })
     }
 
@@ -52,7 +52,7 @@ impl Mods {
         let mods = GameModsSeed::Mode(mode.into()).deserialize(&mut d)?;
         Ok(Self {
             mods,
-            mode
+            mode: Some(mode)
         })
     }
     
@@ -64,7 +64,7 @@ impl Mods {
         mods.sanitize();
         Ok(Self {
             mods: mods.into_iter().filter(|m| m.kind() != UnknownMod::kind()).collect(),
-            mode
+            mode: Some(mode)
         })
     }
     
@@ -93,7 +93,8 @@ impl Mods {
     pub fn insert_json(&mut self, str: AsciiPointer) -> FFIBool {
         if let Ok(s) = str.as_str() {
             let mut d = serde_json::Deserializer::from_str(s);
-            if let Ok(m) = GameModSeed::Mode(self.mode.into()).deserialize(&mut d) {
+            let s = if let Some(mode) = self.mode { GameModSeed::Mode(mode.into()) } else { GameModSeed::GuessMode };
+            if let Ok(m) = s.deserialize(&mut d) {
                 self.mods.insert(m);
                 return FFIBool::TRUE;
             }
@@ -104,7 +105,7 @@ impl Mods {
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn insert(&mut self, str: AsciiPointer) -> FFIBool {
         if let Ok(s) = str.as_str() {
-            self.mods.insert(GameMod::new(s, self.mode.into()));
+            self.mods.insert(GameMod::new(s, self.mode.unwrap_or_default().into()));
             return FFIBool::TRUE;
         }
         FFIBool::FALSE

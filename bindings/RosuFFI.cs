@@ -209,8 +209,8 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_lazer")]
         public static extern void performance_lazer(IntPtr context, Bool lazer);
 
-        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_slider_tick_hits")]
-        public static extern void performance_slider_tick_hits(IntPtr context, uint slider_tick_hits);
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_large_tick_hits")]
+        public static extern void performance_large_tick_hits(IntPtr context, uint large_tick_hits);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_slider_end_hits")]
         public static extern void performance_slider_end_hits(IntPtr context, uint slider_end_hits);
@@ -1399,9 +1399,9 @@ namespace RosuPP
             RosuLibrary.performance_lazer(_context, lazer);
         }
 
-        public void SliderTickHits(uint slider_tick_hits)
+        public void LargeTickHits(uint large_tick_hits)
         {
-            RosuLibrary.performance_slider_tick_hits(_context, slider_tick_hits);
+            RosuLibrary.performance_large_tick_hits(_context, large_tick_hits);
         }
 
         public void SliderEndHits(uint slider_end_hits)

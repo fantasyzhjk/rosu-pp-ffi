@@ -4,7 +4,7 @@ use beatmap::Beatmap;
 use hitresult_priority::HitResultPriority;
 use interoptopus::{
     ffi_service, ffi_service_ctor, ffi_service_method, ffi_type,
-    patterns::{option::FFIOption, primitives::FFIBool, string::AsciiPointer},
+    patterns::{primitives::FFIBool, string::AsciiPointer},
 };
 use mode::Mode;
 use mods::Mods;
@@ -16,31 +16,31 @@ use state::ScoreState;
 #[derive(Clone, Default, PartialEq)]
 #[allow(non_snake_case)]
 pub struct Performance {
-    pub mode: FFIOption<Mode>,
-    pub mods: FFIOption<GameMods>,
-    pub mods_intermode: FFIOption<GameModsIntermode>,
-    pub passed_objects: FFIOption<u32>,
-    pub clock_rate: FFIOption<f64>,
-    pub ar: FFIOption<f32>,
-    pub cs: FFIOption<f32>,
-    pub hp: FFIOption<f32>,
-    pub od: FFIOption<f32>,
-    pub hardrock_offsets: FFIOption<FFIBool>,
-    pub lazer: FFIOption<FFIBool>,
+    pub mode: Option<Mode>,
+    pub mods: Option<GameMods>,
+    pub mods_intermode: Option<GameModsIntermode>,
+    pub passed_objects: Option<u32>,
+    pub clock_rate: Option<f64>,
+    pub ar: Option<f32>,
+    pub cs: Option<f32>,
+    pub hp: Option<f32>,
+    pub od: Option<f32>,
+    pub hardrock_offsets: Option<bool>,
+    pub lazer: Option<bool>,
 
-    pub accuracy: FFIOption<f64>,
-    pub misses: FFIOption<u32>,
-    pub combo: FFIOption<u32>,
-    pub hitresult_priority: FFIOption<HitResultPriority>,
+    pub accuracy: Option<f64>,
+    pub misses: Option<u32>,
+    pub combo: Option<u32>,
+    pub hitresult_priority: Option<HitResultPriority>,
 
-    pub slider_tick_hits: FFIOption<u32>,
-    pub slider_end_hits: FFIOption<u32>,
-    pub n300: FFIOption<u32>,
-    pub n100: FFIOption<u32>,
-    pub n50: FFIOption<u32>,
-    pub n_katu: FFIOption<u32>,
-    pub n_geki: FFIOption<u32>,
-    pub state: FFIOption<ScoreState>
+    pub large_tick_hits: Option<u32>,
+    pub slider_end_hits: Option<u32>,
+    pub n300: Option<u32>,
+    pub n100: Option<u32>,
+    pub n50: Option<u32>,
+    pub n_katu: Option<u32>,
+    pub n_geki: Option<u32>,
+    pub state: Option<ScoreState>
 }
 
 // Regular implementation of methods.
@@ -53,125 +53,124 @@ impl Performance {
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn mode(&mut self, mode: Mode) {
-        self.mode = Some(mode).into();
+        self.mode = Some(mode);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn p_mods(&mut self, mods: &Mods) {
-        self.mods = Some(mods.mods.clone()).into();
+        self.mods = Some(mods.mods.clone());
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn i_mods(&mut self, mods: u32) {
-        self.mods_intermode = Some(GameModsIntermode::from_bits(mods)).into();
+        self.mods_intermode = Some(GameModsIntermode::from_bits(mods));
     }
 
     pub fn s_mods(&mut self, str: AsciiPointer) -> Result<(), Error> {
         self.mods_intermode = Some(GameModsIntermode::from_acronyms(
             str.as_str()?,
-        ))
-        .into();
+        ));
         Ok(())
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn passed_objects(&mut self, passed_objects: u32) {
-        self.passed_objects = Some(passed_objects).into();
+        self.passed_objects = Some(passed_objects);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn clock_rate(&mut self, clock_rate: f64) {
-        self.clock_rate = Some(clock_rate).into();
+        self.clock_rate = Some(clock_rate);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn ar(&mut self, ar: f32) {
-        self.ar = Some(ar).into();
+        self.ar = Some(ar);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn cs(&mut self, cs: f32) {
-        self.cs = Some(cs).into();
+        self.cs = Some(cs);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn hp(&mut self, hp: f32) {
-        self.hp = Some(hp).into();
+        self.hp = Some(hp);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn od(&mut self, od: f32) {
-        self.od = Some(od).into();
+        self.od = Some(od);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn hardrock_offsets(&mut self, hardrock_offsets: FFIBool) {
-        self.hardrock_offsets = Some(hardrock_offsets).into();
+        self.hardrock_offsets = Some(hardrock_offsets.is());
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn state(&mut self, state: ScoreState) {
-        self.state = Some(state).into();
+        self.state = Some(state);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn accuracy(&mut self, accuracy: f64) {
-        self.accuracy = Some(accuracy).into();
+        self.accuracy = Some(accuracy);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn misses(&mut self, misses: u32) {
-        self.misses = Some(misses).into();
+        self.misses = Some(misses);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn combo(&mut self, combo: u32) {
-        self.combo = Some(combo).into();
+        self.combo = Some(combo);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn hitresult_priority(&mut self, hitresult_priority: HitResultPriority) {
-        self.hitresult_priority = Some(hitresult_priority).into();
+        self.hitresult_priority = Some(hitresult_priority);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn lazer(&mut self, lazer: FFIBool) {
-        self.lazer = Some(lazer).into();
+        self.lazer = Some(lazer.is());
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn slider_tick_hits(&mut self, slider_tick_hits: u32) {
-        self.slider_tick_hits = Some(slider_tick_hits).into();
+    pub fn large_tick_hits(&mut self, large_tick_hits: u32) {
+        self.large_tick_hits = Some(large_tick_hits);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn slider_end_hits(&mut self, slider_end_hits: u32) {
-        self.slider_end_hits = Some(slider_end_hits).into();
+        self.slider_end_hits = Some(slider_end_hits);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn n300(&mut self, n300: u32) {
-        self.n300 = Some(n300).into();
+        self.n300 = Some(n300);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn n100(&mut self, n100: u32) {
-        self.n100 = Some(n100).into();
+        self.n100 = Some(n100);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn n50(&mut self, n50: u32) {
-        self.n50 = Some(n50).into();
+        self.n50 = Some(n50);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn n_katu(&mut self, n_katu: u32) {
-        self.n_katu = Some(n_katu).into();
+        self.n_katu = Some(n_katu);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn n_geki(&mut self, n_geki: u32) {
-        self.n_geki = Some(n_geki).into();
+        self.n_geki = Some(n_geki);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
@@ -240,7 +239,7 @@ impl Performance {
             combo,
             hitresult_priority,
             lazer,
-            slider_tick_hits,
+            large_tick_hits,
             slider_end_hits,
             n300,
             n100,
@@ -250,101 +249,93 @@ impl Performance {
             state
         } = self;
 
-        if let Some(mode) = mode.into_option() {
+        if let Some(mode) = *mode {
             perf = perf.mode_or_ignore(mode.into());
         }
 
-        if let Some(mods) = mods.as_ref() {
+        if let Some(mods) = mods {
             perf = perf.mods(mods.clone());
-        } else if let Some(mods_intermode) = mods_intermode.as_ref() {
+        } else if let Some(mods_intermode) = mods_intermode {
             perf = perf.mods(mods_intermode);
         }
 
-        if let Some(passed_objects) = passed_objects.into_option() {
+        if let Some(passed_objects) = *passed_objects {
             perf = perf.passed_objects(passed_objects);
         }
 
-        if let Some(clock_rate) = clock_rate.into_option() {
+        if let Some(clock_rate) = *clock_rate {
             perf = perf.clock_rate(clock_rate);
         }
 
-        if let Some(ar) = ar.into_option() {
+        if let Some(ar) = *ar {
             perf = perf.ar(ar, false);
         }
 
-        if let Some(cs) = cs.into_option() {
+        if let Some(cs) = *cs {
             perf = perf.cs(cs, false);
         }
 
-        if let Some(hp) = hp.into_option() {
+        if let Some(hp) = *hp {
             perf = perf.hp(hp, false);
         }
 
-        if let Some(od) = od.into_option() {
+        if let Some(od) = *od {
             perf = perf.od(od, false);
         }
 
-        if let Some(hardrock_offsets) = hardrock_offsets.into_option() {
-            perf = perf.hardrock_offsets(hardrock_offsets.is());
+        if let Some(hardrock_offsets) = *hardrock_offsets {
+            perf = perf.hardrock_offsets(hardrock_offsets);
         }
 
-        if let Some(state) = state.into_option() {
+        if let Some(state) = *state {
             perf = perf.state(state.into());
         }
 
-        if let Some(accuracy) = accuracy.into_option() {
+        if let Some(accuracy) = *accuracy {
             perf = perf.accuracy(accuracy);
         }
 
-        if let Some(misses) = misses.into_option() {
+        if let Some(misses) = *misses {
             perf = perf.misses(misses);
         }
 
-        if let Some(combo) = combo.into_option() {
+        if let Some(combo) = *combo {
             perf = perf.combo(combo);
         }
 
-        if let Some(hitresult_priority) = hitresult_priority.into_option() {
+        if let Some(hitresult_priority) = *hitresult_priority {
             perf = perf.hitresult_priority(hitresult_priority.into());
         }
 
-        if let Some(lazer) = lazer.into_option() {
-            perf = perf.lazer(lazer.is());
+        if let Some(lazer) = *lazer {
+            perf = perf.lazer(lazer);
         }
 
-        if let Some(slider_tick_hits) = slider_tick_hits.into_option() {
-            perf = if let rosu_pp::Performance::Osu(o) = perf {
-                rosu_pp::Performance::Osu(o.n_large_ticks(slider_tick_hits))
-            } else {
-                perf
-            };
+        if let Some(large_tick_hits) = *large_tick_hits {
+            perf = perf.large_tick_hits(large_tick_hits);
         }
 
-        if let Some(slider_end_hits) = slider_end_hits.into_option() {
-            perf = if let rosu_pp::Performance::Osu(o) = perf {
-                rosu_pp::Performance::Osu(o.n_slider_ends(slider_end_hits))
-            } else {
-                perf
-            };
+        if let Some(slider_end_hits) = *slider_end_hits {
+            perf = perf.n_slider_ends(slider_end_hits);
         }
 
-        if let Some(n300) = n300.into_option() {
+        if let Some(n300) = *n300 {
             perf = perf.n300(n300);
         }
 
-        if let Some(n100) = n100.into_option() {
+        if let Some(n100) = *n100 {
             perf = perf.n100(n100);
         }
 
-        if let Some(n50) = n50.into_option() {
+        if let Some(n50) = *n50 {
             perf = perf.n50(n50);
         }
 
-        if let Some(n_katu) = n_katu.into_option() {
+        if let Some(n_katu) = *n_katu {
             perf = perf.n_katu(n_katu);
         }
 
-        if let Some(n_geki) = n_geki.into_option() {
+        if let Some(n_geki) = *n_geki {
             perf = perf.n_geki(n_geki);
         }
 

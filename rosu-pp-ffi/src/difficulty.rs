@@ -2,7 +2,7 @@ use crate::beatmap::Beatmap;
 use crate::*;
 use interoptopus::{
     ffi_service, ffi_service_ctor, ffi_service_method, ffi_type,
-    patterns::{option::FFIOption, primitives::FFIBool, string::AsciiPointer},
+    patterns::{primitives::FFIBool, string::AsciiPointer},
 };
 use mods::Mods;
 use rosu_mods::{GameModsIntermode, GameMods};
@@ -11,9 +11,9 @@ use rosu_mods::{GameModsIntermode, GameMods};
 #[derive(Default)]
 #[allow(non_snake_case)]
 pub struct Difficulty {
-    pub mods: FFIOption<GameMods>,
-    pub mods_intermode: FFIOption<GameModsIntermode>,
-    pub passed_objects: FFIOption<u32>,
+    pub mods: Option<GameMods>,
+    pub mods_intermode: Option<GameModsIntermode>,
+    pub passed_objects: Option<u32>,
     /// Clock rate will be clamped internally between 0.01 and 100.0.
     ///
     /// Since its minimum value is 0.01, its bits are never zero.
@@ -22,14 +22,14 @@ pub struct Difficulty {
     ///
     /// This allows for an optimization to reduce the struct size by storing its
     /// bits as a [`NonZeroU32`].
-    pub clock_rate: FFIOption<f64>,
-    pub ar: FFIOption<f32>,
-    pub cs: FFIOption<f32>,
-    pub hp: FFIOption<f32>,
-    pub od: FFIOption<f32>,
+    pub clock_rate: Option<f64>,
+    pub ar: Option<f32>,
+    pub cs: Option<f32>,
+    pub hp: Option<f32>,
+    pub od: Option<f32>,
 
-    pub hardrock_offsets: FFIOption<FFIBool>,
-    pub lazer: FFIOption<FFIBool>,
+    pub hardrock_offsets: Option<bool>,
+    pub lazer: Option<bool>,
 }
 
 // Regular implementation of methods.
@@ -42,61 +42,60 @@ impl Difficulty {
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn p_mods(&mut self, mods: &Mods) {
-        self.mods = Some(mods.mods.clone()).into();
+        self.mods = Some(mods.mods.clone());
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn i_mods(&mut self, mods: u32) {
-        self.mods_intermode = Some(GameModsIntermode::from_bits(mods)).into();
+        self.mods_intermode = Some(GameModsIntermode::from_bits(mods));
     }
 
     #[ffi_service_method(on_panic = "ffi_error")]
     pub fn s_mods(&mut self, str: AsciiPointer) -> Result<(), Error> {
         self.mods_intermode = Some(GameModsIntermode::from_acronyms(
             str.as_str()?,
-        ))
-        .into();
+        ));
         Ok(())
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn passed_objects(&mut self, passed_objects: u32) {
-        self.passed_objects = Some(passed_objects).into();
+        self.passed_objects = Some(passed_objects);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn clock_rate(&mut self, clock_rate: f64) {
-        self.clock_rate = Some(clock_rate).into();
+        self.clock_rate = Some(clock_rate);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn ar(&mut self, ar: f32) {
-        self.ar = Some(ar).into();
+        self.ar = Some(ar);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn cs(&mut self, cs: f32) {
-        self.cs = Some(cs).into();
+        self.cs = Some(cs);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn hp(&mut self, hp: f32) {
-        self.hp = Some(hp).into();
+        self.hp = Some(hp);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn od(&mut self, od: f32) {
-        self.od = Some(od).into();
+        self.od = Some(od);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn hardrock_offsets(&mut self, hardrock_offsets: FFIBool) {
-        self.hardrock_offsets = Some(hardrock_offsets).into();
+        self.hardrock_offsets = Some(hardrock_offsets.is());
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn lazer(&mut self, lazer: FFIBool) {
-        self.lazer = Some(lazer).into();
+        self.lazer = Some(lazer.is());
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
@@ -135,42 +134,42 @@ impl Difficulty {
             lazer
         } = self;
 
-        if let Some(mods) = mods.as_ref() {
+        if let Some(mods) = mods {
             diff = diff.mods(mods.clone());
-        } else if let Some(mods_intermode) = mods_intermode.as_ref() {
+        } else if let Some(mods_intermode) = mods_intermode {
             diff = diff.mods(mods_intermode);
         }
 
-        if let Some(passed_objects) = passed_objects.into_option() {
+        if let Some(passed_objects) = *passed_objects {
             diff = diff.passed_objects(passed_objects);
         }
 
-        if let Some(clock_rate) = clock_rate.into_option() {
+        if let Some(clock_rate) = *clock_rate {
             diff = diff.clock_rate(clock_rate);
         }
 
-        if let Some(ar) = ar.into_option() {
+        if let Some(ar) = *ar {
             diff = diff.ar(ar, false);
         }
 
-        if let Some(cs) = cs.into_option() {
+        if let Some(cs) = *cs {
             diff = diff.cs(cs, false);
         }
 
-        if let Some(hp) = hp.into_option() {
+        if let Some(hp) = *hp {
             diff = diff.hp(hp, false);
         }
 
-        if let Some(od) = od.into_option() {
+        if let Some(od) = *od {
             diff = diff.od(od, false);
         }
 
-        if let Some(hardrock_offsets) = hardrock_offsets.into_option() {
-            diff = diff.hardrock_offsets(hardrock_offsets.is());
+        if let Some(hardrock_offsets) = *hardrock_offsets {
+            diff = diff.hardrock_offsets(hardrock_offsets);
         }
 
-        if let Some(lazer) = lazer.into_option() {
-            diff = diff.lazer(lazer.is());
+        if let Some(lazer) = *lazer {
+            diff = diff.lazer(lazer);
         }
 
         diff
