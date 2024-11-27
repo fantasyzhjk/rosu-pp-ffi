@@ -158,7 +158,7 @@ public class RosuFFI {
         public static native int beatmap_from_path(PointerByReference context, String path);
 
         /// Convert a Beatmap to the specified mode
-        public static native boolean beatmap_convert(Pointer context, int mode);
+        public static native byte beatmap_convert(Pointer context, int mode);
 
         public static native double beatmap_bpm(Pointer context);
 
@@ -166,7 +166,7 @@ public class RosuFFI {
 
         public static native int beatmap_mode(Pointer context);
 
-        public static native boolean beatmap_is_convert(Pointer context);
+        public static native byte beatmap_is_convert(Pointer context);
 
         /// Destroys the given instance.
         ///
@@ -196,9 +196,9 @@ public class RosuFFI {
 
         public static native void difficulty_od(Pointer context, float od);
 
-        public static native void difficulty_hardrock_offsets(Pointer context, boolean hardrock_offsets);
+        public static native void difficulty_hardrock_offsets(Pointer context, byte hardrock_offsets);
 
-        public static native void difficulty_lazer(Pointer context, boolean lazer);
+        public static native void difficulty_lazer(Pointer context, byte lazer);
 
         public static native DifficultyAttributes.ByValue difficulty_calculate(Pointer context, Pointer beatmap);
 
@@ -234,7 +234,7 @@ public class RosuFFI {
 
         public static native void performance_od(Pointer context, float od);
 
-        public static native void performance_hardrock_offsets(Pointer context, boolean hardrock_offsets);
+        public static native void performance_hardrock_offsets(Pointer context, byte hardrock_offsets);
 
         public static native void performance_state(Pointer context, ScoreState.ByValue accuracy);
 
@@ -246,7 +246,7 @@ public class RosuFFI {
 
         public static native void performance_hitresult_priority(Pointer context, int hitresult_priority);
 
-        public static native void performance_lazer(Pointer context, boolean lazer);
+        public static native void performance_lazer(Pointer context, byte lazer);
 
         public static native void performance_large_tick_hits(Pointer context, long large_tick_hits);
 
@@ -284,7 +284,7 @@ public class RosuFFI {
 
         public static native int string_empty(PointerByReference context);
 
-        public static native boolean string_is_init(Pointer context);
+        public static native byte string_is_init(Pointer context);
 
         public static native String string_to_cstr(Pointer context);
 
@@ -314,11 +314,11 @@ public class RosuFFI {
 
         public static native void mods_json(Pointer context, Pointer str);
 
-        public static native boolean mods_insert_json(Pointer context, String str);
+        public static native byte mods_insert_json(Pointer context, String str);
 
-        public static native boolean mods_insert(Pointer context, String str);
+        public static native byte mods_insert(Pointer context, String str);
 
-        public static native boolean mods_contains(Pointer context, String str);
+        public static native byte mods_contains(Pointer context, String str);
 
         public static native void mods_clear(Pointer context);
 
@@ -331,6 +331,7 @@ public class RosuFFI {
         public static native void debug_score_state(ScoreState res, Pointer str);
 
         public static native double calculate_accuacy(ScoreState state, DifficultyAttributes difficulty, int origin);
+
 
         @Structure.FieldOrder({"data", "len"})
         public static class Sliceu8 extends Structure {
@@ -417,7 +418,7 @@ public class RosuFFI {
             public double mono_stamina_factor;   // Stamina difficulty ratio for mono-color streams
             public double stars;                 // Final star rating
             public int max_combo;                // Maximum combo (unsigned int -> int)
-            public boolean is_convert;           // Whether the beatmap is a convert (osu!standard)
+            public byte is_convert;           // Whether the beatmap is a convert (osu!standard)
 
             public static class ByReference extends TaikoDifficultyAttributes implements Structure.ByReference {}
             public static class ByValue extends TaikoDifficultyAttributes implements Structure.ByValue {}
@@ -444,7 +445,7 @@ public class RosuFFI {
             public int n_fruits;        // Number of fruits (unsigned int -> use int in Java)
             public int n_droplets;      // Number of droplets (unsigned int -> use int in Java)
             public int n_tiny_droplets; // Number of tiny droplets (unsigned int -> use int in Java)
-            public boolean is_convert;  // Whether the beatmap is a convert (bool)
+            public byte is_convert;  // Whether the beatmap is a convert (bool)
 
             public static class ByReference extends CatchDifficultyAttributes implements Structure.ByReference {}
             public static class ByValue extends CatchDifficultyAttributes implements Structure.ByValue {}
@@ -466,7 +467,7 @@ public class RosuFFI {
             public int n_objects;       // Number of hit objects (unsigned int -> int in Java)
             public int n_hold_notes;    // Number of hold notes (unsigned int -> int in Java)
             public int max_combo;       // Maximum achievable combo (unsigned int -> int in Java)
-            public boolean is_convert;  // Whether the beatmap is a convert (boolean with I1 marshalling)
+            public byte is_convert;  // Whether the beatmap is a convert
 
             public static class ByReference extends ManiaDifficultyAttributes implements Structure.ByReference {}
             public static class ByValue extends ManiaDifficultyAttributes implements Structure.ByValue {}
@@ -690,7 +691,7 @@ public class RosuFFI {
 
         // Convert the Beatmap to the specified mode
         public boolean convert(Mode mode) {
-            return RosuPPLib.beatmap_convert(getContext(), mode.getValue());
+            return RosuPPLib.beatmap_convert(getContext(), mode.getValue()) == 1;
         }
 
         // Get the BPM of the Beatmap
@@ -710,7 +711,7 @@ public class RosuFFI {
 
         // Check if the Beatmap is a converted map
         public boolean isConvert() {
-            return RosuPPLib.beatmap_is_convert(getContext());
+            return RosuPPLib.beatmap_is_convert(getContext()) == 1;
         }
 
         // Getter for the context
@@ -882,12 +883,12 @@ public class RosuFFI {
 
         // Method to set hardrock offsets
         public void setHardrockOffsets(boolean hardrockOffsets) {
-            RosuPPLib.difficulty_hardrock_offsets(getContext(), hardrockOffsets);
+            RosuPPLib.difficulty_hardrock_offsets(getContext(), (byte)(hardrockOffsets ? 1 : 0));
         }
 
         // Method to set lazer
         public void setLazer(boolean lazer) {
-            RosuPPLib.difficulty_lazer(getContext(), lazer);
+            RosuPPLib.difficulty_lazer(getContext(), (byte)(lazer ? 1 : 0));
         }
 
         // Method to calculate DifficultyAttributes from beatmap
@@ -981,7 +982,7 @@ public class RosuFFI {
 
         // Method to set hardrock offsets
         public void setHardrockOffsets(boolean hardrockOffsets) {
-            RosuPPLib.performance_hardrock_offsets(getContext(), hardrockOffsets);
+            RosuPPLib.performance_hardrock_offsets(getContext(), (byte)(hardrockOffsets ? 1 : 0));
         }
 
         // Method to set hardrock offsets
@@ -1035,7 +1036,7 @@ public class RosuFFI {
 
         // Method to set lazer
         public void setLazer(boolean lazer) {
-            RosuPPLib.performance_lazer(getContext(), lazer);
+            RosuPPLib.performance_lazer(getContext(), (byte)(lazer ? 1 : 0));
         }
 
         public RosuPPLib.ScoreState generateState(Beatmap beatmap) {
@@ -1159,15 +1160,15 @@ public class RosuFFI {
         }
 
         public boolean insertJson(String mod) {
-            return RosuPPLib.mods_insert_json(getContext(), mod);
+            return RosuPPLib.mods_insert_json(getContext(), mod) == 1;
         }
 
         public boolean insert(String mod) {
-            return RosuPPLib.mods_insert(getContext(), mod);
+            return RosuPPLib.mods_insert(getContext(), mod) == 1;
         }
 
         public boolean contains(String mod) {
-            return RosuPPLib.mods_contains(getContext(), mod);
+            return RosuPPLib.mods_contains(getContext(), mod) == 1;
         }
 
         public void clear() {
@@ -1227,7 +1228,7 @@ public class RosuFFI {
         }
 
         public boolean isInit() {
-            return RosuPPLib.string_is_init(getContext());
+            return RosuPPLib.string_is_init(getContext()) == 1;
         }
 
         public String toString() {
