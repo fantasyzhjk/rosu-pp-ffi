@@ -159,7 +159,7 @@ public class RosuFFI {
         public static native int beatmap_from_path(PointerByReference context, String path);
 
         /// Convert a Beatmap to the specified mode
-        public static native byte beatmap_convert(Pointer context, int mode);
+        public static native byte beatmap_convert(Pointer context, int mode, Pointer mods);
 
         public static native double beatmap_bpm(Pointer context);
 
@@ -700,8 +700,14 @@ public class RosuFFI {
         }
 
         // Convert the Beatmap to the specified mode
-        public boolean convert(Mode mode) {
-            return RosuPPLib.beatmap_convert(getContext(), mode.getValue()) == 1;
+        public boolean convert(Mode mode, Mods mods) {
+            return RosuPPLib.beatmap_convert(getContext(), mode.getValue(), mods.getContext()) == 1;
+        }
+
+        // Convert the Beatmap to the specified mode
+        public boolean convert(Mode mode) throws FFIException {
+            var mods = Mods.New(mode);
+            return RosuPPLib.beatmap_convert(getContext(), mode.getValue(), mods.getContext()) == 1;
         }
 
         // Get the BPM of the Beatmap
