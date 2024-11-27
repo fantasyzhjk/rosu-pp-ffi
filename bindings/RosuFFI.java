@@ -1,4 +1,5 @@
 import java.lang.ref.Cleaner;
+import java.nio.ByteBuffer;
 import java.util.Optional;
 
 import com.sun.jna.Memory;
@@ -338,9 +339,15 @@ public class RosuFFI {
             public Pointer data;
             public long len;
 
+            public Sliceu8(ByteBuffer data) {
+                this.data = Native.getDirectBufferPointer(data);
+                this.len = data.capacity();
+            }
+
             public Sliceu8(byte[] data) {
-                this.data = new Memory(data.length);
-                this.data.write(0, data, 0, data.length);
+                var mem = new Memory(data.length);
+                mem.write(0, data, 0, data.length);
+                this.data = mem;
                 this.len = data.length;
             }
 
@@ -664,7 +671,10 @@ public class RosuFFI {
         // Load the Beatmap from bytes
         public Beatmap(byte[] data) throws FFIException {
             _context = new PointerByReference();  // Initialize _context to a valid Pointer
-            var sliceu8 = new RosuPPLib.Sliceu8(data);
+            ByteBuffer buffer = ByteBuffer.allocateDirect(data.length);
+            buffer.put(data);
+            buffer.flip();
+            var sliceu8 = new RosuPPLib.Sliceu8(buffer);
             int rval = RosuPPLib.beatmap_from_bytes(_context, sliceu8);
             if (rval != FFIError.Ok) {
                 throw new FFIException("Error loading beatmap from bytes", rval);
