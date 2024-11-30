@@ -1,7 +1,7 @@
 use interoptopus::{ffi_type, patterns::primitives::FFIBool};
 
 /// The result of a difficulty calculation on an osu!mania map.
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 #[repr(C)]
 #[ffi_type]
 pub struct ManiaDifficultyAttributes {

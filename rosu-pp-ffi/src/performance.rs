@@ -294,7 +294,7 @@ impl Performance {
             perf = perf.hardrock_offsets(hardrock_offsets);
         }
 
-        if let Some(state) = *state {
+        if let Some(state) = state {
             perf = perf.state(state.into());
         }
 

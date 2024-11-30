@@ -34,7 +34,7 @@ impl OsuScoreOrigin {
 
 
 /// Aggregation for a score's current state.
-#[derive(Clone, Copy, Default, Debug, Eq, PartialEq)]
+#[derive(Clone, Default, Debug, Eq, PartialEq)]
 #[repr(C)]
 #[ffi_type]
 pub struct ScoreState {
@@ -119,8 +119,8 @@ impl From<rosu_pp::any::ScoreState> for ScoreState {
     }
 }
 
-impl From<ScoreState> for rosu_pp::any::ScoreState {
-    fn from(value: ScoreState) -> Self {
+impl From<&ScoreState> for rosu_pp::any::ScoreState {
+    fn from(value: &ScoreState) -> Self {
         Self {
             max_combo: value.max_combo,
             osu_large_tick_hits: value.osu_large_tick_hits,
@@ -133,6 +133,12 @@ impl From<ScoreState> for rosu_pp::any::ScoreState {
             n50: value.n50,
             misses: value.misses,
         }
+    }
+}
+
+impl From<ScoreState> for rosu_pp::any::ScoreState {
+    fn from(value: ScoreState) -> Self {
+        Self::from(&value)
     }
 }
 
@@ -149,20 +155,20 @@ pub extern "C" fn debug_score_state(res: &ScoreState, str: &mut OwnedString) {
 pub extern "C" fn calculate_accuacy(state: &ScoreState, difficulty: &attributes::DifficultyAttributes, origin: OsuScoreOrigin) -> f64 {
     match difficulty.mode {
         Mode::Osu => {
-            let attrs: rosu_pp::osu::OsuDifficultyAttributes = difficulty.osu.into_option().unwrap_or_default().into();
-            let state: rosu_pp::osu::OsuScoreState = rosu_pp::any::ScoreState::from(*state).into();
+            let attrs: rosu_pp::osu::OsuDifficultyAttributes = difficulty.osu.clone().into_option().unwrap_or_default().into();
+            let state: rosu_pp::osu::OsuScoreState = rosu_pp::any::ScoreState::from(state).into();
             state.accuracy(origin.to_rosu(&attrs))
         },
         Mode::Taiko => {
-            let state: rosu_pp::taiko::TaikoScoreState = rosu_pp::any::ScoreState::from(*state).into();
+            let state: rosu_pp::taiko::TaikoScoreState = rosu_pp::any::ScoreState::from(state).into();
             state.accuracy()
         },
         Mode::Catch => {
-            let state: rosu_pp::catch::CatchScoreState = rosu_pp::any::ScoreState::from(*state).into();
+            let state: rosu_pp::catch::CatchScoreState = rosu_pp::any::ScoreState::from(state).into();
             state.accuracy()
         },
         Mode::Mania => {
-            let state: rosu_pp::mania::ManiaScoreState = rosu_pp::any::ScoreState::from(*state).into();
+            let state: rosu_pp::mania::ManiaScoreState = rosu_pp::any::ScoreState::from(state).into();
             state.accuracy()
         },
     }

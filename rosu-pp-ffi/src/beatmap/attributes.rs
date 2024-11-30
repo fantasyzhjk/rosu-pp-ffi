@@ -9,7 +9,7 @@ use mode::Mode;
 use rosu_mods::{GameMods, GameModsIntermode};
 
 /// Summary struct for a [`Beatmap`]'s attributes.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 #[repr(C)]
 #[ffi_type]
 pub struct BeatmapAttributes {
