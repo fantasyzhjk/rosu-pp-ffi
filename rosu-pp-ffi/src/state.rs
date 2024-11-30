@@ -17,16 +17,16 @@ pub enum OsuScoreOrigin {
 }
 
 impl OsuScoreOrigin {
-    pub fn to_rosu(self, max_large_ticks: u32, max_slider_ends: u32) -> rosu_pp::osu::OsuScoreOrigin {
+    pub fn to_rosu(self, attrs: &rosu_pp::osu::OsuDifficultyAttributes) -> rosu_pp::osu::OsuScoreOrigin {
         match self {
             OsuScoreOrigin::Stable => rosu_pp::osu::OsuScoreOrigin::Stable,
             OsuScoreOrigin::WithSliderAcc => rosu_pp::osu::OsuScoreOrigin::WithSliderAcc {
-                max_large_ticks,
-                max_slider_ends,
+                max_large_ticks: attrs.n_large_ticks,
+                max_slider_ends: attrs.n_sliders,
             },
             OsuScoreOrigin::WithoutSliderAcc => rosu_pp::osu::OsuScoreOrigin::WithoutSliderAcc {
-                max_large_ticks,
-                max_slider_ends,
+                max_large_ticks: attrs.n_sliders + attrs.n_large_ticks,
+                max_small_ticks: attrs.n_sliders,
             },
         }
     }
@@ -54,7 +54,16 @@ pub struct ScoreState {
     ///   slider ticks and repeats
     /// - if set on osu!lazer *with* `CL`, this field is the amount of hit
     ///   slider heads, ticks, and repeats
+    ///
+    /// Only relevant for osu!lazer.
     pub osu_large_tick_hits: u32,
+    /// "Small ticks" hits for osu!standard.
+    ///
+    /// These are essentially the slider end hits for lazer scores without
+    /// slider accuracy.
+    ///
+    /// Only relevant for osu!lazer.
+    pub osu_small_tick_hits: u32,
     /// Amount of successfully hit slider ends.
     ///
     /// Only relevant for osu!standard in lazer.
@@ -98,6 +107,7 @@ impl From<rosu_pp::any::ScoreState> for ScoreState {
         Self {
             max_combo: value.max_combo,
             osu_large_tick_hits: value.osu_large_tick_hits,
+            osu_small_tick_hits: value.osu_small_tick_hits,
             slider_end_hits: value.slider_end_hits,
             n_geki: value.n_geki,
             n_katu: value.n_katu,
@@ -114,6 +124,7 @@ impl From<ScoreState> for rosu_pp::any::ScoreState {
         Self {
             max_combo: value.max_combo,
             osu_large_tick_hits: value.osu_large_tick_hits,
+            osu_small_tick_hits: value.osu_small_tick_hits,
             slider_end_hits: value.slider_end_hits,
             n_geki: value.n_geki,
             n_katu: value.n_katu,
@@ -138,9 +149,9 @@ pub extern "C" fn debug_score_state(res: &ScoreState, str: &mut OwnedString) {
 pub extern "C" fn calculate_accuacy(state: &ScoreState, difficulty: &attributes::DifficultyAttributes, origin: OsuScoreOrigin) -> f64 {
     match difficulty.mode {
         Mode::Osu => {
-            let attr: rosu_pp::osu::OsuDifficultyAttributes = difficulty.osu.into_option().unwrap().into();
+            let attrs: rosu_pp::osu::OsuDifficultyAttributes = difficulty.osu.into_option().unwrap_or_default().into();
             let state: rosu_pp::osu::OsuScoreState = rosu_pp::any::ScoreState::from(*state).into();
-            state.accuracy(origin.to_rosu(attr.n_large_ticks, attr.n_sliders))
+            state.accuracy(origin.to_rosu(&attrs))
         },
         Mode::Taiko => {
             let state: rosu_pp::taiko::TaikoScoreState = rosu_pp::any::ScoreState::from(*state).into();

@@ -34,6 +34,7 @@ pub struct Performance {
     pub hitresult_priority: Option<HitResultPriority>,
 
     pub large_tick_hits: Option<u32>,
+    pub small_tick_hits: Option<u32>,
     pub slider_end_hits: Option<u32>,
     pub n300: Option<u32>,
     pub n100: Option<u32>,
@@ -144,6 +145,11 @@ impl Performance {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn small_tick_hits(&mut self, small_tick_hits: u32) {
+        self.small_tick_hits = Some(small_tick_hits);
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn slider_end_hits(&mut self, slider_end_hits: u32) {
         self.slider_end_hits = Some(slider_end_hits);
     }
@@ -240,6 +246,7 @@ impl Performance {
             hitresult_priority,
             lazer,
             large_tick_hits,
+            small_tick_hits,
             slider_end_hits,
             n300,
             n100,
@@ -314,9 +321,13 @@ impl Performance {
         if let Some(large_tick_hits) = *large_tick_hits {
             perf = perf.large_tick_hits(large_tick_hits);
         }
+        
+        if let Some(small_tick_hits) = *small_tick_hits {
+            perf = perf.small_tick_hits(small_tick_hits);
+        }
 
         if let Some(slider_end_hits) = *slider_end_hits {
-            perf = perf.n_slider_ends(slider_end_hits);
+            perf = perf.slider_end_hits(slider_end_hits);
         }
 
         if let Some(n300) = *n300 {

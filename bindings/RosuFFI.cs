@@ -352,6 +352,9 @@ namespace RosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_large_tick_hits")]
         public static extern void performance_large_tick_hits(IntPtr context, uint large_tick_hits);
 
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_small_tick_hits")]
+        public static extern void performance_small_tick_hits(IntPtr context, uint small_tick_hits);
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_slider_end_hits")]
         public static extern void performance_slider_end_hits(IntPtr context, uint slider_end_hits);
 
@@ -803,7 +806,16 @@ namespace RosuPP
         ///   slider ticks and repeats
         /// - if set on osu!lazer *with* `CL`, this field is the amount of hit
         ///   slider heads, ticks, and repeats
+        ///
+        /// Only relevant for osu!lazer.
         public uint osu_large_tick_hits;
+        /// "Small ticks" hits for osu!standard.
+        ///
+        /// These are essentially the slider end hits for lazer scores without
+        /// slider accuracy.
+        ///
+        /// Only relevant for osu!lazer.
+        public uint osu_small_tick_hits;
         /// Amount of successfully hit slider ends.
         ///
         /// Only relevant for osu!standard in lazer.
@@ -1649,6 +1661,11 @@ namespace RosuPP
         public void LargeTickHits(uint large_tick_hits)
         {
             RosuLibrary.performance_large_tick_hits(_context, large_tick_hits);
+        }
+
+        public void SmallTickHits(uint small_tick_hits)
+        {
+            RosuLibrary.performance_small_tick_hits(_context, small_tick_hits);
         }
 
         public void SliderEndHits(uint slider_end_hits)

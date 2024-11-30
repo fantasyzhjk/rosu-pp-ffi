@@ -66,6 +66,7 @@ def init_lib(path):
     c_lib.performance_hitresult_priority.argtypes = [ctypes.c_void_p, ctypes.c_int]
     c_lib.performance_lazer.argtypes = [ctypes.c_void_p, ctypes.c_uint8]
     c_lib.performance_large_tick_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_small_tick_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_slider_end_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_n300.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_n100.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
@@ -683,6 +684,7 @@ class ScoreState(ctypes.Structure):
     _fields_ = [
         ("max_combo", ctypes.c_uint32),
         ("osu_large_tick_hits", ctypes.c_uint32),
+        ("osu_small_tick_hits", ctypes.c_uint32),
         ("slider_end_hits", ctypes.c_uint32),
         ("n_geki", ctypes.c_uint32),
         ("n_katu", ctypes.c_uint32),
@@ -692,11 +694,13 @@ class ScoreState(ctypes.Structure):
         ("misses", ctypes.c_uint32),
     ]
 
-    def __init__(self, max_combo: int = None, osu_large_tick_hits: int = None, slider_end_hits: int = None, n_geki: int = None, n_katu: int = None, n300: int = None, n100: int = None, n50: int = None, misses: int = None):
+    def __init__(self, max_combo: int = None, osu_large_tick_hits: int = None, osu_small_tick_hits: int = None, slider_end_hits: int = None, n_geki: int = None, n_katu: int = None, n300: int = None, n100: int = None, n50: int = None, misses: int = None):
         if max_combo is not None:
             self.max_combo = max_combo
         if osu_large_tick_hits is not None:
             self.osu_large_tick_hits = osu_large_tick_hits
+        if osu_small_tick_hits is not None:
+            self.osu_small_tick_hits = osu_small_tick_hits
         if slider_end_hits is not None:
             self.slider_end_hits = slider_end_hits
         if n_geki is not None:
@@ -743,7 +747,9 @@ class ScoreState(ctypes.Structure):
  - if set on osu!lazer *without* `CL`, this field is the amount of hit
    slider ticks and repeats
  - if set on osu!lazer *with* `CL`, this field is the amount of hit
-   slider heads, ticks, and repeats"""
+   slider heads, ticks, and repeats
+
+ Only relevant for osu!lazer."""
         return ctypes.Structure.__get__(self, "osu_large_tick_hits")
 
     @osu_large_tick_hits.setter
@@ -755,8 +761,30 @@ class ScoreState(ctypes.Structure):
  - if set on osu!lazer *without* `CL`, this field is the amount of hit
    slider ticks and repeats
  - if set on osu!lazer *with* `CL`, this field is the amount of hit
-   slider heads, ticks, and repeats"""
+   slider heads, ticks, and repeats
+
+ Only relevant for osu!lazer."""
         return ctypes.Structure.__set__(self, "osu_large_tick_hits", value)
+
+    @property
+    def osu_small_tick_hits(self) -> int:
+        """ "Small ticks" hits for osu!standard.
+
+ These are essentially the slider end hits for lazer scores without
+ slider accuracy.
+
+ Only relevant for osu!lazer."""
+        return ctypes.Structure.__get__(self, "osu_small_tick_hits")
+
+    @osu_small_tick_hits.setter
+    def osu_small_tick_hits(self, value: int):
+        """ "Small ticks" hits for osu!standard.
+
+ These are essentially the slider end hits for lazer scores without
+ slider accuracy.
+
+ Only relevant for osu!lazer."""
+        return ctypes.Structure.__set__(self, "osu_small_tick_hits", value)
 
     @property
     def slider_end_hits(self) -> int:
@@ -2108,6 +2136,10 @@ class Performance:
     def large_tick_hits(self, large_tick_hits: int):
         """"""
         return c_lib.performance_large_tick_hits(self._ctx, large_tick_hits)
+
+    def small_tick_hits(self, small_tick_hits: int):
+        """"""
+        return c_lib.performance_small_tick_hits(self._ctx, small_tick_hits)
 
     def slider_end_hits(self, slider_end_hits: int):
         """"""

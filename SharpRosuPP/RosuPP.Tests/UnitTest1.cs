@@ -19,7 +19,7 @@ public class UnitTest1
 
 
     [Fact]
-    public void TestPP()
+    public void TestPPStable()
     {
         var d = Assembly.GetExecutingAssembly().Location;
         var b = File.ReadAllBytes("../../../resources/657916.osu");
@@ -47,10 +47,77 @@ public class UnitTest1
         
         var ruleset = OsuPP.Utils.ParseRuleset((int)beatmap.Mode())!;
         var osubm = OsuPP.Calculater.New(ruleset, new OsuPP.CalculatorWorkingBeatmap(b));
-        var sliderTickMiss = dattr.osu.ToNullable()!.Value.n_large_ticks - state.osu_large_tick_hits;
-        var attr2 = osubm.Mods(mods).LoadState(state, sliderTickMiss).Acc(acc).Calculate();
+        var attr2 = osubm.Mods(mods).LoadState(state, dattr).Acc(acc).Calculate();
 
         Assert.Equal(attr2.Total, attr.osu.ToNullable()!.Value.pp);
+    }
+
+    [Fact]
+    public void TestPPLazer()
+    {
+        var d = Assembly.GetExecutingAssembly().Location;
+        var b = File.ReadAllBytes("../../../resources/657916.osu");
+        var beatmap = Beatmap.FromBytes(b);
+        var mods = Mods.FromAcronyms("HD", beatmap.Mode());
+        var difficulty = Difficulty.New();
+        difficulty.Lazer(Bool.True);
+        difficulty.Mods(mods);
+        var dattr = difficulty.Calculate(beatmap);
+
+        var performance = Performance.New();
+        performance.Lazer(Bool.True);
+        performance.Mods(mods);
+        performance.N100(66);
+        performance.N50(1);
+        performance.Misses(1);
+        performance.Combo(1786);
+
+        var state = performance.GenerateStateFromDifficulty(dattr);
+        var attr = performance.CalculateFromDifficulty(dattr);
+        var acc = state.Acc(ref dattr, OsuScoreOrigin.WithSliderAcc) * 100;
+        output.WriteLine("{0}", attr);
+        output.WriteLine("{0}", state);
+        output.WriteLine("{0}", acc);
+        
+        var ruleset = OsuPP.Utils.ParseRuleset((int)beatmap.Mode())!;
+        var osubm = OsuPP.Calculater.New(ruleset, new OsuPP.CalculatorWorkingBeatmap(b));
+        var attr2 = osubm.Mods(mods).LoadState(state, dattr).Acc(acc).Calculate();
+
+        Assert.Equal(attr2.Total, attr.osu.ToNullable()!.Value.pp);
+    }
+
+    [Fact]
+    public void TestPPLazerWithCL()
+    {
+        var d = Assembly.GetExecutingAssembly().Location;
+        var b = File.ReadAllBytes("../../../resources/657916.osu");
+        var beatmap = Beatmap.FromBytes(b);
+        var mods = Mods.FromAcronyms("HDCL", beatmap.Mode());
+        var difficulty = Difficulty.New();
+        difficulty.Lazer(Bool.True);
+        difficulty.Mods(mods);
+        var dattr = difficulty.Calculate(beatmap);
+
+        var performance = Performance.New();
+        performance.Lazer(Bool.True);
+        performance.Mods(mods);
+        performance.N100(66);
+        performance.N50(1);
+        performance.Misses(1);
+        performance.Combo(1786);
+
+        var state = performance.GenerateStateFromDifficulty(dattr);
+        var attr = performance.CalculateFromDifficulty(dattr);
+        var acc = state.Acc(ref dattr, OsuScoreOrigin.WithoutSliderAcc) * 100;
+        output.WriteLine("{0}", attr);
+        output.WriteLine("{0}", state);
+        output.WriteLine("{0}", acc);
+        
+        var ruleset = OsuPP.Utils.ParseRuleset((int)beatmap.Mode())!;
+        var osubm = OsuPP.Calculater.New(ruleset, new OsuPP.CalculatorWorkingBeatmap(b));
+        var attr2 = osubm.Mods(mods).LoadState(state, dattr).Acc(acc).Calculate();
+
+        Assert.InRange(attr.osu.ToNullable()!.Value.pp, attr2.Total - 0.00005, attr2.Total + 0.00005);
     }
 
     [Fact]

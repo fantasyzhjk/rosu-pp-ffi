@@ -2,7 +2,19 @@ namespace RosuPP.Tests;
 
 public static class Extensions
 {
-    public static OsuPP.Calculater LoadState(this OsuPP.Calculater c, RosuPP.ScoreState state, uint sliderTickMiss) {
+    public static OsuPP.Calculater LoadState(this OsuPP.Calculater c, ScoreState state, DifficultyAttributes dattr, bool is_cl = false, bool is_lazer = false) {
+        uint sliderTickMiss = 0;
+        var dattrosu = dattr.osu.ToNullable();
+        if (dattrosu is not null) {
+            if (is_lazer) {
+                if (is_cl) {
+                    sliderTickMiss = dattrosu.Value.n_large_ticks - state.osu_large_tick_hits;
+                } else {
+                    sliderTickMiss = dattrosu.Value.n_large_ticks + dattrosu.Value.n_sliders - state.osu_large_tick_hits;
+                }
+            }
+        }
+        
         c.combo ??= state.max_combo;
         c.SliderTickMiss ??= sliderTickMiss;
         c.SliderTailHit ??= state.slider_end_hits;
@@ -15,7 +27,7 @@ public static class Extensions
         return c;
     }
 
-    public static OsuPP.Calculater Mods(this OsuPP.Calculater c, RosuPP.Mods mods) {
+    public static OsuPP.Calculater Mods(this OsuPP.Calculater c, Mods mods) {
         var s = OwnedString.Empty();
         mods.Json(ref s);
         c.Mods(s.ToCstr());

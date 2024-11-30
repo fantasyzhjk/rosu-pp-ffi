@@ -167,7 +167,16 @@ typedef struct scorestate
     ///   slider ticks and repeats
     /// - if set on osu!lazer *with* `CL`, this field is the amount of hit
     ///   slider heads, ticks, and repeats
+    ///
+    /// Only relevant for osu!lazer.
     uint32_t osu_large_tick_hits;
+    /// "Small ticks" hits for osu!standard.
+    ///
+    /// These are essentially the slider end hits for lazer scores without
+    /// slider accuracy.
+    ///
+    /// Only relevant for osu!lazer.
+    uint32_t osu_small_tick_hits;
     /// Amount of successfully hit slider ends.
     ///
     /// Only relevant for osu!standard in lazer.
@@ -546,6 +555,8 @@ void performance_hitresult_priority(performance* context, hitresultpriority hitr
 void performance_lazer(performance* context, uint8_t lazer);
 
 void performance_large_tick_hits(performance* context, uint32_t large_tick_hits);
+
+void performance_small_tick_hits(performance* context, uint32_t small_tick_hits);
 
 void performance_slider_end_hits(performance* context, uint32_t slider_end_hits);
 
