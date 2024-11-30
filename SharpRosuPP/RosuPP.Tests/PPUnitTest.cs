@@ -8,116 +8,186 @@ using osu.Game.Rulesets.Taiko;
 
 namespace RosuPP.Tests;
 
-public class UnitTest1
+public class PPUnitTest(ITestOutputHelper output)
 {
-    private readonly ITestOutputHelper output;
+    private readonly ITestOutputHelper output = output;
 
-    public UnitTest1(ITestOutputHelper output)
-    {
-        this.output = output;
+    private void TestPP(string beatmapPath, string modstr, bool isLazer, Mode? mode = null, double compareRange = 0.0000001) {
+        var b = File.ReadAllBytes(beatmapPath);
+        var beatmap = Beatmap.FromBytes(b);
+
+        if (mode is not null) {
+            var convertSuccess = beatmap.Convert(mode.Value, Mods.FromAcronyms(modstr, mode.Value));
+            Assert.True(convertSuccess.Is, "convert failed");
+        } else {
+            mode = beatmap.Mode();
+        }
+
+        var mods = Mods.FromAcronyms(modstr, beatmap.Mode());
+        var difficulty = Difficulty.New();
+        difficulty.Lazer(new Bool(isLazer));
+        difficulty.Mods(mods);
+        var dattr = difficulty.Calculate(beatmap);
+
+        var performance = Performance.New();
+        performance.Lazer(new Bool(isLazer));
+        performance.Mods(mods);
+
+        var state = performance.GenerateStateFromDifficulty(dattr);
+        var attr = performance.CalculateFromDifficulty(dattr);
+        var origin = OsuScoreOrigin.Stable;
+        if (isLazer) {
+            if (mods.Contains("CL").Is) {
+                origin = OsuScoreOrigin.WithoutSliderAcc;
+            } else {
+                origin = OsuScoreOrigin.WithSliderAcc;
+            }
+        }
+        var acc = state.Acc(ref dattr, origin) * 100;
+        output.WriteLine("{0}", attr);
+        output.WriteLine("{0}", state);
+        output.WriteLine("{0}", acc);
+        
+        var ruleset = OsuPP.Utils.ParseRuleset((int)beatmap.Mode())!;
+        var osubm = OsuPP.Calculater.New(ruleset, new OsuPP.CalculatorWorkingBeatmap(b));
+        var attr2 = osubm.Mods(mods).LoadState(state, dattr).Acc(acc).Calculate();
+
+        var pp = mode switch {
+            Mode.Osu => attr.osu.ToNullable()!.Value.pp,
+            Mode.Taiko => attr.taiko.ToNullable()!.Value.pp,
+            Mode.Catch => attr.fruit.ToNullable()!.Value.pp,
+            Mode.Mania => attr.mania.ToNullable()!.Value.pp,
+            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+        };
+
+        Assert.InRange(pp, attr2.Total - compareRange, attr2.Total + compareRange);
+    }
+
+    [Fact]
+    public void Convert() {
+        TestPP(
+            beatmapPath: "../../../resources/657916.osu",
+            modstr: "",
+            isLazer: false, 
+            mode: Mode.Taiko
+        );
+
+        TestPP(
+            beatmapPath: "../../../resources/657916.osu",
+            modstr: "",
+            isLazer: false, 
+            mode: Mode.Catch
+        );
+
+        TestPP(
+            beatmapPath: "../../../resources/657916.osu",
+            modstr: "",
+            isLazer: false, 
+            mode: Mode.Mania
+        );
     }
 
 
     [Fact]
     public void TestPPStable()
     {
-        var d = Assembly.GetExecutingAssembly().Location;
-        var b = File.ReadAllBytes("../../../resources/657916.osu");
-        var beatmap = Beatmap.FromBytes(b);
-        var mods = Mods.FromAcronyms("HDCL", beatmap.Mode());
-        var difficulty = Difficulty.New();
-        difficulty.Lazer(Bool.False);
-        difficulty.Mods(mods);
-        var dattr = difficulty.Calculate(beatmap);
-
-        var performance = Performance.New();
-        performance.Lazer(Bool.False);
-        performance.Mods(mods);
-        performance.N100(66);
-        performance.N50(1);
-        performance.Misses(1);
-        performance.Combo(1786);
-
-        var state = performance.GenerateStateFromDifficulty(dattr);
-        var attr = performance.CalculateFromDifficulty(dattr);
-        var acc = state.Acc(ref dattr, OsuScoreOrigin.Stable) * 100;
-        output.WriteLine("{0}", attr);
-        output.WriteLine("{0}", state);
-        output.WriteLine("{0}", acc);
+        TestPP(
+            beatmapPath: "../../../resources/657916.osu",
+            modstr: "CL",
+            isLazer: false
+        );
         
-        var ruleset = OsuPP.Utils.ParseRuleset((int)beatmap.Mode())!;
-        var osubm = OsuPP.Calculater.New(ruleset, new OsuPP.CalculatorWorkingBeatmap(b));
-        var attr2 = osubm.Mods(mods).LoadState(state, dattr).Acc(acc).Calculate();
+        TestPP(
+            beatmapPath: "../../../resources/1028484.osu",
+            modstr: "CL",
+            isLazer: false
+        );
 
-        Assert.Equal(attr2.Total, attr.osu.ToNullable()!.Value.pp);
+        TestPP(
+            beatmapPath: "../../../resources/1638954.osu",
+            modstr: "CL",
+            isLazer: false
+        );
+
+        TestPP(
+            beatmapPath: "../../../resources/2118524.osu",
+            modstr: "CL",
+            isLazer: false
+        );
+
+        TestPP(
+            beatmapPath: "../../../resources/2785319.osu",
+            modstr: "CL",
+            isLazer: false
+        );
     }
 
     [Fact]
     public void TestPPLazer()
     {
-        var d = Assembly.GetExecutingAssembly().Location;
-        var b = File.ReadAllBytes("../../../resources/657916.osu");
-        var beatmap = Beatmap.FromBytes(b);
-        var mods = Mods.FromAcronyms("HD", beatmap.Mode());
-        var difficulty = Difficulty.New();
-        difficulty.Lazer(Bool.True);
-        difficulty.Mods(mods);
-        var dattr = difficulty.Calculate(beatmap);
+        TestPP(
+            beatmapPath: "../../../resources/657916.osu",
+            modstr: "",
+            isLazer: true
+        );
 
-        var performance = Performance.New();
-        performance.Lazer(Bool.True);
-        performance.Mods(mods);
-        performance.N100(66);
-        performance.N50(1);
-        performance.Misses(1);
-        performance.Combo(1786);
+        TestPP(
+            beatmapPath: "../../../resources/1028484.osu",
+            modstr: "",
+            isLazer: true
+        );
 
-        var state = performance.GenerateStateFromDifficulty(dattr);
-        var attr = performance.CalculateFromDifficulty(dattr);
-        var acc = state.Acc(ref dattr, OsuScoreOrigin.WithSliderAcc) * 100;
-        output.WriteLine("{0}", attr);
-        output.WriteLine("{0}", state);
-        output.WriteLine("{0}", acc);
-        
-        var ruleset = OsuPP.Utils.ParseRuleset((int)beatmap.Mode())!;
-        var osubm = OsuPP.Calculater.New(ruleset, new OsuPP.CalculatorWorkingBeatmap(b));
-        var attr2 = osubm.Mods(mods).LoadState(state, dattr).Acc(acc).Calculate();
+        TestPP(
+            beatmapPath: "../../../resources/1638954.osu",
+            modstr: "",
+            isLazer: true
+        );
 
-        Assert.Equal(attr2.Total, attr.osu.ToNullable()!.Value.pp);
+        TestPP(
+            beatmapPath: "../../../resources/2118524.osu",
+            modstr: "",
+            isLazer: true
+        );
+
+        TestPP(
+            beatmapPath: "../../../resources/2785319.osu",
+            modstr: "",
+            isLazer: true
+        );
     }
 
     [Fact]
     public void TestPPLazerWithCL()
     {
-        var d = Assembly.GetExecutingAssembly().Location;
-        var b = File.ReadAllBytes("../../../resources/657916.osu");
-        var beatmap = Beatmap.FromBytes(b);
-        var mods = Mods.FromAcronyms("HDCL", beatmap.Mode());
-        var difficulty = Difficulty.New();
-        difficulty.Lazer(Bool.True);
-        difficulty.Mods(mods);
-        var dattr = difficulty.Calculate(beatmap);
+        TestPP(
+            beatmapPath: "../../../resources/657916.osu",
+            modstr: "CL",
+            isLazer: true
+        );
 
-        var performance = Performance.New();
-        performance.Lazer(Bool.True);
-        performance.Mods(mods);
-        performance.N100(66);
-        performance.N50(1);
-        performance.Misses(1);
-        performance.Combo(1786);
+        TestPP(
+            beatmapPath: "../../../resources/1028484.osu",
+            modstr: "CL",
+            isLazer: true
+        );
 
-        var state = performance.GenerateStateFromDifficulty(dattr);
-        var attr = performance.CalculateFromDifficulty(dattr);
-        var acc = state.Acc(ref dattr, OsuScoreOrigin.WithoutSliderAcc) * 100;
-        output.WriteLine("{0}", attr);
-        output.WriteLine("{0}", state);
-        output.WriteLine("{0}", acc);
-        
-        var ruleset = OsuPP.Utils.ParseRuleset((int)beatmap.Mode())!;
-        var osubm = OsuPP.Calculater.New(ruleset, new OsuPP.CalculatorWorkingBeatmap(b));
-        var attr2 = osubm.Mods(mods).LoadState(state, dattr).Acc(acc).Calculate();
+        TestPP(
+            beatmapPath: "../../../resources/1638954.osu",
+            modstr: "CL",
+            isLazer: true
+        );
 
-        Assert.InRange(attr.osu.ToNullable()!.Value.pp, attr2.Total - 0.00005, attr2.Total + 0.00005);
+        TestPP(
+            beatmapPath: "../../../resources/2118524.osu",
+            modstr: "CL",
+            isLazer: true
+        );
+
+        TestPP(
+            beatmapPath: "../../../resources/2785319.osu",
+            modstr: "CL",
+            isLazer: true
+        );
     }
 
     [Fact]
