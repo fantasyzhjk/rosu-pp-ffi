@@ -1,0 +1,80 @@
+name: Continuous Integration
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: Test
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-20.04, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.platform }}  
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Rust setup
+      uses: dtolnay/rust-toolchain@nightly
+
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    # Execute all unit tests in the solution
+    - name: Execute unit tests
+      run: dotnet test
+
+
+  build:
+    name: Build
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-20.04, macos-latest, windows-latest]
+
+    # For a list of available runner types, refer to
+    # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+    runs-on: ${{ matrix.platform }}  
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Rust setup
+      uses: dtolnay/rust-toolchain@nightly
+
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+
+    - name: build artifacts
+      working-directory: ./
+      run: cargo build --release
+
+    - uses: actions/upload-artifact@v4
+      if: matrix.platform == 'ubuntu-20.04'
+      with:
+        name: linux-deb
+        path: ./target/release/librosu_pp_ffi.so
+
+    - uses: actions/upload-artifact@v4
+      if: matrix.platform == 'windows-latest'
+      with:
+        name: windows-exe
+        path: ./target/release/rosu_pp_ffi.dll
+
+    - uses: actions/upload-artifact@v4
+      if: matrix.platform == 'macos-latest'
+      with:
+        name: macos-dmg
+        path: ./target/release/librosu_pp_ffi.dylib
+
