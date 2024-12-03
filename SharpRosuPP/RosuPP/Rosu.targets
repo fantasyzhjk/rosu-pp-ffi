@@ -32,6 +32,16 @@
         <DefineConstants>$(DefineConstants);MACOS;UNIX</DefineConstants>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(IsMacOS)' == 'true' And '$(Platform)' == 'x64'">
+        <IsIntelMac>true</IsIntelMac>
+        <DefineConstants>$(DefineConstants);INTELMAC</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(IsMacOS)' == 'true' And '$(Platform)' == 'arm64'">
+        <IsM1Mac>true</IsM1Mac>
+        <DefineConstants>$(DefineConstants);M1MAC</DefineConstants>
+    </PropertyGroup>
+
     <!-- Cargo configuration -->
     <PropertyGroup>
         <CargoTargetPath>$(MSBuildThisFileDirectory)/../../target</CargoTargetPath>
@@ -40,7 +50,8 @@
 
         <CargoTarget Condition=" '$(IsWindows)' == 'true' ">x86_64-pc-windows-msvc</CargoTarget>
         <CargoTarget Condition=" '$(IsLinux)' == 'true' ">x86_64-unknown-linux-gnu</CargoTarget>
-        <CargoTarget Condition=" '$(IsMacOS)' == 'true' ">x86_64-apple-darwin</CargoTarget>
+        <CargoTarget Condition=" '$(IsIntelMac)' == 'true' ">aarch64-apple-darwin</CargoTarget>
+        <CargoTarget Condition=" '$(IsM1Mac)' == 'true' ">x86_64-apple-darwin</CargoTarget>
 
         <CargoExtension Condition=" '$(IsWindows)' == 'true' ">dll</CargoExtension>
         <CargoExtension Condition=" '$(IsLinux)' == 'true' ">so</CargoExtension>
@@ -70,7 +81,7 @@
     <!-- In AOT builds, add a reference to the IL compiler and link the static native artifact -->
     <ItemGroup Condition=" '$(IsAotBuild)' == 'true' ">
         <!-- This version of the IL Compiler is pinned to the framework (and by extension, ASP.NET) -->
-        <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="1.0.0-alpha-28124-02" />
+        <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="9.0.0" />
 
         <IlcArg Include="--completetypemetadata" />
         <IlcArg Include="-g" />
