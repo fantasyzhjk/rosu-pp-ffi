@@ -58,7 +58,7 @@ jobs:
 
     - name: build artifacts
       working-directory: ./
-      run: cargo build --release
+      run: cargo build --release -p rosu_pp_ffi
 
     - uses: actions/upload-artifact@v4
       if: matrix.platform == 'ubuntu-20.04'
