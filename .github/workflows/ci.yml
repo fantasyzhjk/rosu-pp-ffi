@@ -63,18 +63,18 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: matrix.platform == 'ubuntu-20.04'
       with:
-        name: linux-deb
+        name: linux
         path: ./target/release/librosu_pp_ffi.so
 
     - uses: actions/upload-artifact@v4
       if: matrix.platform == 'windows-latest'
       with:
-        name: windows-exe
+        name: windows
         path: ./target/release/rosu_pp_ffi.dll
 
     - uses: actions/upload-artifact@v4
       if: matrix.platform == 'macos-latest'
       with:
-        name: macos-dmg
+        name: macos-arm
         path: ./target/release/librosu_pp_ffi.dylib
 
