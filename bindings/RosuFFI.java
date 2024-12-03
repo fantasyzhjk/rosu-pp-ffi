@@ -424,7 +424,7 @@ public class RosuFFI {
             public double hp;                           // Health drain rate
             public int n_circles;                       // Number of circles (unsigned int -> int)
             public int n_sliders;                       // Number of sliders (unsigned int -> int)
-            public int n_slider_ticks;                  // Number of slider ticks and repeat points (unsigned int -> int)
+            public int n_large_ticks;                  // Number of slider ticks and repeat points (unsigned int -> int)
             public int n_spinners;                      // Number of spinners (unsigned int -> int)
             public double stars;                        // Final star rating
             public int max_combo;                       // Maximum combo (unsigned int -> int)
