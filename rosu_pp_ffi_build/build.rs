@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use interoptopus::util::NamespaceMappings;
 use interoptopus::{Error, Interop};
 
@@ -9,12 +11,16 @@ use interoptopus::{Error, Interop};
 // to run both `cargo build` to produce the `.dll` and `cargo test`
 // to produce the bindings (since `cargo test` does not imply `cargo build`).
 fn main() {
-    bindings_csharp().unwrap();
-    bindings_c().unwrap();
-    bindings_python().unwrap();
+    // to c# project
+    bindings_csharp("../SharpRosuPP/RosuPP/RosuFFI.cs").unwrap();
+
+    // to bindings
+    bindings_csharp("../bindings/RosuFFI.cs").unwrap();
+    bindings_c("../bindings/RosuFFI.h").unwrap();
+    bindings_python("../bindings/RosuFFI.py").unwrap();
 }
 
-fn bindings_csharp() -> Result<(), Error> {
+fn bindings_csharp(file_name: impl AsRef<Path>) -> Result<(), Error> {
     use interoptopus_backend_csharp::{Config, Generator, Unsafe};
     use interoptopus_backend_csharp::overloads::DotNet;
 
@@ -29,12 +35,12 @@ fn bindings_csharp() -> Result<(), Error> {
         rosu_pp_ffi::ffi_inventory(),
     )
     .add_overload_writer(DotNet::new())
-    .write_file("../bindings/RosuFFI.cs")?;
+    .write_file(file_name)?;
 
     Ok(())
 }
 
-fn bindings_c() -> Result<(), Error> {
+fn bindings_c(file_name: impl AsRef<Path>) -> Result<(), Error> {
     use interoptopus_backend_c::{Config, Generator};
 
     Generator::new(
@@ -44,16 +50,16 @@ fn bindings_c() -> Result<(), Error> {
         },
         rosu_pp_ffi::ffi_inventory(),
     )
-    .write_file("../bindings/RosuFFI.h")?;
+    .write_file(file_name)?;
 
     Ok(())
 }
 
-fn bindings_python() -> Result<(), Error> {
+fn bindings_python(file_name: impl AsRef<Path>) -> Result<(), Error> {
     use interoptopus_backend_cpython::{Config, Generator};
 
     let library = rosu_pp_ffi::ffi_inventory();
-    Generator::new(Config::default(), library).write_file("../bindings/RosuFFI.py")?;
+    Generator::new(Config::default(), library).write_file(file_name)?;
 
     Ok(())
 }

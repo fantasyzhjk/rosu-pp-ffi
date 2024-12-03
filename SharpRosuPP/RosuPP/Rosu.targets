@@ -2,6 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <CargoPackage>rosu_pp_ffi</CargoPackage>
+        <CargoBindingsPackage>rosu_pp_ffi_build</CargoBindingsPackage>
         <CargoWorkspacePath>$(MSBuildThisFileDirectory)/../../</CargoWorkspacePath>
     </PropertyGroup>
 
@@ -64,7 +65,10 @@
     </ItemGroup>
 
     <Target Name="Cargo" BeforeTargets="BeforeBuild">
-        <Exec Command="cargo @(CargoChannelArg, ' ') build @(CargoBuildArg, ' ')" WorkingDirectory="$(CargoWorkspacePath)" />
+        <Message Text="Building libs" Importance="high" />
+        <Exec Command="cargo @(CargoChannelArg, ' ') build @(CargoBuildArg, ' ') -p $(CargoPackage)" WorkingDirectory="$(CargoWorkspacePath)" />
+        <Message Text="Generate Bindings" Importance="high" />
+        <Exec Command="cargo @(CargoChannelArg, ' ') build @(CargoBuildArg, ' ') -p $(CargoBindingsPackage)" WorkingDirectory="$(CargoWorkspacePath)" />
     </Target>
 
     <!-- In AOT builds, add a reference to the IL compiler and link the static native artifact -->
