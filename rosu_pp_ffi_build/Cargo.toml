@@ -1,5 +1,5 @@
 [package]
-name = "rosu-pp-ffi-build"
+name = "rosu_pp_ffi_build"
 version = "0.1.0"
 edition = "2021"
 publish = false
@@ -9,4 +9,4 @@ interoptopus = { version = "0.14.27", features = ["log", "serde"] }
 interoptopus_backend_csharp = "0.14.25"
 interoptopus_backend_c = "0.14.25"
 interoptopus_backend_cpython = "0.14.25"
-rosu-pp-ffi = { path = "../rosu-pp-ffi" }
+rosu_pp_ffi = { path = "../rosu_pp_ffi" }

@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "rosu-pp-ffi",
-    "rosu-pp-ffi-build",
+    "rosu_pp_ffi",
+    "rosu_pp_ffi_build",
 ]
 resolver = "2"
