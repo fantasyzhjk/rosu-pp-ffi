@@ -82,7 +82,7 @@ typedef struct catchdifficultyattributes
     /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
     ///
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
-    uint8_t is_convert;
+    bool is_convert;
     } catchdifficultyattributes;
 
 /// The result of a difficulty calculation on an osu!mania map.
@@ -101,7 +101,7 @@ typedef struct maniadifficultyattributes
     /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
     ///
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
-    uint8_t is_convert;
+    bool is_convert;
     } maniadifficultyattributes;
 
 /// The result of a difficulty calculation on an osu!standard map.
@@ -221,7 +221,7 @@ typedef struct taikodifficultyattributes
     /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
     ///
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
-    uint8_t is_convert;
+    bool is_convert;
     } taikodifficultyattributes;
 
 ///Option type containing boolean flag and maybe valid data.
@@ -464,7 +464,7 @@ ffierror beatmap_from_bytes(beatmap** context, sliceu8 data);
 ffierror beatmap_from_path(beatmap** context, const char* path);
 
 /// Convert a Beatmap to the specified mode
-uint8_t beatmap_convert(beatmap* context, mode mode, const mods* mods);
+bool beatmap_convert(beatmap* context, mode mode, const mods* mods);
 
 double beatmap_bpm(beatmap* context);
 
@@ -472,7 +472,7 @@ double beatmap_total_break_time(beatmap* context);
 
 mode beatmap_mode(beatmap* context);
 
-uint8_t beatmap_is_convert(beatmap* context);
+bool beatmap_is_convert(beatmap* context);
 
 /// Destroys the given instance.
 ///
@@ -502,9 +502,9 @@ void difficulty_hp(difficulty* context, float hp);
 
 void difficulty_od(difficulty* context, float od);
 
-void difficulty_hardrock_offsets(difficulty* context, uint8_t hardrock_offsets);
+void difficulty_hardrock_offsets(difficulty* context, bool hardrock_offsets);
 
-void difficulty_lazer(difficulty* context, uint8_t lazer);
+void difficulty_lazer(difficulty* context, bool lazer);
 
 difficultyattributes difficulty_calculate(const difficulty* context, const beatmap* beatmap);
 
@@ -540,7 +540,7 @@ void performance_hp(performance* context, float hp);
 
 void performance_od(performance* context, float od);
 
-void performance_hardrock_offsets(performance* context, uint8_t hardrock_offsets);
+void performance_hardrock_offsets(performance* context, bool hardrock_offsets);
 
 void performance_state(performance* context, scorestate state);
 
@@ -552,7 +552,7 @@ void performance_combo(performance* context, uint32_t combo);
 
 void performance_hitresult_priority(performance* context, hitresultpriority hitresult_priority);
 
-void performance_lazer(performance* context, uint8_t lazer);
+void performance_lazer(performance* context, bool lazer);
 
 void performance_large_tick_hits(performance* context, uint32_t large_tick_hits);
 
@@ -592,7 +592,7 @@ ffierror string_from_c_str(ownedstring** context, const char* str);
 
 ffierror string_empty(ownedstring** context);
 
-uint8_t string_is_init(const ownedstring* context);
+bool string_is_init(const ownedstring* context);
 
 const char* string_to_cstr(const ownedstring* context);
 
@@ -622,11 +622,11 @@ uint32_t mods_len(mods* context);
 
 void mods_json(mods* context, ownedstring* str);
 
-uint8_t mods_insert_json(mods* context, const char* str);
+bool mods_insert_json(mods* context, const char* str);
 
-uint8_t mods_insert(mods* context, const char* str);
+bool mods_insert(mods* context, const char* str);
 
-uint8_t mods_contains(mods* context, const char* str);
+bool mods_contains(mods* context, const char* str);
 
 void mods_clear(mods* context);
 

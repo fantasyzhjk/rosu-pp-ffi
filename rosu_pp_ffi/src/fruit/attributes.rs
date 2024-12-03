@@ -1,4 +1,4 @@
-use interoptopus::{ffi_type, patterns::primitives::FFIBool};
+use interoptopus::ffi_type;
 
 /// The result of a difficulty calculation on an osu!catch map.
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -18,7 +18,7 @@ pub struct CatchDifficultyAttributes {
     /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
     ///
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
-    pub is_convert: FFIBool,
+    pub is_convert: bool,
 }
 
 impl CatchDifficultyAttributes {
@@ -30,8 +30,8 @@ impl CatchDifficultyAttributes {
     /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
     ///
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
-    pub fn is_convert(&self) -> bool {
-        self.is_convert.is()
+    pub const fn is_convert(&self) -> bool {
+        self.is_convert
     }
 }
 
@@ -43,7 +43,7 @@ impl From<rosu_pp::catch::CatchDifficultyAttributes> for CatchDifficultyAttribut
             n_fruits: attributes.n_fruits,
             n_droplets: attributes.n_droplets,
             n_tiny_droplets: attributes.n_tiny_droplets,
-            is_convert: attributes.is_convert.into(),
+            is_convert: attributes.is_convert,
         }
     }
 }
@@ -56,7 +56,7 @@ impl From<CatchDifficultyAttributes> for rosu_pp::catch::CatchDifficultyAttribut
             n_fruits: attributes.n_fruits,
             n_droplets: attributes.n_droplets,
             n_tiny_droplets: attributes.n_tiny_droplets,
-            is_convert: attributes.is_convert.is(),
+            is_convert: attributes.is_convert,
         }
     }
 }
@@ -91,8 +91,8 @@ impl CatchPerformanceAttributes {
     /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
     ///
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
-    pub fn is_convert(&self) -> bool {
-        self.difficulty.is_convert.is()
+    pub const fn is_convert(&self) -> bool {
+        self.difficulty.is_convert
     }
 }
 

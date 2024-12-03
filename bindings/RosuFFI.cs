@@ -155,7 +155,7 @@ namespace RosuPP
 
         /// Convert a Beatmap to the specified mode
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_convert")]
-        public static extern Bool beatmap_convert(IntPtr context, Mode mode, IntPtr mods);
+        public static extern bool beatmap_convert(IntPtr context, Mode mode, IntPtr mods);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_bpm")]
         public static extern double beatmap_bpm(IntPtr context);
@@ -167,7 +167,7 @@ namespace RosuPP
         public static extern Mode beatmap_mode(IntPtr context);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_is_convert")]
-        public static extern Bool beatmap_is_convert(IntPtr context);
+        public static extern bool beatmap_is_convert(IntPtr context);
 
         /// Destroys the given instance.
         ///
@@ -242,10 +242,10 @@ namespace RosuPP
         public static extern void difficulty_od(IntPtr context, float od);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_hardrock_offsets")]
-        public static extern void difficulty_hardrock_offsets(IntPtr context, Bool hardrock_offsets);
+        public static extern void difficulty_hardrock_offsets(IntPtr context, bool hardrock_offsets);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_lazer")]
-        public static extern void difficulty_lazer(IntPtr context, Bool lazer);
+        public static extern void difficulty_lazer(IntPtr context, bool lazer);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_calculate")]
         public static extern DifficultyAttributes difficulty_calculate(IntPtr context, IntPtr beatmap);
@@ -329,7 +329,7 @@ namespace RosuPP
         public static extern void performance_od(IntPtr context, float od);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_hardrock_offsets")]
-        public static extern void performance_hardrock_offsets(IntPtr context, Bool hardrock_offsets);
+        public static extern void performance_hardrock_offsets(IntPtr context, bool hardrock_offsets);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_state")]
         public static extern void performance_state(IntPtr context, ScoreState state);
@@ -347,7 +347,7 @@ namespace RosuPP
         public static extern void performance_hitresult_priority(IntPtr context, HitResultPriority hitresult_priority);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_lazer")]
-        public static extern void performance_lazer(IntPtr context, Bool lazer);
+        public static extern void performance_lazer(IntPtr context, bool lazer);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_large_tick_hits")]
         public static extern void performance_large_tick_hits(IntPtr context, uint large_tick_hits);
@@ -437,7 +437,7 @@ namespace RosuPP
         }
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "string_is_init")]
-        public static extern Bool string_is_init(IntPtr context);
+        public static extern bool string_is_init(IntPtr context);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "string_to_cstr")]
         public static extern IntPtr string_to_cstr(IntPtr context);
@@ -539,13 +539,13 @@ namespace RosuPP
         public static extern void mods_json(IntPtr context, IntPtr str);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_insert_json")]
-        public static extern Bool mods_insert_json(IntPtr context, string str);
+        public static extern bool mods_insert_json(IntPtr context, string str);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_insert")]
-        public static extern Bool mods_insert(IntPtr context, string str);
+        public static extern bool mods_insert(IntPtr context, string str);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_contains")]
-        public static extern Bool mods_contains(IntPtr context, string str);
+        public static extern bool mods_contains(IntPtr context, string str);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_clear")]
         public static extern void mods_clear(IntPtr context);
@@ -633,7 +633,8 @@ namespace RosuPP
         /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
         ///
         /// [`Beatmap`]: crate::model::beatmap::Beatmap
-        public Bool is_convert;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool is_convert;
     }
 
     /// The result of a performance calculation on an osu!catch map.
@@ -691,7 +692,8 @@ namespace RosuPP
         /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
         ///
         /// [`Beatmap`]: crate::model::beatmap::Beatmap
-        public Bool is_convert;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool is_convert;
     }
 
     /// The result of a performance calculation on an osu!mania map.
@@ -862,7 +864,8 @@ namespace RosuPP
         /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
         ///
         /// [`Beatmap`]: crate::model::beatmap::Beatmap
-        public Bool is_convert;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool is_convert;
     }
 
     /// The result of a performance calculation on an osu!taiko map.
@@ -1268,25 +1271,6 @@ namespace RosuPP
     }
 
 
-    [Serializable]
-    [StructLayout(LayoutKind.Sequential)]
-    public partial struct Bool
-    {
-        byte value;
-    }
-
-    public partial struct Bool
-    {
-        public static readonly Bool True = new Bool { value =  1 };
-        public static readonly Bool False = new Bool { value =  0 };
-        public Bool(bool b)
-        {
-            value = (byte) (b ? 1 : 0);
-        }
-        public bool Is => value == 1;
-    }
-
-
 
     public partial class BeatmapAttributesBuilder : IDisposable
     {
@@ -1415,7 +1399,7 @@ namespace RosuPP
         }
 
         /// Convert a Beatmap to the specified mode
-        public Bool Convert(Mode mode, IntPtr mods)
+        public bool Convert(Mode mode, IntPtr mods)
         {
             return RosuLibrary.beatmap_convert(_context, mode, mods);
         }
@@ -1435,7 +1419,7 @@ namespace RosuPP
             return RosuLibrary.beatmap_mode(_context);
         }
 
-        public Bool IsConvert()
+        public bool IsConvert()
         {
             return RosuLibrary.beatmap_is_convert(_context);
         }
@@ -1519,12 +1503,12 @@ namespace RosuPP
             RosuLibrary.difficulty_od(_context, od);
         }
 
-        public void HardrockOffsets(Bool hardrock_offsets)
+        public void HardrockOffsets(bool hardrock_offsets)
         {
             RosuLibrary.difficulty_hardrock_offsets(_context, hardrock_offsets);
         }
 
-        public void Lazer(Bool lazer)
+        public void Lazer(bool lazer)
         {
             RosuLibrary.difficulty_lazer(_context, lazer);
         }
@@ -1623,7 +1607,7 @@ namespace RosuPP
             RosuLibrary.performance_od(_context, od);
         }
 
-        public void HardrockOffsets(Bool hardrock_offsets)
+        public void HardrockOffsets(bool hardrock_offsets)
         {
             RosuLibrary.performance_hardrock_offsets(_context, hardrock_offsets);
         }
@@ -1653,7 +1637,7 @@ namespace RosuPP
             RosuLibrary.performance_hitresult_priority(_context, hitresult_priority);
         }
 
-        public void Lazer(Bool lazer)
+        public void Lazer(bool lazer)
         {
             RosuLibrary.performance_lazer(_context, lazer);
         }
@@ -1764,7 +1748,7 @@ namespace RosuPP
             }
         }
 
-        public Bool IsInit()
+        public bool IsInit()
         {
             return RosuLibrary.string_is_init(_context);
         }
@@ -1869,17 +1853,17 @@ namespace RosuPP
             RosuLibrary.mods_json(_context, str);
         }
 
-        public Bool InsertJson(string str)
+        public bool InsertJson(string str)
         {
             return RosuLibrary.mods_insert_json(_context, str);
         }
 
-        public Bool Insert(string str)
+        public bool Insert(string str)
         {
             return RosuLibrary.mods_insert(_context, str);
         }
 
-        public Bool Contains(string str)
+        public bool Contains(string str)
         {
             return RosuLibrary.mods_contains(_context, str);
         }

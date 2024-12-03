@@ -18,26 +18,26 @@ public class PPUnitTest(ITestOutputHelper output)
 
         if (mode is not null) {
             var convertSuccess = beatmap.Convert(mode.Value, Mods.FromAcronyms(modstr, mode.Value));
-            Assert.True(convertSuccess.Is, "convert failed");
+            Assert.True(convertSuccess, "convert failed");
         } else {
             mode = beatmap.Mode();
         }
 
         var mods = Mods.FromAcronyms(modstr, beatmap.Mode());
         var difficulty = Difficulty.New();
-        difficulty.Lazer(new Bool(isLazer));
+        difficulty.Lazer(isLazer);
         difficulty.Mods(mods);
         var dattr = difficulty.Calculate(beatmap);
 
         var performance = Performance.New();
-        performance.Lazer(new Bool(isLazer));
+        performance.Lazer(isLazer);
         performance.Mods(mods);
 
         var state = performance.GenerateStateFromDifficulty(dattr);
         var attr = performance.CalculateFromDifficulty(dattr);
         var origin = OsuScoreOrigin.Stable;
         if (isLazer) {
-            if (mods.Contains("CL").Is) {
+            if (mods.Contains("CL")) {
                 origin = OsuScoreOrigin.WithoutSliderAcc;
             } else {
                 origin = OsuScoreOrigin.WithSliderAcc;
@@ -309,7 +309,7 @@ public class PPUnitTest(ITestOutputHelper output)
 
         var mods = Mods.FromJson(j, Mode.Taiko);
         Assert.Equal((uint)3, mods.Len());
-        Assert.True(mods.Contains("DT").Is);
+        Assert.True(mods.Contains("DT"));
 
         Assert.Equal((double?)1.5, mods.ClockRate().ToNullable());
 

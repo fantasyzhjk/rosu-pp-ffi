@@ -3,7 +3,7 @@ use std::{ffi::CString, mem::MaybeUninit};
 use crate::*;
 use interoptopus::{
     ffi_service, ffi_service_ctor, ffi_service_method, ffi_type,
-    patterns::{primitives::FFIBool, string::AsciiPointer},
+    patterns::string::AsciiPointer,
 };
 
 #[ffi_type(opaque)]
@@ -32,8 +32,8 @@ impl OwnedString {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn is_init(&self) -> FFIBool {
-       self.is_init.into()
+    pub fn is_init(&self) -> bool {
+       self.is_init
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]

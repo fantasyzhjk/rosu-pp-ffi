@@ -42,8 +42,8 @@ def init_lib(path):
     c_lib.difficulty_cs.argtypes = [ctypes.c_void_p, ctypes.c_float]
     c_lib.difficulty_hp.argtypes = [ctypes.c_void_p, ctypes.c_float]
     c_lib.difficulty_od.argtypes = [ctypes.c_void_p, ctypes.c_float]
-    c_lib.difficulty_hardrock_offsets.argtypes = [ctypes.c_void_p, ctypes.c_uint8]
-    c_lib.difficulty_lazer.argtypes = [ctypes.c_void_p, ctypes.c_uint8]
+    c_lib.difficulty_hardrock_offsets.argtypes = [ctypes.c_void_p, ctypes.c_bool]
+    c_lib.difficulty_lazer.argtypes = [ctypes.c_void_p, ctypes.c_bool]
     c_lib.difficulty_calculate.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
     c_lib.difficulty_get_clock_rate.argtypes = [ctypes.c_void_p]
     c_lib.performance_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
@@ -58,13 +58,13 @@ def init_lib(path):
     c_lib.performance_cs.argtypes = [ctypes.c_void_p, ctypes.c_float]
     c_lib.performance_hp.argtypes = [ctypes.c_void_p, ctypes.c_float]
     c_lib.performance_od.argtypes = [ctypes.c_void_p, ctypes.c_float]
-    c_lib.performance_hardrock_offsets.argtypes = [ctypes.c_void_p, ctypes.c_uint8]
+    c_lib.performance_hardrock_offsets.argtypes = [ctypes.c_void_p, ctypes.c_bool]
     c_lib.performance_state.argtypes = [ctypes.c_void_p, ScoreState]
     c_lib.performance_accuracy.argtypes = [ctypes.c_void_p, ctypes.c_double]
     c_lib.performance_misses.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_combo.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_hitresult_priority.argtypes = [ctypes.c_void_p, ctypes.c_int]
-    c_lib.performance_lazer.argtypes = [ctypes.c_void_p, ctypes.c_uint8]
+    c_lib.performance_lazer.argtypes = [ctypes.c_void_p, ctypes.c_bool]
     c_lib.performance_large_tick_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_small_tick_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_slider_end_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
@@ -111,11 +111,11 @@ def init_lib(path):
     c_lib.beatmap_destroy.restype = ctypes.c_int
     c_lib.beatmap_from_bytes.restype = ctypes.c_int
     c_lib.beatmap_from_path.restype = ctypes.c_int
-    c_lib.beatmap_convert.restype = ctypes.c_uint8
+    c_lib.beatmap_convert.restype = ctypes.c_bool
     c_lib.beatmap_bpm.restype = ctypes.c_double
     c_lib.beatmap_total_break_time.restype = ctypes.c_double
     c_lib.beatmap_mode.restype = ctypes.c_int
-    c_lib.beatmap_is_convert.restype = ctypes.c_uint8
+    c_lib.beatmap_is_convert.restype = ctypes.c_bool
     c_lib.difficulty_destroy.restype = ctypes.c_int
     c_lib.difficulty_new.restype = ctypes.c_int
     c_lib.difficulty_s_mods.restype = ctypes.c_int
@@ -132,7 +132,7 @@ def init_lib(path):
     c_lib.string_destroy.restype = ctypes.c_int
     c_lib.string_from_c_str.restype = ctypes.c_int
     c_lib.string_empty.restype = ctypes.c_int
-    c_lib.string_is_init.restype = ctypes.c_uint8
+    c_lib.string_is_init.restype = ctypes.c_bool
     c_lib.string_to_cstr.restype = ctypes.POINTER(ctypes.c_char)
     c_lib.mods_destroy.restype = ctypes.c_int
     c_lib.mods_new.restype = ctypes.c_int
@@ -142,9 +142,9 @@ def init_lib(path):
     c_lib.mods_from_json_sanitize.restype = ctypes.c_int
     c_lib.mods_bits.restype = ctypes.c_uint32
     c_lib.mods_len.restype = ctypes.c_uint32
-    c_lib.mods_insert_json.restype = ctypes.c_uint8
-    c_lib.mods_insert.restype = ctypes.c_uint8
-    c_lib.mods_contains.restype = ctypes.c_uint8
+    c_lib.mods_insert_json.restype = ctypes.c_bool
+    c_lib.mods_insert.restype = ctypes.c_bool
+    c_lib.mods_contains.restype = ctypes.c_bool
     c_lib.mods_clock_rate.restype = Optionf64
     c_lib.calculate_accuacy.restype = ctypes.c_double
 
@@ -271,10 +271,10 @@ class CatchDifficultyAttributes(ctypes.Structure):
         ("n_fruits", ctypes.c_uint32),
         ("n_droplets", ctypes.c_uint32),
         ("n_tiny_droplets", ctypes.c_uint32),
-        ("is_convert", ctypes.c_uint8),
+        ("is_convert", ctypes.c_bool),
     ]
 
-    def __init__(self, stars: float = None, ar: float = None, n_fruits: int = None, n_droplets: int = None, n_tiny_droplets: int = None, is_convert = None):
+    def __init__(self, stars: float = None, ar: float = None, n_fruits: int = None, n_droplets: int = None, n_tiny_droplets: int = None, is_convert: bool = None):
         if stars is not None:
             self.stars = stars
         if ar is not None:
@@ -339,14 +339,14 @@ class CatchDifficultyAttributes(ctypes.Structure):
         return ctypes.Structure.__set__(self, "n_tiny_droplets", value)
 
     @property
-    def is_convert(self):
+    def is_convert(self) -> bool:
         """ Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
 
  [`Beatmap`]: crate::model::beatmap::Beatmap"""
         return ctypes.Structure.__get__(self, "is_convert")
 
     @is_convert.setter
-    def is_convert(self, value):
+    def is_convert(self, value: bool):
         """ Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
 
  [`Beatmap`]: crate::model::beatmap::Beatmap"""
@@ -363,10 +363,10 @@ class ManiaDifficultyAttributes(ctypes.Structure):
         ("n_objects", ctypes.c_uint32),
         ("n_hold_notes", ctypes.c_uint32),
         ("max_combo", ctypes.c_uint32),
-        ("is_convert", ctypes.c_uint8),
+        ("is_convert", ctypes.c_bool),
     ]
 
-    def __init__(self, stars: float = None, hit_window: float = None, n_objects: int = None, n_hold_notes: int = None, max_combo: int = None, is_convert = None):
+    def __init__(self, stars: float = None, hit_window: float = None, n_objects: int = None, n_hold_notes: int = None, max_combo: int = None, is_convert: bool = None):
         if stars is not None:
             self.stars = stars
         if hit_window is not None:
@@ -431,14 +431,14 @@ class ManiaDifficultyAttributes(ctypes.Structure):
         return ctypes.Structure.__set__(self, "max_combo", value)
 
     @property
-    def is_convert(self):
+    def is_convert(self) -> bool:
         """ Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
 
  [`Beatmap`]: crate::model::beatmap::Beatmap"""
         return ctypes.Structure.__get__(self, "is_convert")
 
     @is_convert.setter
-    def is_convert(self, value):
+    def is_convert(self, value: bool):
         """ Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
 
  [`Beatmap`]: crate::model::beatmap::Beatmap"""
@@ -877,10 +877,10 @@ class TaikoDifficultyAttributes(ctypes.Structure):
         ("mono_stamina_factor", ctypes.c_double),
         ("stars", ctypes.c_double),
         ("max_combo", ctypes.c_uint32),
-        ("is_convert", ctypes.c_uint8),
+        ("is_convert", ctypes.c_bool),
     ]
 
-    def __init__(self, stamina: float = None, rhythm: float = None, color: float = None, peak: float = None, great_hit_window: float = None, ok_hit_window: float = None, mono_stamina_factor: float = None, stars: float = None, max_combo: int = None, is_convert = None):
+    def __init__(self, stamina: float = None, rhythm: float = None, color: float = None, peak: float = None, great_hit_window: float = None, ok_hit_window: float = None, mono_stamina_factor: float = None, stars: float = None, max_combo: int = None, is_convert: bool = None):
         if stamina is not None:
             self.stamina = stamina
         if rhythm is not None:
@@ -995,14 +995,14 @@ class TaikoDifficultyAttributes(ctypes.Structure):
         return ctypes.Structure.__set__(self, "max_combo", value)
 
     @property
-    def is_convert(self):
+    def is_convert(self) -> bool:
         """ Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
 
  [`Beatmap`]: crate::model::beatmap::Beatmap"""
         return ctypes.Structure.__get__(self, "is_convert")
 
     @is_convert.setter
-    def is_convert(self, value):
+    def is_convert(self, value: bool):
         """ Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
 
  [`Beatmap`]: crate::model::beatmap::Beatmap"""
@@ -1943,7 +1943,7 @@ class Beatmap:
 
     def __del__(self):
         c_lib.beatmap_destroy(self._ctx, )
-    def convert(self, mode: ctypes.c_int, mods: ctypes.c_void_p):
+    def convert(self, mode: ctypes.c_int, mods: ctypes.c_void_p) -> bool:
         """ Convert a Beatmap to the specified mode"""
         return c_lib.beatmap_convert(self._ctx, mode, mods)
 
@@ -1959,7 +1959,7 @@ class Beatmap:
         """"""
         return c_lib.beatmap_mode(self._ctx, )
 
-    def is_convert(self, ):
+    def is_convert(self, ) -> bool:
         """"""
         return c_lib.beatmap_is_convert(self._ctx, )
 
@@ -2024,11 +2024,11 @@ class Difficulty:
         """"""
         return c_lib.difficulty_od(self._ctx, od)
 
-    def hardrock_offsets(self, hardrock_offsets):
+    def hardrock_offsets(self, hardrock_offsets: bool):
         """"""
         return c_lib.difficulty_hardrock_offsets(self._ctx, hardrock_offsets)
 
-    def lazer(self, lazer):
+    def lazer(self, lazer: bool):
         """"""
         return c_lib.difficulty_lazer(self._ctx, lazer)
 
@@ -2105,7 +2105,7 @@ class Performance:
         """"""
         return c_lib.performance_od(self._ctx, od)
 
-    def hardrock_offsets(self, hardrock_offsets):
+    def hardrock_offsets(self, hardrock_offsets: bool):
         """"""
         return c_lib.performance_hardrock_offsets(self._ctx, hardrock_offsets)
 
@@ -2129,7 +2129,7 @@ class Performance:
         """"""
         return c_lib.performance_hitresult_priority(self._ctx, hitresult_priority)
 
-    def lazer(self, lazer):
+    def lazer(self, lazer: bool):
         """"""
         return c_lib.performance_lazer(self._ctx, lazer)
 
@@ -2218,7 +2218,7 @@ class OwnedString:
 
     def __del__(self):
         c_lib.string_destroy(self._ctx, )
-    def is_init(self, ):
+    def is_init(self, ) -> bool:
         """"""
         return c_lib.string_is_init(self._ctx, )
 
@@ -2304,19 +2304,19 @@ class Mods:
         """"""
         return c_lib.mods_json(self._ctx, str)
 
-    def insert_json(self, str: bytes):
+    def insert_json(self, str: bytes) -> bool:
         """"""
         if not hasattr(str, "__ctypes_from_outparam__"):
             str = ctypes.cast(str, ctypes.POINTER(ctypes.c_char))
         return c_lib.mods_insert_json(self._ctx, str)
 
-    def insert(self, str: bytes):
+    def insert(self, str: bytes) -> bool:
         """"""
         if not hasattr(str, "__ctypes_from_outparam__"):
             str = ctypes.cast(str, ctypes.POINTER(ctypes.c_char))
         return c_lib.mods_insert(self._ctx, str)
 
-    def contains(self, str: bytes):
+    def contains(self, str: bytes) -> bool:
         """"""
         if not hasattr(str, "__ctypes_from_outparam__"):
             str = ctypes.cast(str, ctypes.POINTER(ctypes.c_char))

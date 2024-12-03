@@ -2,7 +2,7 @@ pub mod attributes;
 
 use crate::*;
 use interoptopus::{
-    ffi_service, ffi_service_ctor, ffi_service_method, ffi_type, patterns::{primitives::FFIBool, slice::FFISlice, string::AsciiPointer}
+    ffi_service, ffi_service_ctor, ffi_service_method, ffi_type, patterns::{slice::FFISlice, string::AsciiPointer}
 };
 use mode::Mode;
 use mods::Mods;
@@ -35,8 +35,8 @@ impl Beatmap {
 
     /// Convert a Beatmap to the specified mode
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn convert(&mut self, mode: Mode, mods: &Mods) -> FFIBool {
-        self.inner.convert_mut(mode.into(), &GameMods::from(mods.mods.clone())).is_ok().into()
+    pub fn convert(&mut self, mode: Mode, mods: &Mods) -> bool {
+        self.inner.convert_mut(mode.into(), &GameMods::from(mods.mods.clone())).is_ok()
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
@@ -55,7 +55,7 @@ impl Beatmap {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn is_convert(&mut self) -> FFIBool {
-        self.inner.is_convert.into()
+    pub fn is_convert(&mut self) -> bool {
+        self.inner.is_convert
     }
 }
