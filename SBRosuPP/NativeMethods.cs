@@ -94,13 +94,13 @@ internal static unsafe partial class NativeMethods
             name = "lib" + libraryName;
         }
 
-        var filePath = name + extension;
+        var filePath = "native/" + name + extension;
 
-        // 将库写入临时文件
-        string resourceName = $"{assembly.GetName().Name}.{filePath}";
-        string tempPath = ExtractDllToFile(resourceName, filePath);
+        // 这个是使用资源文件加载，备用方案
+        // string resourceName = $"{assembly.GetName().Name}.{filePath}";
+        // string tempPath = ExtractDllToFile(resourceName, filePath);
 
         // 加载库
-        return NativeLibrary.Load(tempPath, assembly, searchPath);
+        return NativeLibrary.Load(Path.Combine(AppContext.BaseDirectory, filePath), assembly, searchPath);
     }
 }

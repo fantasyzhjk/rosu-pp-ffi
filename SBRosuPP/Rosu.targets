@@ -84,10 +84,13 @@
     </ItemGroup>
 
     <Target Name="CargoBuildCopy" DependsOnTargets="Cargo" BeforeTargets="BeforeBuild" Condition=" '$(IsAotBuild)' == 'false' ">
-        <!-- <Copy Condition=" '$(TargetDir)' != '' " SourceFiles="@(CargoLibrary)" DestinationFolder="$(TargetDir)/native/" /> -->
         <Message Text="Copy native libs" Importance="high" />
         <ItemGroup>
-			<EmbeddedResource Include="@(CargoLibrary)" />
+            <Content Include="@(CargoLibrary)">
+                <Link>native/%(RecursiveDir)%(Filename)%(Extension)</Link>
+                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            </Content>
+			<!-- <EmbeddedResource Include="@(CargoLibrary)" /> -->
 		</ItemGroup>
     </Target>
 </Project>
