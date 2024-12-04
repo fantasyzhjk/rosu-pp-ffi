@@ -46,7 +46,12 @@ To use this library in a C# project, you can add it as a Git submodule and refer
     </ItemGroup>
     ```
 
-For detailed usage examples, refer to the official [rosu-pp documentation](https://github.com/MaxOhn/rosu-pp) and language-specific bindings.
+For detailed usage examples, refer to the official [rosu-pp documentation](https://docs.rs/rosu-pp/) and language-specific bindings.
+
+## Learn More
+
+- [rosu-pp](https://github.com/MaxOhn/rosu-pp)
+- [interoptopus](https://github.com/ralfbiedert/interoptopus)
 
 ## Contributing
 
