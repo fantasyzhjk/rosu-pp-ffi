@@ -73,7 +73,7 @@ internal static unsafe partial class NativeMethods
 
     static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
     {
-        if (libraryName != "rosu_pp_ffi") { return IntPtr.Zero; }
+        if (libraryName != RosuLibrary.NativeLib) { return IntPtr.Zero; }
 
         string name;
         string extension;
