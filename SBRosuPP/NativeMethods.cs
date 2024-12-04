@@ -3,9 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text.Json.Serialization;
 using SBRosuPP;
 
@@ -26,35 +28,79 @@ internal static unsafe partial class NativeMethods
         NativeLibrary.SetDllImportResolver(typeof(NativeMethods).Assembly, DllImportResolver);
     }
 
-    static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+
+    private static byte[] ComputeFileChecksum(string filePath)
     {
-        if (libraryName == SBRosu.NativeLib)
+        using var md5 = MD5.Create();
+        using var stream = File.OpenRead(filePath);
+        return md5.ComputeHash(stream);
+    }
+
+    private static byte[] ComputeEmbeddedDllChecksum(Stream stream)
+    {
+        using var md5 = MD5.Create();
+        return md5.ComputeHash(stream);
+    }
+
+    private static string ExtractDllToFile(string resourceName, string filePath)
+    {
+        var tempFile = Path.Combine(Path.GetTempPath(), filePath);
+
+        using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
         {
-            var path = "native/";
-            var extension = "";
-            string name;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (stream == null)
             {
-                extension = ".dll";
-                name = SBRosu.NativeLib;
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                extension = ".dylib";
-                name = "lib" + SBRosu.NativeLib;
-            }
-            else
-            {
-                extension = ".so";
-                name = "lib" + SBRosu.NativeLib;
+                throw new FileNotFoundException($"Resource {resourceName} not found.");
             }
 
-            path += name + extension;
+            if (File.Exists(tempFile))
+            {
+                var existingChecksum = ComputeFileChecksum(tempFile);
+                var embeddedChecksum = ComputeEmbeddedDllChecksum(stream);
 
-            return NativeLibrary.Load(Path.Combine(AppContext.BaseDirectory, path), assembly, searchPath);
+                if (existingChecksum.SequenceEqual(embeddedChecksum))
+                {
+                    return tempFile;
+                }
+            }
+
+            using var fileStream = new FileStream(tempFile, FileMode.Create, FileAccess.Write);
+            stream.CopyTo(fileStream);
         }
 
-        return IntPtr.Zero;
+        return tempFile;
+    }
+
+    static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+    {
+        if (libraryName != SBRosu.NativeLib) { return IntPtr.Zero; }
+
+        string name;
+        string extension;
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            extension = ".dll";
+            name = libraryName;
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            extension = ".dylib";
+            name = "lib" + libraryName;
+        }
+        else
+        {
+            extension = ".so";
+            name = "lib" + libraryName;
+        }
+
+        var filePath = name + extension;
+
+        // 将库写入临时文件
+        string resourceName = $"{assembly.GetName().Name}.{filePath}";
+        string tempPath = ExtractDllToFile(resourceName, filePath);
+
+        // 加载库
+        return NativeLibrary.Load(tempPath, assembly, searchPath);
     }
 }

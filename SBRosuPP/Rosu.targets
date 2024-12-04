@@ -40,7 +40,7 @@
 
         <CargoTarget Condition=" '$(IsWindows)' == 'true' ">x86_64-pc-windows-msvc</CargoTarget>
         <CargoTarget Condition=" '$(IsLinux)' == 'true' ">x86_64-unknown-linux-gnu</CargoTarget>
-        <CargoTarget Condition=" '$(IsMacOS)' == 'true' ">x86_64-apple-darwin</CargoTarget>
+        <CargoTarget Condition=" '$(IsMacOS)' == 'true' ">aarch64-apple-darwin</CargoTarget>
 
         <CargoExtension Condition=" '$(IsWindows)' == 'true' ">dll</CargoExtension>
         <CargoExtension Condition=" '$(IsLinux)' == 'true' ">so</CargoExtension>
@@ -71,7 +71,7 @@
     <!-- In AOT builds, add a reference to the IL compiler and link the static native artifact -->
     <ItemGroup Condition=" '$(IsAotBuild)' == 'true' ">
         <!-- This version of the IL Compiler is pinned to the framework (and by extension, ASP.NET) -->
-        <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="1.0.0-alpha-28124-02" />
+        <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="9.0.0" />
 
         <IlcArg Include="--completetypemetadata" />
         <IlcArg Include="-g" />
@@ -87,10 +87,7 @@
         <!-- <Copy Condition=" '$(TargetDir)' != '' " SourceFiles="@(CargoLibrary)" DestinationFolder="$(TargetDir)/native/" /> -->
         <Message Text="Copy native libs" Importance="high" />
         <ItemGroup>
-			<Content Include="@(CargoLibrary)">
-                <Link>native/%(RecursiveDir)%(Filename)%(Extension)</Link>
-                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            </Content>
+			<EmbeddedResource Include="@(CargoLibrary)" />
 		</ItemGroup>
     </Target>
 </Project>
