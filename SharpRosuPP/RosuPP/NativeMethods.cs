@@ -3,9 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text.Json.Serialization;
 using RosuPP;
 
@@ -26,11 +28,55 @@ internal static unsafe partial class NativeMethods
         NativeLibrary.SetDllImportResolver(typeof(NativeMethods).Assembly, DllImportResolver);
     }
 
+
+    private static byte[] ComputeFileChecksum(string filePath)
+    {
+        using var md5 = MD5.Create();
+        using var stream = File.OpenRead(filePath);
+        return md5.ComputeHash(stream);
+    }
+
+    private static byte[] ComputeEmbeddedDllChecksum(Stream stream)
+    {
+        using var md5 = MD5.Create();
+        return md5.ComputeHash(stream);
+    }
+
+    private static string ExtractDllToFile(string resourceName, string filePath)
+    {
+        var tempFile = Path.Combine(Path.GetTempPath(), filePath);
+
+        using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
+        {
+            if (stream == null)
+            {
+                throw new FileNotFoundException($"Resource {resourceName} not found.");
+            }
+
+            if (File.Exists(tempFile))
+            {
+                var existingChecksum = ComputeFileChecksum(tempFile);
+                var embeddedChecksum = ComputeEmbeddedDllChecksum(stream);
+
+                if (existingChecksum.SequenceEqual(embeddedChecksum))
+                {
+                    return tempFile;
+                }
+            }
+
+            using var fileStream = new FileStream(tempFile, FileMode.Create, FileAccess.Write);
+            stream.CopyTo(fileStream);
+        }
+
+        return tempFile;
+    }
+
     static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
     {
-        var path = "native/";
-        var extension = "";
+        if (libraryName != "rosu_pp_ffi") { return IntPtr.Zero; }
+
         string name;
+        string extension;
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -48,8 +94,13 @@ internal static unsafe partial class NativeMethods
             name = "lib" + libraryName;
         }
 
-        path += name + extension;
+        var filePath = name + extension;
 
-        return NativeLibrary.Load(Path.Combine(AppContext.BaseDirectory, path), assembly, searchPath);
+        // 将库写入临时文件
+        string resourceName = $"{assembly.GetName().Name}.{filePath}";
+        string tempPath = ExtractDllToFile(resourceName, filePath);
+
+        // 加载库
+        return NativeLibrary.Load(tempPath, assembly, searchPath);
     }
 }
