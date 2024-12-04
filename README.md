@@ -18,6 +18,7 @@
 ### Usage
 
 Clone and Build the library:
+
 ```bash
 git clone https://github.com/fantasyzhjk/rosu-pp-ffi.git
 cd rosu-pp-ffi
@@ -26,10 +27,31 @@ cargo build --release
 
 Link the resulting library to your project according to your programming language’s FFI guidelines.
 
+### C# Usage
+
+To use this library in a C# project, you can add it as a Git submodule and reference the `RosuPP.csproj` directly in your `.csproj` file:
+
+1. Add the repository as a Git submodule:
+
+    ```bash
+    git submodule add https://github.com/fantasyzhjk/rosu-pp-ffi.git
+    git submodule update --init --recursive
+    ```
+
+2. In your .csproj file, add the following reference to include the library as a dependency:
+
+    ```xml
+    <ItemGroup>
+        <ProjectReference Include="./rosu-pp-ffi/SharpRosuPP/RosuPP/RosuPP.csproj" />
+    </ItemGroup>
+    ```
+
 For detailed usage examples, refer to the official [rosu-pp documentation](https://github.com/MaxOhn/rosu-pp) and language-specific bindings.
 
 ## Contributing
+
 Contributions are welcome! Please open an issue or submit a pull request to suggest improvements or add new features.
 
 ## License
+
 This project is licensed under the MIT License. See the LICENSE file for details.
