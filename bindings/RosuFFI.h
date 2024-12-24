@@ -127,6 +127,8 @@ typedef struct osudifficultyattributes
     double od;
     /// The health drain rate.
     double hp;
+    /// The circle size.
+    double cs;
     /// The amount of circles.
     uint32_t n_circles;
     /// The amount of sliders.

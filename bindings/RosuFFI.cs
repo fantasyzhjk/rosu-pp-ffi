@@ -734,6 +734,8 @@ namespace RosuPP
         public double od;
         /// The health drain rate.
         public double hp;
+        /// The circle size.
+        public double cs;
         /// The amount of circles.
         public uint n_circles;
         /// The amount of sliders.

@@ -25,6 +25,8 @@ pub struct OsuDifficultyAttributes {
     pub od: f64,
     /// The health drain rate.
     pub hp: f64,
+    /// The circle size.
+    pub cs: f64,
     /// The amount of circles.
     pub n_circles: u32,
     /// The amount of sliders.
@@ -71,6 +73,7 @@ impl From<rosu_pp::osu::OsuDifficultyAttributes> for OsuDifficultyAttributes {
             ar: attributes.ar,
             od: attributes.od,
             hp: attributes.hp,
+            cs: attributes.cs,
             n_circles: attributes.n_circles,
             n_sliders: attributes.n_sliders,
             n_large_ticks: attributes.n_large_ticks,
@@ -94,6 +97,7 @@ impl From<OsuDifficultyAttributes> for rosu_pp::osu::OsuDifficultyAttributes {
             ar: attributes.ar,
             od: attributes.od,
             hp: attributes.hp,
+            cs: attributes.cs,
             n_circles: attributes.n_circles,
             n_sliders: attributes.n_sliders,
             n_large_ticks: attributes.n_large_ticks,

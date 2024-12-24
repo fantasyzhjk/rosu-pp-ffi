@@ -124,6 +124,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d75a2a4b1b190afb6f5425f10f6a8f959d2ea0b9c2b1d79553551850539e4674"
 
 [[package]]
+name = "lazy_static"
+version = "1.5.0"
+source = "git+https://github.com/Kimundi/lazy-static.rs#f9ee0cc3df7084d624cb768de8ab6900d23fbedc"
+
+[[package]]
 name = "log"
 version = "0.4.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -200,8 +205,9 @@ dependencies = [
 [[package]]
 name = "rosu-pp"
 version = "2.0.0"
-source = "git+https://github.com/MaxOhn/rosu-pp?rev=51a303834fbf65f5c8c0a49061f3459c44f19d49#51a303834fbf65f5c8c0a49061f3459c44f19d49"
+source = "git+https://github.com/ppy-sb/rosu-pp?rev=f918f88f892ee1cdcde1727174d391b29925eb81#f918f88f892ee1cdcde1727174d391b29925eb81"
 dependencies = [
+ "lazy_static",
  "rosu-map",
  "rosu-mods",
 ]

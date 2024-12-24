@@ -460,6 +460,7 @@ class OsuDifficultyAttributes(ctypes.Structure):
         ("ar", ctypes.c_double),
         ("od", ctypes.c_double),
         ("hp", ctypes.c_double),
+        ("cs", ctypes.c_double),
         ("n_circles", ctypes.c_uint32),
         ("n_sliders", ctypes.c_uint32),
         ("n_large_ticks", ctypes.c_uint32),
@@ -468,7 +469,7 @@ class OsuDifficultyAttributes(ctypes.Structure):
         ("max_combo", ctypes.c_uint32),
     ]
 
-    def __init__(self, aim: float = None, speed: float = None, flashlight: float = None, slider_factor: float = None, speed_note_count: float = None, aim_difficult_strain_count: float = None, speed_difficult_strain_count: float = None, ar: float = None, od: float = None, hp: float = None, n_circles: int = None, n_sliders: int = None, n_large_ticks: int = None, n_spinners: int = None, stars: float = None, max_combo: int = None):
+    def __init__(self, aim: float = None, speed: float = None, flashlight: float = None, slider_factor: float = None, speed_note_count: float = None, aim_difficult_strain_count: float = None, speed_difficult_strain_count: float = None, ar: float = None, od: float = None, hp: float = None, cs: float = None, n_circles: int = None, n_sliders: int = None, n_large_ticks: int = None, n_spinners: int = None, stars: float = None, max_combo: int = None):
         if aim is not None:
             self.aim = aim
         if speed is not None:
@@ -489,6 +490,8 @@ class OsuDifficultyAttributes(ctypes.Structure):
             self.od = od
         if hp is not None:
             self.hp = hp
+        if cs is not None:
+            self.cs = cs
         if n_circles is not None:
             self.n_circles = n_circles
         if n_sliders is not None:
@@ -601,6 +604,16 @@ class OsuDifficultyAttributes(ctypes.Structure):
     def hp(self, value: float):
         """ The health drain rate."""
         return ctypes.Structure.__set__(self, "hp", value)
+
+    @property
+    def cs(self) -> float:
+        """ The circle size."""
+        return ctypes.Structure.__get__(self, "cs")
+
+    @cs.setter
+    def cs(self, value: float):
+        """ The circle size."""
+        return ctypes.Structure.__set__(self, "cs", value)
 
     @property
     def n_circles(self) -> int:
