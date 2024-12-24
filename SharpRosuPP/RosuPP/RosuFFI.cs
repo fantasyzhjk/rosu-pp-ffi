@@ -13,7 +13,7 @@ namespace SBRosuPP
 {
     public static partial class RosuLibrary
     {
-        public const string NativeLib = "rosu_pp_ffi";
+        public const string NativeLib = "sb_pp_ffi";
 
         static RosuLibrary()
         {

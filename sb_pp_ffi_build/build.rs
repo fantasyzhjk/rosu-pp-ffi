@@ -28,7 +28,7 @@ fn bindings_csharp(file_name: impl AsRef<Path>, namespace: &str) -> Result<(), E
     Generator::new(
         Config {
             class: "RosuLibrary".to_string(),
-            dll_name: "rosu_pp_ffi".to_string(),
+            dll_name: "sb_pp_ffi".to_string(),
             namespace_mappings: NamespaceMappings::new(namespace),
             use_unsafe: Unsafe::UnsafePlatformMemCpy,
             ..Config::default()
