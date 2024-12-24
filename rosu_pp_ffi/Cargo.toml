@@ -11,7 +11,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 interoptopus = { version = "0.14.27", features = ["log", "serde"] }
-rosu-pp = { git = "https://github.com/MaxOhn/rosu-pp", rev = "51a303834fbf65f5c8c0a49061f3459c44f19d49" }
+rosu-pp = { git = "https://github.com/ppy-sb/rosu-pp", rev = "f918f88f892ee1cdcde1727174d391b29925eb81" }
 rosu-map = { version = "0.2.0" }
 rosu-mods = { version = "0.2.0", features = ["serde"] }
 thiserror = "2.0.4"
