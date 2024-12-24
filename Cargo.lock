@@ -213,7 +213,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "rosu_pp_ffi"
+name = "ryu"
+version = "1.0.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3cb5ba0dc43242ce17de99c180e96db90b235b8a9fdc9543c96d2209116bd9f"
+
+[[package]]
+name = "sb_pp_ffi"
 version = "0.2.0"
 dependencies = [
  "interoptopus",
@@ -226,21 +232,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "rosu_pp_ffi_build"
+name = "sb_pp_ffi_build"
 version = "0.1.0"
 dependencies = [
  "interoptopus",
  "interoptopus_backend_c",
  "interoptopus_backend_cpython",
  "interoptopus_backend_csharp",
- "rosu_pp_ffi",
+ "sb_pp_ffi",
 ]
-
-[[package]]
-name = "ryu"
-version = "1.0.18"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3cb5ba0dc43242ce17de99c180e96db90b235b8a9fdc9543c96d2209116bd9f"
 
 [[package]]
 name = "serde"

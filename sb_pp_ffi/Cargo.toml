@@ -1,5 +1,5 @@
 [package]
-name = "rosu_pp_ffi"
+name = "sb_pp_ffi"
 version = "0.2.0"
 edition = "2021"
 publish = false

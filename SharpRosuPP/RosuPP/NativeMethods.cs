@@ -9,11 +9,11 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json.Serialization;
-using RosuPP;
+using SBRosuPP;
 
 #nullable enable
 
-namespace RosuPP;
+namespace SBRosuPP;
 
 internal static unsafe partial class NativeMethods
 {

@@ -3,11 +3,11 @@ using System.Collections.Immutable;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json.Serialization;
-using RosuPP;
+using SBRosuPP;
 
 #nullable enable
 
-namespace RosuPP;
+namespace SBRosuPP;
 
 public static class Extensions {
     public static double Acc(ref this ScoreState state, ref DifficultyAttributes attr, OsuScoreOrigin origin) {

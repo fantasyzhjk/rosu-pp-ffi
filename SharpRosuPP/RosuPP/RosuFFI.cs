@@ -6,10 +6,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
-using RosuPP;
+using SBRosuPP;
 #pragma warning restore 0105
 
-namespace RosuPP
+namespace SBRosuPP
 {
     public static partial class RosuLibrary
     {

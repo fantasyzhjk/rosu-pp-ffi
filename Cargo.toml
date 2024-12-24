@@ -1,9 +1,9 @@
 [workspace]
 members = [
-    "rosu_pp_ffi",
-    "rosu_pp_ffi_build",
+    "sb_pp_ffi",
+    "sb_pp_ffi_build",
 ]
-default-members = ["rosu_pp_ffi"]
+default-members = ["sb_pp_ffi"]
 resolver = "2"
 
 [profile.release]

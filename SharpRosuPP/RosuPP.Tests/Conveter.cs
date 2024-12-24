@@ -1,4 +1,4 @@
-namespace RosuPP.Tests;
+namespace SBRosuPP.Tests;
 
 public static class Extensions
 {

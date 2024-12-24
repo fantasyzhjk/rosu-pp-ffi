@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using osu.Game.Rulesets.Taiko;
 
-namespace RosuPP.Tests;
+namespace SBRosuPP.Tests;
 
 public class PPUnitTest(ITestOutputHelper output)
 {
