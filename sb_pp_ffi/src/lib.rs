@@ -19,6 +19,7 @@ mod performance;
 mod state;
 mod mods;
 mod hitresult_priority;
+mod gradual;
 use error::{FFIError, Error};
 
 #[ffi_function]
@@ -45,6 +46,8 @@ pub fn ffi_inventory() -> Inventory {
         .register(pattern!(beatmap::Beatmap))
         .register(pattern!(difficulty::Difficulty))
         .register(pattern!(performance::Performance))
+        .register(pattern!(gradual::GradualDifficulty))
+        .register(pattern!(gradual::GradualPerformance))
         .register(pattern!(owned_string::OwnedString))
         .register(pattern!(mods::Mods))
         .register(function!(attributes::debug_difficylty_attributes))

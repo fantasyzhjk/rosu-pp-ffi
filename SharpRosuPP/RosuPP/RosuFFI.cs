@@ -394,6 +394,141 @@ namespace SBRosuPP
         ///
         /// The passed parameter MUST have been created with the corresponding init function;
         /// passing any other value results in undefined behavior.
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "gradual_difficulty_destroy")]
+        public static extern FFIError gradual_difficulty_destroy(ref IntPtr context);
+
+        /// Destroys the given instance.
+        ///
+        /// # Safety
+        ///
+        /// The passed parameter MUST have been created with the corresponding init function;
+        /// passing any other value results in undefined behavior.
+        public static void gradual_difficulty_destroy_checked(ref IntPtr context)
+        {
+            var rval = gradual_difficulty_destroy(ref context);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
+        /// Create a [`GradualDifficulty`] for a map of any mode.
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "gradual_difficulty_new")]
+        public static extern FFIError gradual_difficulty_new(ref IntPtr context, IntPtr difficulty, IntPtr beatmap);
+
+        /// Create a [`GradualDifficulty`] for a map of any mode.
+        public static void gradual_difficulty_new_checked(ref IntPtr context, IntPtr difficulty, IntPtr beatmap)
+        {
+            var rval = gradual_difficulty_new(ref context, difficulty, beatmap);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
+        /// Create a [`GradualDifficulty`] for a [`Beatmap`] on a specific [`GameMode`].
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "gradual_difficulty_new_with_mode")]
+        public static extern FFIError gradual_difficulty_new_with_mode(ref IntPtr context, IntPtr difficulty, IntPtr beatmap, Mode mode);
+
+        /// Create a [`GradualDifficulty`] for a [`Beatmap`] on a specific [`GameMode`].
+        public static void gradual_difficulty_new_with_mode_checked(ref IntPtr context, IntPtr difficulty, IntPtr beatmap, Mode mode)
+        {
+            var rval = gradual_difficulty_new_with_mode(ref context, difficulty, beatmap, mode);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "gradual_difficulty_next")]
+        public static extern OptionDifficultyAttributes gradual_difficulty_next(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "gradual_difficulty_nth")]
+        public static extern OptionDifficultyAttributes gradual_difficulty_nth(IntPtr context, uint n);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "gradual_difficulty_len")]
+        public static extern uint gradual_difficulty_len(IntPtr context);
+
+        /// Destroys the given instance.
+        ///
+        /// # Safety
+        ///
+        /// The passed parameter MUST have been created with the corresponding init function;
+        /// passing any other value results in undefined behavior.
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "gradual_performance_destroy")]
+        public static extern FFIError gradual_performance_destroy(ref IntPtr context);
+
+        /// Destroys the given instance.
+        ///
+        /// # Safety
+        ///
+        /// The passed parameter MUST have been created with the corresponding init function;
+        /// passing any other value results in undefined behavior.
+        public static void gradual_performance_destroy_checked(ref IntPtr context)
+        {
+            var rval = gradual_performance_destroy(ref context);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
+        /// Create a [`GradualPerformance`] for a map of any mode.
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "gradual_performance_new")]
+        public static extern FFIError gradual_performance_new(ref IntPtr context, IntPtr difficulty, IntPtr beatmap);
+
+        /// Create a [`GradualPerformance`] for a map of any mode.
+        public static void gradual_performance_new_checked(ref IntPtr context, IntPtr difficulty, IntPtr beatmap)
+        {
+            var rval = gradual_performance_new(ref context, difficulty, beatmap);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
+        /// Create a [`GradualPerformance`] for a [`Beatmap`] on a specific [`GameMode`].
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "gradual_performance_new_with_mode")]
+        public static extern FFIError gradual_performance_new_with_mode(ref IntPtr context, IntPtr difficulty, IntPtr beatmap, Mode mode);
+
+        /// Create a [`GradualPerformance`] for a [`Beatmap`] on a specific [`GameMode`].
+        public static void gradual_performance_new_with_mode_checked(ref IntPtr context, IntPtr difficulty, IntPtr beatmap, Mode mode)
+        {
+            var rval = gradual_performance_new_with_mode(ref context, difficulty, beatmap, mode);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
+        /// Process the next hit object and calculate the performance attributes
+        /// for the resulting score state.
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "gradual_performance_next")]
+        public static extern OptionPerformanceAttributes gradual_performance_next(IntPtr context, ScoreState state);
+
+        /// Process all remaining hit objects and calculate the final performance
+        /// attributes.
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "gradual_performance_last")]
+        public static extern OptionPerformanceAttributes gradual_performance_last(IntPtr context, ScoreState state);
+
+        /// Process everything up to the next `n`th hitobject and calculate the
+        /// performance attributes for the resulting score state.
+        ///
+        /// Note that the count is zero-indexed, so `n=0` will process 1 object,
+        /// `n=1` will process 2, and so on.
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "gradual_performance_nth")]
+        public static extern OptionPerformanceAttributes gradual_performance_nth(IntPtr context, ScoreState state, uint n);
+
+        /// Returns the amount of remaining objects.
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "gradual_performance_len")]
+        public static extern uint gradual_performance_len(IntPtr context);
+
+        /// Destroys the given instance.
+        ///
+        /// # Safety
+        ///
+        /// The passed parameter MUST have been created with the corresponding init function;
+        /// passing any other value results in undefined behavior.
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "string_destroy")]
         public static extern FFIError string_destroy(ref IntPtr context);
 
@@ -898,6 +1033,7 @@ namespace SBRosuPP
         Utf8Error = 400,
         InvalidString = 500,
         SerializeError = 600,
+        ConvertError = 700,
         Unknown = 1000,
     }
 
@@ -1052,6 +1188,38 @@ namespace SBRosuPP
     ///Option type containing boolean flag and maybe valid data.
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
+    public partial struct OptionDifficultyAttributes
+    {
+        ///Element that is maybe valid.
+        DifficultyAttributes t;
+        ///Byte where `1` means element `t` is valid.
+        byte is_some;
+    }
+
+    public partial struct OptionDifficultyAttributes
+    {
+        public static OptionDifficultyAttributes FromNullable(DifficultyAttributes? nullable)
+        {
+            var result = new OptionDifficultyAttributes();
+            if (nullable.HasValue)
+            {
+                result.is_some = 1;
+                result.t = nullable.Value;
+            }
+
+            return result;
+        }
+
+        public DifficultyAttributes? ToNullable()
+        {
+            return this.is_some == 1 ? this.t : (DifficultyAttributes?)null;
+        }
+    }
+
+
+    ///Option type containing boolean flag and maybe valid data.
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct OptionManiaDifficultyAttributes
     {
         ///Element that is maybe valid.
@@ -1173,6 +1341,38 @@ namespace SBRosuPP
         public OsuPerformanceAttributes? ToNullable()
         {
             return this.is_some == 1 ? this.t : (OsuPerformanceAttributes?)null;
+        }
+    }
+
+
+    ///Option type containing boolean flag and maybe valid data.
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
+    public partial struct OptionPerformanceAttributes
+    {
+        ///Element that is maybe valid.
+        PerformanceAttributes t;
+        ///Byte where `1` means element `t` is valid.
+        byte is_some;
+    }
+
+    public partial struct OptionPerformanceAttributes
+    {
+        public static OptionPerformanceAttributes FromNullable(PerformanceAttributes? nullable)
+        {
+            var result = new OptionPerformanceAttributes();
+            if (nullable.HasValue)
+            {
+                result.is_some = 1;
+                result.t = nullable.Value;
+            }
+
+            return result;
+        }
+
+        public PerformanceAttributes? ToNullable()
+        {
+            return this.is_some == 1 ? this.t : (PerformanceAttributes?)null;
         }
     }
 
@@ -1707,6 +1907,137 @@ namespace SBRosuPP
         public double GetClockRate()
         {
             return RosuLibrary.performance_get_clock_rate(_context);
+        }
+
+        public IntPtr Context => _context;
+    }
+
+
+    public partial class GradualDifficulty : IDisposable
+    {
+        private IntPtr _context;
+
+        private GradualDifficulty() {}
+
+        /// Create a [`GradualDifficulty`] for a map of any mode.
+        public static GradualDifficulty New(IntPtr difficulty, IntPtr beatmap)
+        {
+            var self = new GradualDifficulty();
+            var rval = RosuLibrary.gradual_difficulty_new(ref self._context, difficulty, beatmap);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+            return self;
+        }
+
+        /// Create a [`GradualDifficulty`] for a [`Beatmap`] on a specific [`GameMode`].
+        public static GradualDifficulty NewWithMode(IntPtr difficulty, IntPtr beatmap, Mode mode)
+        {
+            var self = new GradualDifficulty();
+            var rval = RosuLibrary.gradual_difficulty_new_with_mode(ref self._context, difficulty, beatmap, mode);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+            return self;
+        }
+
+        public void Dispose()
+        {
+            var rval = RosuLibrary.gradual_difficulty_destroy(ref _context);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
+        public OptionDifficultyAttributes Next()
+        {
+            return RosuLibrary.gradual_difficulty_next(_context);
+        }
+
+        public OptionDifficultyAttributes Nth(uint n)
+        {
+            return RosuLibrary.gradual_difficulty_nth(_context, n);
+        }
+
+        public uint Len()
+        {
+            return RosuLibrary.gradual_difficulty_len(_context);
+        }
+
+        public IntPtr Context => _context;
+    }
+
+
+    public partial class GradualPerformance : IDisposable
+    {
+        private IntPtr _context;
+
+        private GradualPerformance() {}
+
+        /// Create a [`GradualPerformance`] for a map of any mode.
+        public static GradualPerformance New(IntPtr difficulty, IntPtr beatmap)
+        {
+            var self = new GradualPerformance();
+            var rval = RosuLibrary.gradual_performance_new(ref self._context, difficulty, beatmap);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+            return self;
+        }
+
+        /// Create a [`GradualPerformance`] for a [`Beatmap`] on a specific [`GameMode`].
+        public static GradualPerformance NewWithMode(IntPtr difficulty, IntPtr beatmap, Mode mode)
+        {
+            var self = new GradualPerformance();
+            var rval = RosuLibrary.gradual_performance_new_with_mode(ref self._context, difficulty, beatmap, mode);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+            return self;
+        }
+
+        public void Dispose()
+        {
+            var rval = RosuLibrary.gradual_performance_destroy(ref _context);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
+        /// Process the next hit object and calculate the performance attributes
+        /// for the resulting score state.
+        public OptionPerformanceAttributes Next(ScoreState state)
+        {
+            return RosuLibrary.gradual_performance_next(_context, state);
+        }
+
+        /// Process all remaining hit objects and calculate the final performance
+        /// attributes.
+        public OptionPerformanceAttributes Last(ScoreState state)
+        {
+            return RosuLibrary.gradual_performance_last(_context, state);
+        }
+
+        /// Process everything up to the next `n`th hitobject and calculate the
+        /// performance attributes for the resulting score state.
+        ///
+        /// Note that the count is zero-indexed, so `n=0` will process 1 object,
+        /// `n=1` will process 2, and so on.
+        public OptionPerformanceAttributes Nth(ScoreState state, uint n)
+        {
+            return RosuLibrary.gradual_performance_nth(_context, state, n);
+        }
+
+        /// Returns the amount of remaining objects.
+        public uint Len()
+        {
+            return RosuLibrary.gradual_performance_len(_context);
         }
 
         public IntPtr Context => _context;

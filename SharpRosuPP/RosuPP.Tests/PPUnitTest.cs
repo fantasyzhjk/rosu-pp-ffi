@@ -64,6 +64,31 @@ public class PPUnitTest(ITestOutputHelper output)
     }
 
     [Fact]
+    public void GradualTest() {
+        var d = Assembly.GetExecutingAssembly().Location;
+        var b = File.ReadAllBytes("../../../resources/657916.osu");
+        var beatmap = Beatmap.FromBytes(b);
+        var difficulty = Difficulty.New();
+        var gradual = GradualPerformance.New(difficulty, beatmap);
+
+        var totalLen = gradual.Len();
+
+        var calculated = 10;
+
+        var state = new ScoreState();
+        for (var i = 0; i < calculated; i++) {
+            state.n300 += 1;
+            state.max_combo += 1;
+            var attrs = gradual.Next(state).Unwarp();
+            output.WriteLine("pp: {0}", attrs.osu.Unwarp().pp);
+        }
+
+        var remainingObjects = gradual.Len();
+
+        Assert.Equal(totalLen, remainingObjects + calculated);
+    }
+
+    [Fact]
     public void Convert() {
         TestPP(
             beatmapPath: "../../../resources/657916.osu",

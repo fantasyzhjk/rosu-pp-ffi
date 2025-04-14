@@ -15,6 +15,7 @@ pub enum FFIError {
     Utf8Error = 400,
     InvalidString = 500,
     SerializeError = 600,
+    ConvertError = 700,
     Unknown = 1000
 }
 
@@ -49,6 +50,9 @@ pub enum Error {
     UTF8(#[from] std::str::Utf8Error),
     #[error("SerializeError")]
     Serialize(#[from] serde_json::Error),
+    #[error("ConvertError")]
+    Convert(#[from] rosu_pp::model::mode::ConvertError),
+
 }
 
 impl Default for Error {
@@ -68,6 +72,7 @@ impl From<Error> for FFIError {
             Error::InvalidString => Self::InvalidString,
             Error::UTF8(_) => Self::Utf8Error,
             Error::Serialize(_) => Self::SerializeError,
+            Error::Convert(_) => Self::ConvertError
         }
     }
 }
