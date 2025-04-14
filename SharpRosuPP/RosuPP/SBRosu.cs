@@ -137,9 +137,10 @@ public partial struct DifficultyAttributes
 {
     public override string ToString()
     {
-        var str = OwnedString.Empty();
-        RosuLibrary.debug_difficylty_attributes(ref this, str.Context);
-        return str.ToString();
+        using (var str = OwnedString.Empty()) {
+            RosuLibrary.debug_difficylty_attributes(ref this, str.Context);
+            return str.ToString();
+        }
     }
 }
 
@@ -147,9 +148,10 @@ public partial struct PerformanceAttributes
 {
     public override string ToString()
     {
-        var str = OwnedString.Empty();
-        RosuLibrary.debug_performance_attributes(ref this, str.Context);
-        return str.ToString();
+        using (var str = OwnedString.Empty()) {
+            RosuLibrary.debug_performance_attributes(ref this, str.Context);
+            return str.ToString();
+        }
     }
 }
 
@@ -198,9 +200,10 @@ public partial struct ScoreState
 {
     public override string ToString()
     {
-        var str = OwnedString.Empty();
-        RosuLibrary.debug_score_state(ref this, str.Context);
-        return str.ToString();
+        using (var str = OwnedString.Empty()) {
+            RosuLibrary.debug_score_state(ref this, str.Context);
+            return str.ToString();
+        }
     }
 }
 
@@ -348,7 +351,7 @@ public partial class Beatmap
 
 public partial class Mods
 {
-    public void Json(ref OwnedString str) {
+    public void Json(OwnedString str) {
         this.Json(str.Context);
     }
 }
