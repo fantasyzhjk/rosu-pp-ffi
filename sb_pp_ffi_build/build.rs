@@ -13,7 +13,7 @@ use sb_pp_ffi::ffi_inventory;
 // to produce the bindings (since `cargo test` does not imply `cargo build`).
 fn main() {
     // to c# project
-    // bindings_csharp("../SharpRosuPP/RosuPP/RosuFFI.cs", "SBRosuPP").unwrap();
+    bindings_csharp("../SharpRosuPP/RosuPP/RosuFFI.cs", "SBRosuPP").unwrap();
 
     // to bindings
     // bindings_csharp("../bindings/RosuFFI.cs").unwrap();

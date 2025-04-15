@@ -4,7 +4,7 @@ use beatmap::Beatmap;
 use hitresult_priority::HitResultPriority;
 use interoptopus::{
     ffi_service, ffi_service_ctor, ffi_service_method, ffi_type,
-    patterns::string::AsciiPointer,
+    patterns::{primitives::FFIBool, string::AsciiPointer},
 };
 use mode::Mode;
 use mods::Mods;
@@ -105,8 +105,8 @@ impl Performance {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn hardrock_offsets(&mut self, hardrock_offsets: bool) {
-        self.hardrock_offsets = Some(hardrock_offsets);
+    pub fn hardrock_offsets(&mut self, hardrock_offsets: FFIBool) {
+        self.hardrock_offsets = Some(hardrock_offsets.is());
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
@@ -135,8 +135,8 @@ impl Performance {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn lazer(&mut self, lazer: bool) {
-        self.lazer = Some(lazer);
+    pub fn lazer(&mut self, lazer: FFIBool) {
+        self.lazer = Some(lazer.is());
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]

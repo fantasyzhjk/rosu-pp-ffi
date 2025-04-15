@@ -81,7 +81,7 @@ namespace SBRosuPP
 
         /// Convert a Beatmap to the specified mode
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_convert")]
-        public static extern bool beatmap_convert(IntPtr context, Mode mode, IntPtr mods);
+        public static extern Bool beatmap_convert(IntPtr context, Mode mode, IntPtr mods);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_bpm")]
         public static extern double beatmap_bpm(IntPtr context);
@@ -93,7 +93,7 @@ namespace SBRosuPP
         public static extern Mode beatmap_mode(IntPtr context);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_is_convert")]
-        public static extern bool beatmap_is_convert(IntPtr context);
+        public static extern Bool beatmap_is_convert(IntPtr context);
 
         /// Destroys the given instance.
         ///
@@ -135,10 +135,10 @@ namespace SBRosuPP
         public static extern void difficulty_od(IntPtr context, float od);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_hardrock_offsets")]
-        public static extern void difficulty_hardrock_offsets(IntPtr context, bool hardrock_offsets);
+        public static extern void difficulty_hardrock_offsets(IntPtr context, Bool hardrock_offsets);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_lazer")]
-        public static extern void difficulty_lazer(IntPtr context, bool lazer);
+        public static extern void difficulty_lazer(IntPtr context, Bool lazer);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "difficulty_calculate")]
         public static extern DifficultyAttributes difficulty_calculate(IntPtr context, IntPtr beatmap);
@@ -189,7 +189,7 @@ namespace SBRosuPP
         public static extern void performance_od(IntPtr context, float od);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_hardrock_offsets")]
-        public static extern void performance_hardrock_offsets(IntPtr context, bool hardrock_offsets);
+        public static extern void performance_hardrock_offsets(IntPtr context, Bool hardrock_offsets);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_state")]
         public static extern void performance_state(IntPtr context, ScoreState state);
@@ -207,7 +207,7 @@ namespace SBRosuPP
         public static extern void performance_hitresult_priority(IntPtr context, HitResultPriority hitresult_priority);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_lazer")]
-        public static extern void performance_lazer(IntPtr context, bool lazer);
+        public static extern void performance_lazer(IntPtr context, Bool lazer);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_large_tick_hits")]
         public static extern void performance_large_tick_hits(IntPtr context, uint large_tick_hits);
@@ -329,7 +329,7 @@ namespace SBRosuPP
         public static extern FFIError string_empty(ref IntPtr context);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "string_is_init")]
-        public static extern bool string_is_init(IntPtr context);
+        public static extern Bool string_is_init(IntPtr context);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "string_to_cstr")]
         public static extern IntPtr string_to_cstr(IntPtr context);
@@ -371,13 +371,13 @@ namespace SBRosuPP
         public static extern void mods_json(IntPtr context, IntPtr str);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_insert_json")]
-        public static extern bool mods_insert_json(IntPtr context, string str);
+        public static extern Bool mods_insert_json(IntPtr context, string str);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_insert")]
-        public static extern bool mods_insert(IntPtr context, string str);
+        public static extern Bool mods_insert(IntPtr context, string str);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_contains")]
-        public static extern bool mods_contains(IntPtr context, string str);
+        public static extern Bool mods_contains(IntPtr context, string str);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "mods_clear")]
         public static extern void mods_clear(IntPtr context);
@@ -399,13 +399,13 @@ namespace SBRosuPP
 
     }
 
-    public enum HitResultPriority : int
+    public enum HitResultPriority
     {
         BestCase = 0,
         WorstCase = 1,
     }
 
-    public enum Mode : int
+    public enum Mode
     {
         /// osu!standard
         Osu = 0,
@@ -418,7 +418,7 @@ namespace SBRosuPP
     }
 
     /// Type to pass [`OsuScoreState::accuracy`] and specify the origin of a score.
-    public enum OsuScoreOrigin : int
+    public enum OsuScoreOrigin
     {
         /// For scores set on osu!stable
         Stable = 0,
@@ -430,7 +430,7 @@ namespace SBRosuPP
 
     /// Summary struct for a [`Beatmap`]'s attributes.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct BeatmapAttributes
     {
         /// The approach rate.
@@ -449,7 +449,7 @@ namespace SBRosuPP
 
     /// The result of a difficulty calculation on an osu!catch map.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct CatchDifficultyAttributes
     {
         /// The final star rating
@@ -465,13 +465,12 @@ namespace SBRosuPP
         /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
         ///
         /// [`Beatmap`]: crate::model::beatmap::Beatmap
-        [MarshalAs(UnmanagedType.I1)]
-        public bool is_convert;
+        public Bool is_convert;
     }
 
     /// The result of a performance calculation on an osu!catch map.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct CatchPerformanceAttributes
     {
         /// The difficulty attributes that were used for the performance calculation
@@ -481,7 +480,7 @@ namespace SBRosuPP
     }
 
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct DifficultyAttributes
     {
         public OptionOsuDifficultyAttributes osu;
@@ -493,7 +492,7 @@ namespace SBRosuPP
 
     /// AR and OD hit windows
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct HitWindows
     {
         /// Hit window for approach rate i.e. `TimePreempt` in milliseconds.
@@ -508,7 +507,7 @@ namespace SBRosuPP
 
     /// The result of a difficulty calculation on an osu!mania map.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct ManiaDifficultyAttributes
     {
         /// The final star rating.
@@ -524,13 +523,12 @@ namespace SBRosuPP
         /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
         ///
         /// [`Beatmap`]: crate::model::beatmap::Beatmap
-        [MarshalAs(UnmanagedType.I1)]
-        public bool is_convert;
+        public Bool is_convert;
     }
 
     /// The result of a performance calculation on an osu!mania map.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct ManiaPerformanceAttributes
     {
         /// The difficulty attributes that were used for the performance calculation.
@@ -543,7 +541,7 @@ namespace SBRosuPP
 
     /// The result of a difficulty calculation on an osu!standard map.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct OsuDifficultyAttributes
     {
         /// The difficulty of the aim skill.
@@ -591,7 +589,7 @@ namespace SBRosuPP
 
     /// The result of a performance calculation on an osu!standard map.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct OsuPerformanceAttributes
     {
         /// The difficulty attributes that were used for the performance calculation
@@ -611,7 +609,7 @@ namespace SBRosuPP
     }
 
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct PerformanceAttributes
     {
         public OptionOsuPerformanceAttributes osu;
@@ -623,7 +621,7 @@ namespace SBRosuPP
 
     /// Aggregation for a score's current state.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct ScoreState
     {
         /// Maximum combo that the score has had so far. **Not** the maximum
@@ -673,7 +671,7 @@ namespace SBRosuPP
 
     /// The result of a difficulty calculation on an osu!taiko map.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct TaikoDifficultyAttributes
     {
         /// The difficulty of the stamina skill.
@@ -698,13 +696,12 @@ namespace SBRosuPP
         /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
         ///
         /// [`Beatmap`]: crate::model::beatmap::Beatmap
-        [MarshalAs(UnmanagedType.I1)]
-        public bool is_convert;
+        public Bool is_convert;
     }
 
     /// The result of a performance calculation on an osu!taiko map.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct TaikoPerformanceAttributes
     {
         /// The difficulty attributes that were used for the performance calculation
@@ -721,7 +718,7 @@ namespace SBRosuPP
         public Optionf64 estimated_unstable_rate;
     }
 
-    public enum FFIError : int
+    public enum FFIError
     {
         Ok = 0,
         Null = 100,
@@ -736,7 +733,7 @@ namespace SBRosuPP
 
     ///A pointer to an array of data someone else owns which may not be modified.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct Sliceu8
     {
         ///Pointer to start of immutable data.
@@ -797,7 +794,7 @@ namespace SBRosuPP
 
     ///Option type containing boolean flag and maybe valid data.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct OptionCatchDifficultyAttributes
     {
         ///Element that is maybe valid.
@@ -829,7 +826,7 @@ namespace SBRosuPP
 
     ///Option type containing boolean flag and maybe valid data.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct OptionCatchPerformanceAttributes
     {
         ///Element that is maybe valid.
@@ -861,7 +858,7 @@ namespace SBRosuPP
 
     ///Option type containing boolean flag and maybe valid data.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct OptionDifficultyAttributes
     {
         ///Element that is maybe valid.
@@ -893,7 +890,7 @@ namespace SBRosuPP
 
     ///Option type containing boolean flag and maybe valid data.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct OptionManiaDifficultyAttributes
     {
         ///Element that is maybe valid.
@@ -925,7 +922,7 @@ namespace SBRosuPP
 
     ///Option type containing boolean flag and maybe valid data.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct OptionManiaPerformanceAttributes
     {
         ///Element that is maybe valid.
@@ -957,7 +954,7 @@ namespace SBRosuPP
 
     ///Option type containing boolean flag and maybe valid data.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct OptionOsuDifficultyAttributes
     {
         ///Element that is maybe valid.
@@ -989,7 +986,7 @@ namespace SBRosuPP
 
     ///Option type containing boolean flag and maybe valid data.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct OptionOsuPerformanceAttributes
     {
         ///Element that is maybe valid.
@@ -1021,7 +1018,7 @@ namespace SBRosuPP
 
     ///Option type containing boolean flag and maybe valid data.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct OptionPerformanceAttributes
     {
         ///Element that is maybe valid.
@@ -1053,7 +1050,7 @@ namespace SBRosuPP
 
     ///Option type containing boolean flag and maybe valid data.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct OptionTaikoDifficultyAttributes
     {
         ///Element that is maybe valid.
@@ -1085,7 +1082,7 @@ namespace SBRosuPP
 
     ///Option type containing boolean flag and maybe valid data.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct OptionTaikoPerformanceAttributes
     {
         ///Element that is maybe valid.
@@ -1117,7 +1114,7 @@ namespace SBRosuPP
 
     ///Option type containing boolean flag and maybe valid data.
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct Optionf64
     {
         ///Element that is maybe valid.
@@ -1144,6 +1141,25 @@ namespace SBRosuPP
         {
             return this.is_some == 1 ? this.t : (double?)null;
         }
+    }
+
+
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
+    public partial struct Bool
+    {
+        byte value;
+    }
+
+    public partial struct Bool
+    {
+        public static readonly Bool True = new Bool { value =  1 };
+        public static readonly Bool False = new Bool { value =  0 };
+        public Bool(bool b)
+        {
+            value = (byte) (b ? 1 : 0);
+        }
+        public bool Is => value == 1;
     }
 
 
@@ -1275,7 +1291,7 @@ namespace SBRosuPP
         }
 
         /// Convert a Beatmap to the specified mode
-        public bool Convert(Mode mode, IntPtr mods)
+        public Bool Convert(Mode mode, IntPtr mods)
         {
             return RosuLibrary.beatmap_convert(_context, mode, mods);
         }
@@ -1295,7 +1311,7 @@ namespace SBRosuPP
             return RosuLibrary.beatmap_mode(_context);
         }
 
-        public bool IsConvert()
+        public Bool IsConvert()
         {
             return RosuLibrary.beatmap_is_convert(_context);
         }
@@ -1379,12 +1395,12 @@ namespace SBRosuPP
             RosuLibrary.difficulty_od(_context, od);
         }
 
-        public void HardrockOffsets(bool hardrock_offsets)
+        public void HardrockOffsets(Bool hardrock_offsets)
         {
             RosuLibrary.difficulty_hardrock_offsets(_context, hardrock_offsets);
         }
 
-        public void Lazer(bool lazer)
+        public void Lazer(Bool lazer)
         {
             RosuLibrary.difficulty_lazer(_context, lazer);
         }
@@ -1483,7 +1499,7 @@ namespace SBRosuPP
             RosuLibrary.performance_od(_context, od);
         }
 
-        public void HardrockOffsets(bool hardrock_offsets)
+        public void HardrockOffsets(Bool hardrock_offsets)
         {
             RosuLibrary.performance_hardrock_offsets(_context, hardrock_offsets);
         }
@@ -1513,7 +1529,7 @@ namespace SBRosuPP
             RosuLibrary.performance_hitresult_priority(_context, hitresult_priority);
         }
 
-        public void Lazer(bool lazer)
+        public void Lazer(Bool lazer)
         {
             RosuLibrary.performance_lazer(_context, lazer);
         }
@@ -1755,7 +1771,7 @@ namespace SBRosuPP
             }
         }
 
-        public bool IsInit()
+        public Bool IsInit()
         {
             return RosuLibrary.string_is_init(_context);
         }
@@ -1860,17 +1876,17 @@ namespace SBRosuPP
             RosuLibrary.mods_json(_context, str);
         }
 
-        public bool InsertJson(string str)
+        public Bool InsertJson(string str)
         {
             return RosuLibrary.mods_insert_json(_context, str);
         }
 
-        public bool Insert(string str)
+        public Bool Insert(string str)
         {
             return RosuLibrary.mods_insert(_context, str);
         }
 
-        public bool Contains(string str)
+        public Bool Contains(string str)
         {
             return RosuLibrary.mods_contains(_context, str);
         }

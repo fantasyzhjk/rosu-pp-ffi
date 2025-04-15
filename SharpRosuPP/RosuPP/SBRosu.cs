@@ -104,7 +104,7 @@ namespace SBRosuPP {
         public readonly double stars => difficulty.stars;
         public readonly uint max_combo => difficulty.max_combo;
         public readonly uint n_objects => difficulty.n_objects;
-        public readonly bool is_convert => difficulty.is_convert;
+        public readonly bool is_convert => difficulty.is_convert.Is;
     }
 
     public partial struct CatchDifficultyAttributes
@@ -116,14 +116,14 @@ namespace SBRosuPP {
     {
         public readonly double stars => difficulty.stars;
         public readonly uint max_combo => difficulty.max_combo;
-        public readonly bool is_convert => difficulty.is_convert;
+        public readonly bool is_convert => difficulty.is_convert.Is;
     }
 
     public partial struct TaikoPerformanceAttributes
     {
         public readonly double stars => difficulty.stars;
         public readonly uint max_combo => difficulty.max_combo;
-        public readonly bool is_convert => difficulty.is_convert;
+        public readonly bool is_convert => difficulty.is_convert.Is;
     }
 
     public partial struct DifficultyAttributes
@@ -342,13 +342,13 @@ namespace SBRosuPP {
         }
 
         /// Convert a Beatmap to the specified mode
-        public bool Convert(Mode mode, Mods mods)
+        public Bool Convert(Mode mode, Mods mods)
         {
             return Convert(mode, mods.Context);
         }
 
         /// Convert a Beatmap to the specified mode
-        public bool Convert(Mode mode)
+        public Bool Convert(Mode mode)
         {
             return Convert(mode, Mods.New(mode));
         }
