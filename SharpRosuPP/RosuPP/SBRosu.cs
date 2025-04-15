@@ -324,20 +324,7 @@ namespace SBRosuPP {
         public static Beatmap FromBytes(byte[] data)
         {
             var self = new Beatmap();
-
-            unsafe
-            {
-                fixed (void* ptr_data = data)
-                {
-                    var data_slice = new Sliceu8(new IntPtr(ptr_data), (ulong) data.Length);
-                    var rval = RosuLibrary.beatmap_from_bytes(ref self._context, data_slice);
-                    if (rval != FFIError.Ok)
-                    {
-                        throw new InteropException<FFIError>(rval);
-                    }
-                }
-            }
-            
+            RosuLibrary.beatmap_from_bytes(ref self._context, data);
             return self;
         }
 

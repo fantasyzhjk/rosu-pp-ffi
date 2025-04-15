@@ -23,17 +23,19 @@ fn main() {
 
 fn bindings_csharp(file_name: impl AsRef<Path>, namespace: &str) -> Result<(), Error> {
     use interoptopus_backend_csharp::{Config, Generator, Unsafe};
+    use interoptopus_backend_csharp::overloads::DotNet;
 
     Generator::new(
         Config {
             class: "RosuLibrary".to_string(),
             dll_name: "sb_pp_ffi".to_string(),
             namespace_mappings: NamespaceMappings::new(namespace),
-            use_unsafe: Unsafe::UnsafeKeyword,
+            use_unsafe: Unsafe::UnsafePlatformMemCpy,
             ..Config::default()
         },
         ffi_inventory(),
     )
+    .add_overload_writer(DotNet::new())
     .write_file(file_name)?;
 
     Ok(())

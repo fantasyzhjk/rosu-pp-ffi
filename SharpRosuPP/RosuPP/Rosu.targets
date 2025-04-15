@@ -90,7 +90,7 @@
         <Message Text="Copy native libs" Importance="high" />
         <ItemGroup>
 			<Content Include="@(CargoLibrary)">
-                <Link>native/%(RecursiveDir)%(Filename)%(Extension)</Link>
+                <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
                 <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             </Content>
             <!-- <EmbeddedResource Include="@(CargoLibrary)" /> -->
