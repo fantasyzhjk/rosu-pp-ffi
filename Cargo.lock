@@ -124,11 +124,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d75a2a4b1b190afb6f5425f10f6a8f959d2ea0b9c2b1d79553551850539e4674"
 
 [[package]]
-name = "lazy_static"
-version = "1.5.0"
-source = "git+https://github.com/Kimundi/lazy-static.rs#6f864e47ed7c3e548cbe715b8d28041f32ec6e43"
-
-[[package]]
 name = "log"
 version = "0.4.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -195,19 +190,18 @@ checksum = "6b92ea634d8b3eaa4d7fba7bd12045dda1a50ce81401c96af0d9c851b0737544"
 
 [[package]]
 name = "rosu-mods"
-version = "0.2.1"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "65892bec4e81b3931f3c0b3a646feff0daa78b22dff2b45b157c642f1be14b04"
+checksum = "743a643c73fd79731b2b688e60f5e86eeea0e0953ab1f4fac8b5ce0b476a5773"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "rosu-pp"
-version = "2.0.0"
-source = "git+https://github.com/fantasyzhjk/sb-rosu-pp?rev=677d272956eb89fd272414324df52f08023b58ef#677d272956eb89fd272414324df52f08023b58ef"
+version = "3.0.0"
+source = "git+https://github.com/fantasyzhjk/sb-rosu-pp?rev=93d98bccc62522d8a22cbe4ad66ffdf04e79af7e#93d98bccc62522d8a22cbe4ad66ffdf04e79af7e"
 dependencies = [
- "lazy_static",
  "rosu-map",
  "rosu-mods",
 ]

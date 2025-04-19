@@ -11,9 +11,9 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 interoptopus = { version = "0.14.27", features = ["log", "serde"] }
-rosu-pp = { git = "https://github.com/fantasyzhjk/sb-rosu-pp", rev = "677d272956eb89fd272414324df52f08023b58ef" }
-rosu-map = { version = "0.2.0" }
-rosu-mods = { version = "0.2.0", features = ["serde"] }
+rosu-pp = { git = "https://github.com/fantasyzhjk/sb-rosu-pp", rev = "93d98bccc62522d8a22cbe4ad66ffdf04e79af7e" }
+rosu-map = { version = "0.2.1" }
+rosu-mods = { version = "0.3.0", features = ["serde"] }
 thiserror = "2.0.4"
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }

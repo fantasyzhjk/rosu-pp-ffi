@@ -11,8 +11,8 @@ pub struct TaikoDifficultyAttributes {
     pub rhythm: f64,
     /// The difficulty of the color skill.
     pub color: f64,
-    /// The difficulty of the hardest parts of the map.
-    pub peak: f64,
+    /// The difficulty of the reading skill.
+    pub reading: f64,
     /// The perceived hit window for an n300 inclusive of rate-adjusting mods (DT/HT/etc)
     pub great_hit_window: f64,
     /// The perceived hit window for an n100 inclusive of rate-adjusting mods (DT/HT/etc)
@@ -50,7 +50,7 @@ impl From<rosu_pp::taiko::TaikoDifficultyAttributes> for TaikoDifficultyAttribut
             stamina: attributes.stamina,
             rhythm: attributes.rhythm,
             color: attributes.color,
-            peak: attributes.peak,
+            reading: attributes.reading,
             great_hit_window: attributes.great_hit_window,
             ok_hit_window: attributes.ok_hit_window,
             mono_stamina_factor: attributes.mono_stamina_factor,
@@ -67,7 +67,7 @@ impl From<TaikoDifficultyAttributes> for rosu_pp::taiko::TaikoDifficultyAttribut
             stamina: attributes.stamina,
             rhythm: attributes.rhythm,
             color: attributes.color,
-            peak: attributes.peak,
+            reading: attributes.reading,
             great_hit_window: attributes.great_hit_window,
             ok_hit_window: attributes.ok_hit_window,
             mono_stamina_factor: attributes.mono_stamina_factor,

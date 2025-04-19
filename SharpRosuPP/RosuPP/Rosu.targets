@@ -39,7 +39,7 @@
 
         <CargoConfiguration>release</CargoConfiguration>
 
-        <CargoTarget Condition=" '$(IsWindows)' == 'true' ">x86_64-pc-windows-msvc</CargoTarget>
+        <CargoTarget Condition=" '$(IsWindows)' == 'true' ">i686-pc-windows-msvc</CargoTarget>
         <CargoTarget Condition=" '$(IsLinux)' == 'true' ">x86_64-unknown-linux-gnu</CargoTarget>
         <CargoTarget Condition=" '$(IsMacOS)' == 'true' ">aarch64-apple-darwin</CargoTarget>
 

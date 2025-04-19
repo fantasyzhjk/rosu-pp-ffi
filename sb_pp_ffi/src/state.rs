@@ -169,7 +169,7 @@ pub extern "C" fn calculate_accuacy(state: &ScoreState, difficulty: &attributes:
         },
         Mode::Mania => {
             let state: rosu_pp::mania::ManiaScoreState = rosu_pp::any::ScoreState::from(state).into();
-            state.accuracy()
+            state.accuracy(origin == OsuScoreOrigin::Stable)
         },
     }
 }
