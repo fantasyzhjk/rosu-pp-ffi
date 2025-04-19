@@ -14,6 +14,7 @@ use interoptopus::{
 #[allow(non_snake_case)]
 pub struct GradualDifficulty {
     pub inner: rosu_pp::GradualDifficulty,
+    bm: rosu_pp::Beatmap
 }
 
 
@@ -22,13 +23,15 @@ impl GradualDifficulty {
     /// Create a [`GradualDifficulty`] for a map of any mode.
     #[ffi_service_ctor]
     pub fn new(difficulty: &Difficulty, beatmap: &Beatmap) -> Result<Self, Error> {
-        Ok(Self { inner: rosu_pp::GradualDifficulty::new(difficulty.construct(), &beatmap.inner) })
+        let bm = beatmap.inner.clone();
+        Ok(Self { inner: rosu_pp::GradualDifficulty::new(difficulty.construct(), &bm), bm })
     }
 
     /// Create a [`GradualDifficulty`] for a [`Beatmap`] on a specific [`GameMode`].
     #[ffi_service_ctor]
     pub fn new_with_mode(difficulty: &Difficulty, beatmap: &Beatmap, mode: Mode) -> Result<Self, Error> {
-        Ok(Self { inner: rosu_pp::GradualDifficulty::new_with_mode(difficulty.construct(), &beatmap.inner, mode.into())? })
+        let bm = beatmap.inner.clone();
+        Ok(Self { inner: rosu_pp::GradualDifficulty::new_with_mode(difficulty.construct(), &bm, mode.into())?, bm })
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
@@ -53,6 +56,7 @@ impl GradualDifficulty {
 #[allow(non_snake_case)]
 pub struct GradualPerformance {
     pub inner: rosu_pp::GradualPerformance,
+    bm: rosu_pp::Beatmap
 }
 
 
@@ -61,13 +65,15 @@ impl GradualPerformance {
     /// Create a [`GradualPerformance`] for a map of any mode.
     #[ffi_service_ctor]
     pub fn new(difficulty: &Difficulty, beatmap: &Beatmap) -> Result<Self, Error> {
-        Ok(Self { inner: rosu_pp::GradualPerformance::new(difficulty.construct(), &beatmap.inner) })
+        let bm = beatmap.inner.clone();
+        Ok(Self { inner: rosu_pp::GradualPerformance::new(difficulty.construct(), &bm), bm })
     }
 
     /// Create a [`GradualPerformance`] for a [`Beatmap`] on a specific [`GameMode`].
     #[ffi_service_ctor]
     pub fn new_with_mode(difficulty: &Difficulty, beatmap: &Beatmap, mode: Mode) -> Result<Self, Error> {
-        Ok(Self { inner: rosu_pp::GradualPerformance::new_with_mode(difficulty.construct(), &beatmap.inner, mode.into())? })
+        let bm = beatmap.inner.clone();
+        Ok(Self { inner: rosu_pp::GradualPerformance::new_with_mode(difficulty.construct(), &bm, mode.into())?, bm })
     }
 
     /// Process the next hit object and calculate the performance attributes

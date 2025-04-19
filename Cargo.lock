@@ -126,7 +126,7 @@ checksum = "d75a2a4b1b190afb6f5425f10f6a8f959d2ea0b9c2b1d79553551850539e4674"
 [[package]]
 name = "lazy_static"
 version = "1.5.0"
-source = "git+https://github.com/Kimundi/lazy-static.rs#f9ee0cc3df7084d624cb768de8ab6900d23fbedc"
+source = "git+https://github.com/Kimundi/lazy-static.rs#6f864e47ed7c3e548cbe715b8d28041f32ec6e43"
 
 [[package]]
 name = "log"
@@ -189,9 +189,9 @@ checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 
 [[package]]
 name = "rosu-map"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21de4f8c5cd2738e1c9a2ed477aad2579dacd5acf3845d80738fcec160d0bd8a"
+checksum = "6b92ea634d8b3eaa4d7fba7bd12045dda1a50ce81401c96af0d9c851b0737544"
 
 [[package]]
 name = "rosu-mods"
@@ -205,7 +205,7 @@ dependencies = [
 [[package]]
 name = "rosu-pp"
 version = "2.0.0"
-source = "git+https://github.com/ppy-sb/rosu-pp?rev=f918f88f892ee1cdcde1727174d391b29925eb81#f918f88f892ee1cdcde1727174d391b29925eb81"
+source = "git+https://github.com/fantasyzhjk/sb-rosu-pp?rev=677d272956eb89fd272414324df52f08023b58ef#677d272956eb89fd272414324df52f08023b58ef"
 dependencies = [
  "lazy_static",
  "rosu-map",
