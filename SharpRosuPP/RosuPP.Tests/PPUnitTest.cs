@@ -80,8 +80,8 @@ public class PPUnitTest(ITestOutputHelper output)
         for (var i = 0; i < calculated; i++) {
             state.n300 += 1;
             state.max_combo += 1;
-            var attrs = gradual.Next(state).Unwarp();
-            output.WriteLine("pp: {0}", attrs.osu.Unwarp().pp);
+            var attrs = gradual.Next(state).Unwrap();
+            output.WriteLine("pp: {0}", attrs.osu.Unwrap().pp);
         }
 
         var remainingObjects = gradual.Len();

@@ -46,32 +46,25 @@ impl Mods {
 
 
     #[ffi_service_ctor]
-    pub fn from_json(str: AsciiPointer, mode: Mode) -> Result<Self, Error> {
+    pub fn from_json(str: AsciiPointer, mode: Mode, deny_unknown_fields: bool) -> Result<Self, Error> {
         let s = str.as_str()?;
         let mut d = serde_json::Deserializer::from_str(s);
-        let mods = GameModsSeed::Mode(mode.into()).deserialize(&mut d)?;
+        let mods = GameModsSeed::Mode { mode: mode.into(), deny_unknown_fields }.deserialize(&mut d)?;
         Ok(Self {
             mods,
             mode: Some(mode)
         })
     }
     
-    #[ffi_service_ctor]
-    pub fn from_json_sanitize(str: AsciiPointer, mode: Mode) -> Result<Self, Error> {
-        let s = str.as_str()?;
-        let mut d = serde_json::Deserializer::from_str(s);
-        let mut mods = GameModsSeed::Mode(mode.into()).deserialize(&mut d)?;
-        mods.sanitize();
-        Ok(Self {
-            mods: mods.into_iter().filter(|m| m.kind() != UnknownMod::kind()).collect(),
-            mode: Some(mode)
-        })
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn remove_unknown_mods(&mut self) {
+        self.mods = self.mods.clone().into_iter().filter(|m| m.kind() != UnknownMod::kind()).collect();
     }
     
+
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn remove_incompatible_mods(&mut self) {
+    pub fn sanitize(&mut self) {
         self.mods.sanitize();
-        self.mods = self.mods.clone().into_iter().filter(|m| m.kind() != UnknownMod::kind()).collect();
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
@@ -90,10 +83,10 @@ impl Mods {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn insert_json(&mut self, str: AsciiPointer) -> bool {
+    pub fn insert_json(&mut self, str: AsciiPointer, deny_unknown_fields: bool) -> bool {
         if let Ok(s) = str.as_str() {
             let mut d = serde_json::Deserializer::from_str(s);
-            let s = if let Some(mode) = self.mode { GameModSeed::Mode(mode.into()) } else { GameModSeed::GuessMode };
+            let s = if let Some(mode) = self.mode { GameModSeed::Mode { mode: mode.into(), deny_unknown_fields } } else { GameModSeed::GuessMode { deny_unknown_fields } };
             if let Ok(m) = s.deserialize(&mut d) {
                 self.mods.insert(m);
                 return true;

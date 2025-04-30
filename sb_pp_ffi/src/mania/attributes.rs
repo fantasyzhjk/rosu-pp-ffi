@@ -7,8 +7,6 @@ use interoptopus::ffi_type;
 pub struct ManiaDifficultyAttributes {
     /// The final star rating.
     pub stars: f64,
-    /// The perceived hit window for an n300 inclusive of rate-adjusting mods (DT/HT/etc).
-    pub hit_window: f64,
     /// The amount of hitobjects in the map.
     pub n_objects: u32,
     /// The amount of hold notes in the map.
@@ -45,7 +43,6 @@ impl From<rosu_pp::mania::ManiaDifficultyAttributes> for ManiaDifficultyAttribut
     fn from(attributes: rosu_pp::mania::ManiaDifficultyAttributes) -> Self {
         Self {
             stars: attributes.stars,
-            hit_window: attributes.hit_window,
             n_objects: attributes.n_objects,
             n_hold_notes: attributes.n_hold_notes,
             max_combo: attributes.max_combo,
@@ -58,7 +55,6 @@ impl From<ManiaDifficultyAttributes> for rosu_pp::mania::ManiaDifficultyAttribut
     fn from(attributes: ManiaDifficultyAttributes) -> Self {
         Self {
             stars: attributes.stars,
-            hit_window: attributes.hit_window,
             n_objects: attributes.n_objects,
             n_hold_notes: attributes.n_hold_notes,
             max_combo: attributes.max_combo,

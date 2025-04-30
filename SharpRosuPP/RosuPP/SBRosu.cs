@@ -97,6 +97,7 @@ public partial struct ScoreState
 public partial struct OsuDifficultyAttributes
 {
     public readonly uint n_objects => n_circles + n_sliders + n_spinners;
+    public readonly double od => (80.0 - great_hit_window) / 6.0;
 }
 
 public partial struct OsuPerformanceAttributes
@@ -353,6 +354,14 @@ public partial class Mods
 {
     public void Json(OwnedString str) {
         this.Json(str.Context);
+    }
+
+    public static Mods FromJson(string str, Mode mode) {
+        return Mods.FromJson(str, mode, false);
+    }
+
+    public bool InsertJson(string str) {
+        return this.InsertJson(str, false);
     }
 }
 
