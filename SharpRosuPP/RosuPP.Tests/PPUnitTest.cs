@@ -54,10 +54,10 @@ public class PPUnitTest(ITestOutputHelper output)
         var attr2 = osubm.Mods(mods).LoadState(state, dattr).Acc(acc).Calculate();
 
         var pp = mode switch {
-            Mode.Osu => attr.osu.ToNullable()!.Value.pp,
-            Mode.Taiko => attr.taiko.ToNullable()!.Value.pp,
-            Mode.Catch => attr.fruit.ToNullable()!.Value.pp,
-            Mode.Mania => attr.mania.ToNullable()!.Value.pp,
+            Mode.Osu => attr.osu.Unwrap().pp,
+            Mode.Taiko => attr.taiko.Unwrap().pp,
+            Mode.Catch => attr.fruit.Unwrap().pp,
+            Mode.Mania => attr.mania.Unwrap().pp,
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
         };
 
@@ -81,6 +81,7 @@ public class PPUnitTest(ITestOutputHelper output)
             state.n300 += 1;
             state.max_combo += 1;
             var attrs = gradual.Next(state).Unwrap();
+            output.WriteLine("{0}", attrs);
             output.WriteLine("pp: {0}", attrs.osu.Unwrap().pp);
         }
 
@@ -237,7 +238,7 @@ public class PPUnitTest(ITestOutputHelper output)
         performance2.State(state);
         var attr2 = performance.CalculateFromDifficulty(dattr);
 
-        Assert.Equal(attr2.osu.ToNullable()!.Value.pp, attr.osu.ToNullable()!.Value.pp);
+        Assert.Equal(attr2.osu.Unwrap().pp, attr.osu.Unwrap().pp);
     }
 
     [Fact]
@@ -257,7 +258,7 @@ public class PPUnitTest(ITestOutputHelper output)
         var attr2 = osubm.CalculateDifficulty();
         
         output.WriteLine("{0}", JsonConvert.SerializeObject(attr2, Formatting.Indented));
-        Assert.Equal(attr2.StarRating, attr.taiko.ToNullable()!.Value.stars);
+        Assert.Equal(attr2.StarRating, attr.taiko.Unwrap().stars);
     }
 
     [Fact]
@@ -277,7 +278,7 @@ public class PPUnitTest(ITestOutputHelper output)
         var attr2 = osubm.CalculateDifficulty();
         
         output.WriteLine("{0}", JsonConvert.SerializeObject(attr2, Formatting.Indented));
-        Assert.Equal(attr2.StarRating, attr.fruit.ToNullable()!.Value.stars);
+        Assert.Equal(attr2.StarRating, attr.fruit.Unwrap().stars);
     }
 
     [Fact]
@@ -297,7 +298,7 @@ public class PPUnitTest(ITestOutputHelper output)
         var attr2 = osubm.CalculateDifficulty();
         
         output.WriteLine("{0}", JsonConvert.SerializeObject(attr2, Formatting.Indented));
-        Assert.Equal(attr2.StarRating, attr.mania.ToNullable()!.Value.stars);
+        Assert.Equal(attr2.StarRating, attr.mania.Unwrap().stars);
     }
 
     [Fact]
@@ -352,5 +353,24 @@ public class PPUnitTest(ITestOutputHelper output)
         
         mods.Insert("HR");
         Assert.Equal((uint)4, mods.Len());
+    }
+
+    [Fact]
+    public void BeatmapInfoTest() {
+        var d = Assembly.GetExecutingAssembly().Location;
+        var b = File.ReadAllBytes("../../../resources/657916.osu");
+        using var beatmap = Beatmap.FromBytes(b);
+        using var hitobjects = HitObjects.New(beatmap);
+
+        var len = hitobjects.Len();
+        
+        Assert.Equal((uint)1368, len);
+
+        uint index = 0;
+        while (index < len) {
+            var obj = hitobjects.Next().ToNullable();
+            Assert.NotNull(obj);
+            index += 1;
+        }
     }
 }

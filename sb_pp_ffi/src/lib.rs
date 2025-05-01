@@ -32,6 +32,10 @@ pub extern "C" fn pattern_api_guard() -> APIVersion {
 // an abstract FFI representation (called `Library`) for this crate.
 pub fn ffi_inventory() -> Inventory {
     InventoryBuilder::new()
+        .register(extra_type!(beatmap::pos::Pos))
+        .register(extra_type!(beatmap::hitobjects::HitObject))
+        .register(extra_type!(beatmap::hitobjects::HitObjectData))
+        .register(extra_type!(beatmap::hitobjects::HitObjectKind))
         .register(extra_type!(mode::Mode))
         .register(extra_type!(hitresult_priority::HitResultPriority))
         .register(extra_type!(osu::attributes::OsuDifficultyAttributes))
@@ -44,6 +48,7 @@ pub fn ffi_inventory() -> Inventory {
         .register(extra_type!(beatmap::attributes::HitWindows))
         .register(pattern!(beatmap::attributes::BeatmapAttributesBuilder))
         .register(pattern!(beatmap::Beatmap))
+        .register(pattern!(beatmap::hitobjects::HitObjects))
         .register(pattern!(difficulty::Difficulty))
         .register(pattern!(performance::Performance))
         .register(pattern!(gradual::GradualDifficulty))

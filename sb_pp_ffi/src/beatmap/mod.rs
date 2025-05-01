@@ -1,4 +1,6 @@
 pub mod attributes;
+pub mod hitobjects;
+pub mod pos;
 
 use crate::*;
 use interoptopus::{
@@ -50,12 +52,54 @@ impl Beatmap {
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn mode(&mut self) -> Mode {
-        self.inner.mode.into()
+    pub fn version(&mut self) -> i32 {
+        self.inner.version
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn is_convert(&mut self) -> bool {
         self.inner.is_convert
+    }
+
+    // General
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn stack_leniency(&mut self) -> f32 {
+        self.inner.stack_leniency
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn mode(&mut self) -> Mode {
+        self.inner.mode.into()
+    }
+
+    // Difficulty
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn ar(&mut self) -> f32 {
+        self.inner.ar
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn cs(&mut self) -> f32 {
+        self.inner.ar
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn hp(&mut self) -> f32 {
+        self.inner.ar
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn od(&mut self) -> f32 {
+        self.inner.ar
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn slider_multiplier(&mut self) -> f64 {
+        self.inner.slider_multiplier
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn slider_tick_rate(&mut self) -> f64 {
+        self.inner.slider_tick_rate
     }
 }

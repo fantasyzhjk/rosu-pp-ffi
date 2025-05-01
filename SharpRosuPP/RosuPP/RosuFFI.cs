@@ -163,11 +163,86 @@ namespace SBRosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_total_break_time")]
         public static extern double beatmap_total_break_time(IntPtr context);
 
-        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_mode")]
-        public static extern Mode beatmap_mode(IntPtr context);
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_version")]
+        public static extern int beatmap_version(IntPtr context);
 
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_is_convert")]
         public static extern bool beatmap_is_convert(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_stack_leniency")]
+        public static extern float beatmap_stack_leniency(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_mode")]
+        public static extern Mode beatmap_mode(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_ar")]
+        public static extern float beatmap_ar(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_cs")]
+        public static extern float beatmap_cs(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_hp")]
+        public static extern float beatmap_hp(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_od")]
+        public static extern float beatmap_od(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_slider_multiplier")]
+        public static extern double beatmap_slider_multiplier(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_slider_tick_rate")]
+        public static extern double beatmap_slider_tick_rate(IntPtr context);
+
+        /// Destroys the given instance.
+        ///
+        /// # Safety
+        ///
+        /// The passed parameter MUST have been created with the corresponding init function;
+        /// passing any other value results in undefined behavior.
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "hitobjects_destroy")]
+        public static extern FFIError hitobjects_destroy(ref IntPtr context);
+
+        /// Destroys the given instance.
+        ///
+        /// # Safety
+        ///
+        /// The passed parameter MUST have been created with the corresponding init function;
+        /// passing any other value results in undefined behavior.
+        public static void hitobjects_destroy_checked(ref IntPtr context)
+        {
+            var rval = hitobjects_destroy(ref context);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "hitobjects_new")]
+        public static extern FFIError hitobjects_new(ref IntPtr context, IntPtr beatmap);
+
+        public static void hitobjects_new_checked(ref IntPtr context, IntPtr beatmap)
+        {
+            var rval = hitobjects_new(ref context, beatmap);;
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "hitobjects_len")]
+        public static extern uint hitobjects_len(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "hitobjects_get")]
+        public static extern OptionHitObject hitobjects_get(IntPtr context, uint index);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "hitobjects_next")]
+        public static extern OptionHitObject hitobjects_next(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "hitobjects_prev")]
+        public static extern OptionHitObject hitobjects_prev(IntPtr context);
+
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "hitobjects_reset")]
+        public static extern void hitobjects_reset(IntPtr context);
 
         /// Destroys the given instance.
         ///
@@ -693,6 +768,14 @@ namespace SBRosuPP
 
     }
 
+    public enum HitObjectKind
+    {
+        Circle = 0,
+        Slider = 1,
+        Spinner = 2,
+        Hold = 3,
+    }
+
     public enum HitResultPriority
     {
         BestCase = 0,
@@ -783,6 +866,25 @@ namespace SBRosuPP
         public OptionCatchDifficultyAttributes fruit;
         public OptionManiaDifficultyAttributes mania;
         public Mode mode;
+    }
+
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
+    public partial struct HitObject
+    {
+        public Pos pos;
+        public double start_time;
+        public HitObjectData data;
+    }
+
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
+    public partial struct HitObjectData
+    {
+        public HitObjectKind kind;
+        public uint repeats;
+        public Optionf64 expected_dist;
+        public double duration;
     }
 
     /// AR and OD hit windows
@@ -919,6 +1021,16 @@ namespace SBRosuPP
         public OptionCatchPerformanceAttributes fruit;
         public OptionManiaPerformanceAttributes mania;
         public Mode mode;
+    }
+
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
+    public partial struct Pos
+    {
+        /// Position on the x-axis.
+        public float x;
+        /// Position on the y-axis.
+        public float y;
     }
 
     /// Aggregation for a score's current state.
@@ -1210,6 +1322,38 @@ namespace SBRosuPP
         public DifficultyAttributes? ToNullable()
         {
             return this.is_some == 1 ? this.t : (DifficultyAttributes?)null;
+        }
+    }
+
+
+    ///Option type containing boolean flag and maybe valid data.
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
+    public partial struct OptionHitObject
+    {
+        ///Element that is maybe valid.
+        HitObject t;
+        ///Byte where `1` means element `t` is valid.
+        byte is_some;
+    }
+
+    public partial struct OptionHitObject
+    {
+        public static OptionHitObject FromNullable(HitObject? nullable)
+        {
+            var result = new OptionHitObject();
+            if (nullable.HasValue)
+            {
+                result.is_some = 1;
+                result.t = nullable.Value;
+            }
+
+            return result;
+        }
+
+        public HitObject? ToNullable()
+        {
+            return this.is_some == 1 ? this.t : (HitObject?)null;
         }
     }
 
@@ -1613,14 +1757,109 @@ namespace SBRosuPP
             return RosuLibrary.beatmap_total_break_time(_context);
         }
 
-        public Mode Mode()
+        public int Version()
         {
-            return RosuLibrary.beatmap_mode(_context);
+            return RosuLibrary.beatmap_version(_context);
         }
 
         public bool IsConvert()
         {
             return RosuLibrary.beatmap_is_convert(_context);
+        }
+
+        public float StackLeniency()
+        {
+            return RosuLibrary.beatmap_stack_leniency(_context);
+        }
+
+        public Mode Mode()
+        {
+            return RosuLibrary.beatmap_mode(_context);
+        }
+
+        public float Ar()
+        {
+            return RosuLibrary.beatmap_ar(_context);
+        }
+
+        public float Cs()
+        {
+            return RosuLibrary.beatmap_cs(_context);
+        }
+
+        public float Hp()
+        {
+            return RosuLibrary.beatmap_hp(_context);
+        }
+
+        public float Od()
+        {
+            return RosuLibrary.beatmap_od(_context);
+        }
+
+        public double SliderMultiplier()
+        {
+            return RosuLibrary.beatmap_slider_multiplier(_context);
+        }
+
+        public double SliderTickRate()
+        {
+            return RosuLibrary.beatmap_slider_tick_rate(_context);
+        }
+
+        public IntPtr Context => _context;
+    }
+
+
+    public partial class HitObjects : IDisposable
+    {
+        private IntPtr _context;
+
+        private HitObjects() {}
+
+        public static HitObjects New(IntPtr beatmap)
+        {
+            var self = new HitObjects();
+            var rval = RosuLibrary.hitobjects_new(ref self._context, beatmap);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+            return self;
+        }
+
+        public void Dispose()
+        {
+            var rval = RosuLibrary.hitobjects_destroy(ref _context);
+            if (rval != FFIError.Ok)
+            {
+                throw new InteropException<FFIError>(rval);
+            }
+        }
+
+        public uint Len()
+        {
+            return RosuLibrary.hitobjects_len(_context);
+        }
+
+        public OptionHitObject Get(uint index)
+        {
+            return RosuLibrary.hitobjects_get(_context, index);
+        }
+
+        public OptionHitObject Next()
+        {
+            return RosuLibrary.hitobjects_next(_context);
+        }
+
+        public OptionHitObject Prev()
+        {
+            return RosuLibrary.hitobjects_prev(_context);
+        }
+
+        public void Reset()
+        {
+            RosuLibrary.hitobjects_reset(_context);
         }
 
         public IntPtr Context => _context;

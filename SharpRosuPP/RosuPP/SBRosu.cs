@@ -158,41 +158,51 @@ public partial struct PerformanceAttributes
 
 public partial struct OptionDifficultyAttributes {
     public DifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(DifficultyAttributes)} is null");
+    public DifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(DifficultyAttributes)} is null");
 }
 
 public partial struct OptionOsuDifficultyAttributes {
+    public OsuDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(OsuDifficultyAttributes)} is null");
     public OsuDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(OsuDifficultyAttributes)} is null");
 }
 
 public partial struct OptionTaikoDifficultyAttributes {
     public TaikoDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(TaikoDifficultyAttributes)} is null");
+    public TaikoDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(TaikoDifficultyAttributes)} is null");
 }
 
 public partial struct OptionCatchDifficultyAttributes {
+    public CatchDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(CatchDifficultyAttributes)} is null");
     public CatchDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(CatchDifficultyAttributes)} is null");
 }
 
 public partial struct OptionManiaDifficultyAttributes {
     public ManiaDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(ManiaDifficultyAttributes)} is null");
+    public ManiaDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(ManiaDifficultyAttributes)} is null");
 }
 
 public partial struct OptionPerformanceAttributes {
+    public PerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(PerformanceAttributes)} is null");
     public PerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(PerformanceAttributes)} is null");
 }
 
 public partial struct OptionOsuPerformanceAttributes {
     public OsuPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(OsuPerformanceAttributes)} is null");
+    public OsuPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(OsuPerformanceAttributes)} is null");
 }
 
 public partial struct OptionTaikoPerformanceAttributes {
+    public TaikoPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(TaikoPerformanceAttributes)} is null");
     public TaikoPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(TaikoPerformanceAttributes)} is null");
 }
 
 public partial struct OptionCatchPerformanceAttributes {
     public CatchPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(CatchPerformanceAttributes)} is null");
+    public CatchPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(CatchPerformanceAttributes)} is null");
 }
 
 public partial struct OptionManiaPerformanceAttributes {
+    public ManiaPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(ManiaPerformanceAttributes)} is null");
     public ManiaPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(ManiaPerformanceAttributes)} is null");
 }
 
@@ -205,6 +215,14 @@ public partial struct ScoreState
             RosuLibrary.debug_score_state(ref this, str.Context);
             return str.ToString();
         }
+    }
+}
+
+public partial class HitObjects
+{
+    public static HitObjects New(Beatmap beatmap)
+    {
+        return New(beatmap.Context);
     }
 }
 
@@ -352,6 +370,7 @@ public partial class Beatmap
 
 public partial class Mods
 {
+    public void Json(OwnedString str) {
     public void Json(OwnedString str) {
         this.Json(str.Context);
     }
