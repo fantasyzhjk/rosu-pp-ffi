@@ -150,43 +150,43 @@ namespace SBRosuPP {
     }
 
     public partial struct OptionDifficultyAttributes {
-        public DifficultyAttributes Unwarp() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(DifficultyAttributes)} is null");
+        public DifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(DifficultyAttributes)} is null");
     }
 
     public partial struct OptionOsuDifficultyAttributes {
-        public OsuDifficultyAttributes Unwarp() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(OsuDifficultyAttributes)} is null");
+        public OsuDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(OsuDifficultyAttributes)} is null");
     }
 
     public partial struct OptionTaikoDifficultyAttributes {
-        public TaikoDifficultyAttributes Unwarp() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(TaikoDifficultyAttributes)} is null");
+        public TaikoDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(TaikoDifficultyAttributes)} is null");
     }
 
     public partial struct OptionCatchDifficultyAttributes {
-        public CatchDifficultyAttributes Unwarp() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(CatchDifficultyAttributes)} is null");
+        public CatchDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(CatchDifficultyAttributes)} is null");
     }
 
     public partial struct OptionManiaDifficultyAttributes {
-        public ManiaDifficultyAttributes Unwarp() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(ManiaDifficultyAttributes)} is null");
+        public ManiaDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(ManiaDifficultyAttributes)} is null");
     }
 
     public partial struct OptionPerformanceAttributes {
-        public PerformanceAttributes Unwarp() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(PerformanceAttributes)} is null");
+        public PerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(PerformanceAttributes)} is null");
     }
 
     public partial struct OptionOsuPerformanceAttributes {
-        public OsuPerformanceAttributes Unwarp() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(OsuPerformanceAttributes)} is null");
+        public OsuPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(OsuPerformanceAttributes)} is null");
     }
 
     public partial struct OptionTaikoPerformanceAttributes {
-        public TaikoPerformanceAttributes Unwarp() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(TaikoPerformanceAttributes)} is null");
+        public TaikoPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(TaikoPerformanceAttributes)} is null");
     }
 
     public partial struct OptionCatchPerformanceAttributes {
-        public CatchPerformanceAttributes Unwarp() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(CatchPerformanceAttributes)} is null");
+        public CatchPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(CatchPerformanceAttributes)} is null");
     }
 
     public partial struct OptionManiaPerformanceAttributes {
-        public ManiaPerformanceAttributes Unwarp() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(ManiaPerformanceAttributes)} is null");
+        public ManiaPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(ManiaPerformanceAttributes)} is null");
     }
 
 
