@@ -189,6 +189,9 @@ namespace SBRosuPP {
         public ManiaPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(ManiaPerformanceAttributes)} is null");
     }
 
+    public partial struct OptionTooSuspicious {
+        public TooSuspicious Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(TooSuspicious)} is null");
+    }
 
     public partial struct ScoreState
     {
@@ -327,6 +330,11 @@ namespace SBRosuPP {
             var self = new Beatmap();
             RosuLibrary.beatmap_from_bytes(ref self._context, data);
             return self;
+        }
+
+        public static Beatmap FromClone(Beatmap bm)
+        {
+            return Beatmap.FromClone(bm.Context);
         }
 
         /// Convert a Beatmap to the specified mode

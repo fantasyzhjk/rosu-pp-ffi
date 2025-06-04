@@ -200,7 +200,7 @@ dependencies = [
 [[package]]
 name = "rosu-pp"
 version = "3.0.0"
-source = "git+https://github.com/fantasyzhjk/sb-rosu-pp?rev=93d98bccc62522d8a22cbe4ad66ffdf04e79af7e#93d98bccc62522d8a22cbe4ad66ffdf04e79af7e"
+source = "git+https://github.com/ppy-sb/rosu-pp?rev=650cd7f79d0fe7e968ea7efa4ab0033c29e22239#650cd7f79d0fe7e968ea7efa4ab0033c29e22239"
 dependencies = [
  "rosu-map",
  "rosu-mods",
