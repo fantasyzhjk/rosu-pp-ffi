@@ -47,7 +47,6 @@ impl From<rosu_mods::GameMode> for Mode {
 }
 
 #[ffi_type]
-#[repr(C)]
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, Default)]
 pub enum Mode {
     /// osu!standard

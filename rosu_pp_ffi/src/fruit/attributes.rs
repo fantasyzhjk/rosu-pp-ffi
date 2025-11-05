@@ -2,7 +2,6 @@ use interoptopus::ffi_type;
 
 /// The result of a difficulty calculation on an osu!catch map.
 #[derive(Clone, Debug, Default, PartialEq)]
-#[repr(C)]
 #[ffi_type]
 pub struct CatchDifficultyAttributes {
     /// The final star rating
@@ -63,7 +62,6 @@ impl From<CatchDifficultyAttributes> for rosu_pp::catch::CatchDifficultyAttribut
 
 /// The result of a performance calculation on an osu!catch map.
 #[derive(Clone, Debug, Default, PartialEq)]
-#[repr(C)]
 #[ffi_type]
 pub struct CatchPerformanceAttributes {
     /// The difficulty attributes that were used for the performance calculation

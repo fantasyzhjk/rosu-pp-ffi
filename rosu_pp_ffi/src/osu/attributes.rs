@@ -1,8 +1,7 @@
-use interoptopus::{ffi_type, patterns::option::FFIOption};
+use interoptopus::{ffi_type, pattern::option::Option as FFIOption};
 
 /// The result of a difficulty calculation on an osu!standard map.
 #[derive(Clone, Debug, Default, PartialEq)]
-#[repr(C)]
 #[ffi_type]
 pub struct OsuDifficultyAttributes {
     /// The difficulty of the aim skill.
@@ -118,7 +117,6 @@ impl From<OsuDifficultyAttributes> for rosu_pp::osu::OsuDifficultyAttributes {
 
 /// The result of a performance calculation on an osu!standard map.
 #[derive(Clone, Debug, Default, PartialEq)]
-#[repr(C)]
 #[ffi_type]
 pub struct OsuPerformanceAttributes {
     /// The difficulty attributes that were used for the performance calculation

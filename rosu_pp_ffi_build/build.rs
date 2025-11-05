@@ -1,7 +1,7 @@
 use std::path::Path;
+use std::error::Error;
 
-use interoptopus::util::NamespaceMappings;
-use interoptopus::{Error, Interop};
+use interoptopus::lang::NamespaceMappings;
 
 // By adding the interop generation logic into a `build.rs` that depends on
 // our `core_library_ffi` we ensure that upon `cargo build` both the `.dll`
@@ -20,46 +20,38 @@ fn main() {
     bindings_python("../bindings/RosuFFI.py").unwrap();
 }
 
-fn bindings_csharp(file_name: impl AsRef<Path>) -> Result<(), Error> {
-    use interoptopus_backend_csharp::{Config, Generator, Unsafe};
-    use interoptopus_backend_csharp::overloads::DotNet;
+fn bindings_csharp(file_name: impl AsRef<Path>) -> Result<(), Box<dyn Error>> {
+    use interoptopus_backend_csharp::Interop;
 
-    Generator::new(
-        Config {
-            class: "RosuLibrary".to_string(),
-            dll_name: "rosu_pp_ffi".to_string(),
-            namespace_mappings: NamespaceMappings::new("RosuPP"),
-            use_unsafe: Unsafe::UnsafePlatformMemCpy,
-            ..Config::default()
-        },
-        rosu_pp_ffi::ffi_inventory(),
-    )
-    .add_overload_writer(DotNet::new())
-    .write_file(file_name)?;
+    Interop::builder()
+        .inventory(rosu_pp_ffi::ffi_inventory())
+        .dll_name("rosu_pp_ffi")
+        .namespace_mappings(NamespaceMappings::new("RosuPP"))
+        .build()?
+        .write_file(file_name)?;
 
     Ok(())
 }
 
-fn bindings_c(file_name: impl AsRef<Path>) -> Result<(), Error> {
-    use interoptopus_backend_c::{Config, Generator};
+fn bindings_c(file_name: impl AsRef<Path>) -> Result<(), Box<dyn Error>> {
+    use interoptopus_backend_c::Interop;
 
-    Generator::new(
-        Config {
-            ifndef: "rosu_pp".to_string(),
-            ..Config::default()
-        },
-        rosu_pp_ffi::ffi_inventory(),
-    )
-    .write_file(file_name)?;
+    Interop::builder()
+        .inventory(rosu_pp_ffi::ffi_inventory())
+        .ifndef("rosu_pp".to_string())
+        .build()?
+        .write_file(file_name)?;
 
     Ok(())
 }
 
-fn bindings_python(file_name: impl AsRef<Path>) -> Result<(), Error> {
-    use interoptopus_backend_cpython::{Config, Generator};
+fn bindings_python(file_name: impl AsRef<Path>) -> Result<(), Box<dyn Error>> {
+    use interoptopus_backend_cpython::Interop;
 
-    let library = rosu_pp_ffi::ffi_inventory();
-    Generator::new(Config::default(), library).write_file(file_name)?;
+    Interop::builder()
+        .inventory(rosu_pp_ffi::ffi_inventory())
+        .build()?
+        .write_file(file_name)?;
 
     Ok(())
 }

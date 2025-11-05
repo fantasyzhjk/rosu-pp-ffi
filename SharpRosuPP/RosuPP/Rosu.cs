@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using RosuPP;
 
 #nullable enable
@@ -7,11 +8,11 @@ namespace RosuPP;
 
 public static class Extensions {
     public static double Acc(ref this ScoreState state, ref DifficultyAttributes attr, OsuScoreOrigin origin) {
-        return RosuLibrary.calculate_accuacy(ref state, ref attr, origin);
+        return Interop.calculate_accuracy(ref state, ref attr, origin);
     }
 
     public static double Acc(ref this ScoreState state, ref DifficultyAttributes attr) {
-        return RosuLibrary.calculate_accuacy(ref state, ref attr, OsuScoreOrigin.WithSliderAcc);
+        return Interop.calculate_accuracy(ref state, ref attr, OsuScoreOrigin.WithSliderAcc);
     }
 }
 
@@ -74,14 +75,14 @@ public partial struct ScoreState
     {
         var amount = n300 + n100 + misses;
 
-        if (mode is not Mode.Taiko)
+        if (!mode.IsTaiko)
         {
             amount += n50;
 
-            if (mode is not Mode.Osu)
+            if (!mode.IsOsu)
             {
                 amount += n_katu;
-                amount += mode is Mode.Catch ? n_geki : 0;
+                amount += mode.IsCatch ? n_geki : 0;
             }
         }
 
@@ -129,82 +130,42 @@ public partial struct TaikoPerformanceAttributes
     public readonly bool is_convert => difficulty.is_convert;
 }
 
+public partial struct Mode
+{
+    public readonly int AsInt()
+    {
+        return (int)_variant;
+    }
+}
+
+
 public partial struct DifficultyAttributes
 {
-    public override string ToString()
+    public string? Debug()
     {
         using var str = OwnedString.Empty();
-        RosuLibrary.debug_difficylty_attributes(ref this, str.Context);
+        Interop.debug_difficulty_attributes(ref this, str.Context);
         return str.ToString();
     }
 }
 
 public partial struct PerformanceAttributes
 {
-    public override string ToString()
+    public string? Debug()
     {
         using var str = OwnedString.Empty();
-        RosuLibrary.debug_performance_attributes(ref this, str.Context);
+        Interop.debug_performance_attributes(ref this, str.Context);
         return str.ToString();
     }
 }
-
-public partial struct OptionDifficultyAttributes {
-    public DifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(DifficultyAttributes)} is null");
-}
-
-public partial struct OptionOsuDifficultyAttributes {
-    public OsuDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(OsuDifficultyAttributes)} is null");
-}
-
-public partial struct OptionTaikoDifficultyAttributes {
-    public TaikoDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(TaikoDifficultyAttributes)} is null");
-}
-
-public partial struct OptionCatchDifficultyAttributes {
-    public CatchDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(CatchDifficultyAttributes)} is null");
-}
-
-public partial struct OptionManiaDifficultyAttributes {
-    public ManiaDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(ManiaDifficultyAttributes)} is null");
-}
-
-public partial struct OptionPerformanceAttributes {
-    public PerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(PerformanceAttributes)} is null");
-}
-
-public partial struct OptionOsuPerformanceAttributes {
-    public OsuPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(OsuPerformanceAttributes)} is null");
-}
-
-public partial struct OptionTaikoPerformanceAttributes {
-    public TaikoPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(TaikoPerformanceAttributes)} is null");
-}
-
-public partial struct OptionCatchPerformanceAttributes {
-    public CatchPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(CatchPerformanceAttributes)} is null");
-}
-
-public partial struct OptionManiaPerformanceAttributes {
-    public ManiaPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(ManiaPerformanceAttributes)} is null");
-}
-
 
 public partial struct ScoreState
 {
-    public override string ToString()
+    public string? Debug()
     {
         using var str = OwnedString.Empty();
-        RosuLibrary.debug_score_state(ref this, str.Context);
+        Interop.debug_score_state(ref this, str.Context);
         return str.ToString();
-    }
-}
-
-public partial class HitObjects
-{
-    public static HitObjects New(Beatmap beatmap)
-    {
-        return New(beatmap.Context);
     }
 }
 
@@ -321,9 +282,9 @@ public partial class BeatmapAttributesBuilder
 
 public partial class OwnedString
 {
-    public override string ToString()
+    public override string? ToString()
     {
-        return ToCstr();
+        return Marshal.PtrToStringUTF8(ToCstr());
     }
 }
 
@@ -331,9 +292,7 @@ public partial class Beatmap
 {
     public static Beatmap FromBytes(byte[] data)
     {
-        var self = new Beatmap();
-        RosuLibrary.beatmap_from_bytes(ref self._context, data);
-        return self;
+        return FromBytes(SliceU8.From(data));
     }
 
     /// Convert a Beatmap to the specified mode

@@ -1,7 +1,6 @@
 use interoptopus::ffi_type;
 
 #[ffi_type]
-#[repr(C)]
 #[derive(Debug, Clone, Default)]
 pub struct Pos {
     /// Position on the x-axis.

@@ -5,8 +5,8 @@ edition = "2021"
 publish = false
 
 [build-dependencies]
-interoptopus = { version = "0.14.27", features = ["log", "serde"] }
-interoptopus_backend_csharp = "0.14.25"
-interoptopus_backend_c = "0.14.25"
-interoptopus_backend_cpython = "0.14.25"
+interoptopus = { version = "=0.15.0-alpha.21", features = ["log", "serde"] }
+interoptopus_backend_csharp = "=0.15.0-alpha.21"
+interoptopus_backend_c = "=0.15.0-alpha.21"
+interoptopus_backend_cpython = "=0.15.0-alpha.21"
 rosu_pp_ffi = { path = "../rosu_pp_ffi" }

@@ -10,7 +10,7 @@ publish = false
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-interoptopus = { version = "0.14.27", features = ["log", "serde"] }
+interoptopus = { version = "0.15.0-alpha.21", features = ["log", "serde"] }
 rosu-pp = { git = "https://github.com/MaxOhn/rosu-pp", rev = "96941dfeae697656b5a91442f7f290c0b10498bf" }
 rosu-map = { version = "0.2.1" }
 rosu-mods = { version = "0.3.0", features = ["serde"] }

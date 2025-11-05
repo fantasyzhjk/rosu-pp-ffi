@@ -2,8 +2,9 @@ use std::{ffi::CString, mem::MaybeUninit};
 
 use crate::*;
 use interoptopus::{
-    ffi_service, ffi_service_ctor, ffi_service_method, ffi_type,
-    patterns::string::AsciiPointer,
+    ffi_service, ffi_type,
+    ffi::CStrPtr,
+    pattern::result::{Result, result_to_ffi}
 };
 
 #[ffi_type(opaque)]
@@ -13,32 +14,30 @@ pub struct OwnedString {
 }
 
 // Regular implementation of methods.
-#[ffi_service(error = "FFIError", prefix = "string_")]
+#[ffi_service(prefix = "string_")]
 impl OwnedString {
-    #[ffi_service_ctor]
-    pub fn from_c_str(str: AsciiPointer) -> Result<Self, Error> {
+    pub fn from_c_str(str: CStrPtr) -> Result<Self, Error> {
+        result_to_ffi(|| {
         Ok(Self {
             inner: MaybeUninit::new(str.as_c_str().ok_or(Error::Null)?.to_owned()),
             is_init: true
         })
+        })
     }
 
-    #[ffi_service_ctor]
     pub fn empty() -> Result<Self, Error> {
-        Ok(Self {
+        Result::Ok(Self {
             inner: MaybeUninit::uninit(),
             is_init: false
         })
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn is_init(&self) -> bool {
        self.is_init
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
-    pub fn to_cstr(&self) -> AsciiPointer {
-        AsciiPointer::from_cstr(unsafe { self.inner.assume_init_ref() })
+    pub fn to_cstr(&self) -> CStrPtr<'_> {
+        CStrPtr::from_cstr(unsafe { self.inner.assume_init_ref() })
     }
 }
 

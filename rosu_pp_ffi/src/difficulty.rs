@@ -1,8 +1,9 @@
 use crate::beatmap::Beatmap;
 use crate::*;
 use interoptopus::{
-    ffi_service, ffi_service_ctor, ffi_service_method, ffi_type,
-    patterns::string::AsciiPointer,
+    ffi_service, ffi_type,
+    ffi::CStrPtr,
+    pattern::result::{Result, result_to_ffi}
 };
 use mods::Mods;
 use rosu_mods::{GameModsIntermode, GameMods};
@@ -33,77 +34,78 @@ pub struct Difficulty {
 }
 
 // Regular implementation of methods.
-#[ffi_service(error = "FFIError", prefix = "difficulty_")]
+#[ffi_service(prefix = "difficulty_")]
 impl Difficulty {
-    #[ffi_service_ctor]
+    
     pub fn new() -> Result<Self, Error> {
-        Ok(Self::default())
+        Result::Ok(Self::default())
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn p_mods(&mut self, mods: &Mods) {
         self.mods = Some(mods.mods.clone());
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn i_mods(&mut self, mods: u32) {
         self.mods_intermode = Some(GameModsIntermode::from_bits(mods));
     }
 
-    #[ffi_service_method(on_panic = "ffi_error")]
-    pub fn s_mods(&mut self, str: AsciiPointer) -> Result<(), Error> {
-        self.mods_intermode = Some(GameModsIntermode::from_acronyms(
-            str.as_str()?,
-        ));
-        Ok(())
+    pub fn s_mods(&mut self, str: CStrPtr) -> Result<(), Error> {
+        result_to_ffi(|| {
+            self.mods_intermode = Some(GameModsIntermode::from_acronyms(
+                str.as_str()?,
+            ));
+            Ok(())
+        })
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn passed_objects(&mut self, passed_objects: u32) {
         self.passed_objects = Some(passed_objects);
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn clock_rate(&mut self, clock_rate: f64) {
         self.clock_rate = Some(clock_rate);
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn ar(&mut self, ar: f32) {
         self.ar = Some(ar);
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn cs(&mut self, cs: f32) {
         self.cs = Some(cs);
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn hp(&mut self, hp: f32) {
         self.hp = Some(hp);
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn od(&mut self, od: f32) {
         self.od = Some(od);
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn hardrock_offsets(&mut self, hardrock_offsets: bool) {
         self.hardrock_offsets = Some(hardrock_offsets);
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn lazer(&mut self, lazer: bool) {
         self.lazer = Some(lazer);
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn calculate(&self, beatmap: &Beatmap) -> attributes::DifficultyAttributes {
         self.construct().calculate(&beatmap.inner).into()
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn get_clock_rate(&mut self) -> f64 {
         if let Some(mods) = self.mods.as_ref() {
             return mods.clock_rate().unwrap_or(1.0)

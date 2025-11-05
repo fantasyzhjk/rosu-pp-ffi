@@ -2,15 +2,16 @@ use crate::mods::Mods;
 use crate::*;
 use beatmap::Beatmap;
 use interoptopus::{
-    ffi_service, ffi_service_ctor, ffi_service_method, ffi_type,
-    patterns::{option::FFIOption, string::AsciiPointer},
+    ffi_service, ffi_type,
+    pattern::option::Option as FFIOption,
+    ffi::CStrPtr,
+    pattern::result::{Result, result_to_ffi}
 };
 use mode::Mode;
 use rosu_mods::{GameMods, GameModsIntermode};
 
 /// Summary struct for a [`Beatmap`]'s attributes.
 #[derive(Clone, Debug, PartialEq)]
-#[repr(C)]
 #[ffi_type]
 pub struct BeatmapAttributes {
     /// The approach rate.
@@ -42,7 +43,6 @@ impl From<rosu_pp::model::beatmap::BeatmapAttributes> for BeatmapAttributes {
 
 /// AR and OD hit windows
 #[derive(Copy, Clone, Debug, PartialEq)]
-#[repr(C)]
 #[ffi_type]
 pub struct HitWindows {
     /// Hit window for approach rate i.e. `TimePreempt` in milliseconds.
@@ -80,61 +80,58 @@ pub struct BeatmapAttributesBuilder {
 }
 
 // Regular implementation of methods.
-#[ffi_service(error = "FFIError", prefix = "beatmap_attributes_")]
+#[ffi_service(prefix = "beatmap_attributes_")]
 impl BeatmapAttributesBuilder {
-    #[ffi_service_ctor]
     pub fn new() -> Result<Self, Error> {
-        Ok(Self::default())
+        Result::Ok(Self::default())
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn mode(&mut self, mode: Mode) {
         self.mode = Some(mode);
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn p_mods(&mut self, mods: &Mods) {
         self.mods = Some(mods.mods.clone());
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn i_mods(&mut self, mods: u32) {
         self.mods_intermode = Some(GameModsIntermode::from_bits(mods));
     }
 
-    pub fn s_mods(&mut self, str: AsciiPointer) -> Result<(), Error> {
-        self.mods_intermode = Some(GameModsIntermode::from_acronyms(
-            str.as_str()?,
-        ));
-        Ok(())
+    pub fn s_mods(&mut self, str: CStrPtr) -> Result<(), Error> {
+        result_to_ffi(|| {
+            self.mods_intermode = Some(GameModsIntermode::from_acronyms(
+                str.as_str()?,
+            ));
+            Ok(())
+        })
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn clock_rate(&mut self, clock_rate: f64) {
         self.clock_rate = Some(clock_rate);
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn ar(&mut self, ar: f32) {
         self.ar = Some(ar);
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn cs(&mut self, cs: f32) {
         self.cs = Some(cs);
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn hp(&mut self, hp: f32) {
         self.hp = Some(hp);
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn od(&mut self, od: f32) {
         self.od = Some(od);
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn get_clock_rate(&mut self) -> f64 {
         if let Some(mods) = self.mods.as_ref() {
             return mods.clock_rate().unwrap_or(1.0)
@@ -147,7 +144,7 @@ impl BeatmapAttributesBuilder {
         1.0
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
+    
     pub fn build(&self, beatmap: *const Beatmap) -> BeatmapAttributes {
         let beatmap = unsafe {
             beatmap

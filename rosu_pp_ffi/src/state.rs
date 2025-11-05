@@ -3,8 +3,8 @@ use interoptopus::{ffi_function, ffi_type};
 use crate::{attributes, mode::Mode, owned_string::OwnedString};
 
 /// Type to pass [`OsuScoreState::accuracy`] and specify the origin of a score.
+#[allow(dead_code)]
 #[ffi_type]
-#[repr(C)]
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, Default)]
 pub enum OsuScoreOrigin {
     /// For scores set on osu!stable
@@ -35,7 +35,6 @@ impl OsuScoreOrigin {
 
 /// Aggregation for a score's current state.
 #[derive(Clone, Default, Debug, Eq, PartialEq)]
-#[repr(C)]
 #[ffi_type]
 pub struct ScoreState {
     /// Maximum combo that the score has had so far. **Not** the maximum
@@ -144,32 +143,37 @@ impl From<ScoreState> for rosu_pp::any::ScoreState {
 
 
 #[ffi_function]
-#[no_mangle]
-pub extern "C" fn debug_score_state(res: &ScoreState, str: &mut OwnedString) {
-    str.replace(format!("{:#?}", res))
+pub fn debug_score_state(res: &ScoreState, str: &mut OwnedString) {
+    str.replace(format!("{res:#?}"))
 }
 
 
 #[ffi_function]
-#[no_mangle]
-pub extern "C" fn calculate_accuacy(state: &ScoreState, difficulty: &attributes::DifficultyAttributes, origin: OsuScoreOrigin) -> f64 {
-    match difficulty.mode {
-        Mode::Osu => {
-            let attrs: rosu_pp::osu::OsuDifficultyAttributes = difficulty.osu.clone().into_option().unwrap_or_default().into();
+pub fn calculate_accuracy(
+    state: &ScoreState,
+    difficulty: &attributes::DifficultyAttributes,
+    origin: OsuScoreOrigin,
+) -> f64 {
+    match difficulty {
+        attributes::DifficultyAttributes::Osu(attrs) => {
+            let attrs: rosu_pp::osu::OsuDifficultyAttributes = attrs.clone().into();
             let state: rosu_pp::osu::OsuScoreState = rosu_pp::any::ScoreState::from(state).into();
             state.accuracy(origin.to_rosu(&attrs))
-        },
-        Mode::Taiko => {
-            let state: rosu_pp::taiko::TaikoScoreState = rosu_pp::any::ScoreState::from(state).into();
+        }
+        attributes::DifficultyAttributes::Taiko(_) => {
+            let state: rosu_pp::taiko::TaikoScoreState =
+                rosu_pp::any::ScoreState::from(state).into();
             state.accuracy()
-        },
-        Mode::Catch => {
-            let state: rosu_pp::catch::CatchScoreState = rosu_pp::any::ScoreState::from(state).into();
+        }
+        attributes::DifficultyAttributes::Catch(_) => {
+            let state: rosu_pp::catch::CatchScoreState =
+                rosu_pp::any::ScoreState::from(state).into();
             state.accuracy()
-        },
-        Mode::Mania => {
-            let state: rosu_pp::mania::ManiaScoreState = rosu_pp::any::ScoreState::from(state).into();
+        }
+        attributes::DifficultyAttributes::Mania(_) => {
+            let state: rosu_pp::mania::ManiaScoreState =
+                rosu_pp::any::ScoreState::from(state).into();
             state.accuracy(origin == OsuScoreOrigin::Stable)
-        },
+        }
     }
 }

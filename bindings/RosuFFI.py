@@ -9,240 +9,278 @@ def init_lib(path):
     """Initializes the native library. Must be called at least once before anything else."""
     global c_lib
     c_lib = ctypes.cdll.LoadLibrary(path)
-
-    c_lib.beatmap_attributes_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
-    c_lib.beatmap_attributes_new.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
-    c_lib.beatmap_attributes_mode.argtypes = [ctypes.c_void_p, ctypes.c_int]
-    c_lib.beatmap_attributes_p_mods.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
-    c_lib.beatmap_attributes_i_mods.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-    c_lib.beatmap_attributes_s_mods.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
-    c_lib.beatmap_attributes_clock_rate.argtypes = [ctypes.c_void_p, ctypes.c_double]
-    c_lib.beatmap_attributes_ar.argtypes = [ctypes.c_void_p, ctypes.c_float]
-    c_lib.beatmap_attributes_cs.argtypes = [ctypes.c_void_p, ctypes.c_float]
-    c_lib.beatmap_attributes_hp.argtypes = [ctypes.c_void_p, ctypes.c_float]
-    c_lib.beatmap_attributes_od.argtypes = [ctypes.c_void_p, ctypes.c_float]
-    c_lib.beatmap_attributes_get_clock_rate.argtypes = [ctypes.c_void_p]
-    c_lib.beatmap_attributes_build.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
-    c_lib.beatmap_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
-    c_lib.beatmap_from_bytes.argtypes = [ctypes.POINTER(ctypes.c_void_p), Sliceu8]
-    c_lib.beatmap_from_path.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_char)]
-    c_lib.beatmap_convert.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p]
-    c_lib.beatmap_bpm.argtypes = [ctypes.c_void_p]
-    c_lib.beatmap_total_break_time.argtypes = [ctypes.c_void_p]
-    c_lib.beatmap_version.argtypes = [ctypes.c_void_p]
-    c_lib.beatmap_is_convert.argtypes = [ctypes.c_void_p]
-    c_lib.beatmap_stack_leniency.argtypes = [ctypes.c_void_p]
-    c_lib.beatmap_mode.argtypes = [ctypes.c_void_p]
     c_lib.beatmap_ar.argtypes = [ctypes.c_void_p]
+    c_lib.beatmap_attributes_ar.argtypes = [ctypes.c_void_p, ctypes.c_float]
+    c_lib.beatmap_attributes_build.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    c_lib.beatmap_attributes_clock_rate.argtypes = [ctypes.c_void_p, ctypes.c_double]
+    c_lib.beatmap_attributes_cs.argtypes = [ctypes.c_void_p, ctypes.c_float]
+    c_lib.beatmap_attributes_destroy.argtypes = [ctypes.c_void_p]
+    c_lib.beatmap_attributes_get_clock_rate.argtypes = [ctypes.c_void_p]
+    c_lib.beatmap_attributes_hp.argtypes = [ctypes.c_void_p, ctypes.c_float]
+    c_lib.beatmap_attributes_i_mods.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.beatmap_attributes_mode.argtypes = [ctypes.c_void_p, ctypes.c_int]
+    c_lib.beatmap_attributes_new.argtypes = []
+    c_lib.beatmap_attributes_od.argtypes = [ctypes.c_void_p, ctypes.c_float]
+    c_lib.beatmap_attributes_p_mods.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    c_lib.beatmap_attributes_s_mods.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
+    c_lib.beatmap_bpm.argtypes = [ctypes.c_void_p]
+    c_lib.beatmap_convert.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p]
     c_lib.beatmap_cs.argtypes = [ctypes.c_void_p]
+    c_lib.beatmap_destroy.argtypes = [ctypes.c_void_p]
+    c_lib.beatmap_from_bytes.argtypes = [SliceU8]
+    c_lib.beatmap_from_path.argtypes = [ctypes.POINTER(ctypes.c_char)]
+    c_lib.beatmap_hit_objects.argtypes = [ctypes.c_void_p]
     c_lib.beatmap_hp.argtypes = [ctypes.c_void_p]
+    c_lib.beatmap_is_convert.argtypes = [ctypes.c_void_p]
+    c_lib.beatmap_mode.argtypes = [ctypes.c_void_p]
     c_lib.beatmap_od.argtypes = [ctypes.c_void_p]
     c_lib.beatmap_slider_multiplier.argtypes = [ctypes.c_void_p]
     c_lib.beatmap_slider_tick_rate.argtypes = [ctypes.c_void_p]
-    c_lib.hitobjects_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
-    c_lib.hitobjects_new.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p]
-    c_lib.hitobjects_len.argtypes = [ctypes.c_void_p]
-    c_lib.hitobjects_get.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-    c_lib.hitobjects_next.argtypes = [ctypes.c_void_p]
-    c_lib.hitobjects_prev.argtypes = [ctypes.c_void_p]
-    c_lib.hitobjects_reset.argtypes = [ctypes.c_void_p]
-    c_lib.difficulty_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
-    c_lib.difficulty_new.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
-    c_lib.difficulty_p_mods.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
-    c_lib.difficulty_i_mods.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-    c_lib.difficulty_s_mods.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
-    c_lib.difficulty_passed_objects.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-    c_lib.difficulty_clock_rate.argtypes = [ctypes.c_void_p, ctypes.c_double]
+    c_lib.beatmap_stack_leniency.argtypes = [ctypes.c_void_p]
+    c_lib.beatmap_total_break_time.argtypes = [ctypes.c_void_p]
+    c_lib.beatmap_version.argtypes = [ctypes.c_void_p]
+    c_lib.calculate_accuracy.argtypes = [ctypes.POINTER(ScoreState), ctypes.POINTER(ctypes.c_int), ctypes.c_int]
+    c_lib.debug_difficulty_attributes.argtypes = [ctypes.POINTER(ctypes.c_int), ctypes.c_void_p]
+    c_lib.debug_performance_attributes.argtypes = [ctypes.POINTER(ctypes.c_int), ctypes.c_void_p]
+    c_lib.debug_score_state.argtypes = [ctypes.POINTER(ScoreState), ctypes.c_void_p]
     c_lib.difficulty_ar.argtypes = [ctypes.c_void_p, ctypes.c_float]
-    c_lib.difficulty_cs.argtypes = [ctypes.c_void_p, ctypes.c_float]
-    c_lib.difficulty_hp.argtypes = [ctypes.c_void_p, ctypes.c_float]
-    c_lib.difficulty_od.argtypes = [ctypes.c_void_p, ctypes.c_float]
-    c_lib.difficulty_hardrock_offsets.argtypes = [ctypes.c_void_p, ctypes.c_bool]
-    c_lib.difficulty_lazer.argtypes = [ctypes.c_void_p, ctypes.c_bool]
     c_lib.difficulty_calculate.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    c_lib.difficulty_clock_rate.argtypes = [ctypes.c_void_p, ctypes.c_double]
+    c_lib.difficulty_cs.argtypes = [ctypes.c_void_p, ctypes.c_float]
+    c_lib.difficulty_destroy.argtypes = [ctypes.c_void_p]
     c_lib.difficulty_get_clock_rate.argtypes = [ctypes.c_void_p]
-    c_lib.performance_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
-    c_lib.performance_new.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
-    c_lib.performance_mode.argtypes = [ctypes.c_void_p, ctypes.c_int]
-    c_lib.performance_p_mods.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
-    c_lib.performance_i_mods.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-    c_lib.performance_s_mods.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
-    c_lib.performance_passed_objects.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-    c_lib.performance_clock_rate.argtypes = [ctypes.c_void_p, ctypes.c_double]
-    c_lib.performance_ar.argtypes = [ctypes.c_void_p, ctypes.c_float]
-    c_lib.performance_cs.argtypes = [ctypes.c_void_p, ctypes.c_float]
-    c_lib.performance_hp.argtypes = [ctypes.c_void_p, ctypes.c_float]
-    c_lib.performance_od.argtypes = [ctypes.c_void_p, ctypes.c_float]
-    c_lib.performance_hardrock_offsets.argtypes = [ctypes.c_void_p, ctypes.c_bool]
-    c_lib.performance_state.argtypes = [ctypes.c_void_p, ScoreState]
-    c_lib.performance_accuracy.argtypes = [ctypes.c_void_p, ctypes.c_double]
-    c_lib.performance_misses.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-    c_lib.performance_combo.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-    c_lib.performance_hitresult_priority.argtypes = [ctypes.c_void_p, ctypes.c_int]
-    c_lib.performance_lazer.argtypes = [ctypes.c_void_p, ctypes.c_bool]
-    c_lib.performance_large_tick_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-    c_lib.performance_small_tick_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-    c_lib.performance_slider_end_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-    c_lib.performance_n300.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-    c_lib.performance_n100.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-    c_lib.performance_n50.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-    c_lib.performance_n_katu.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-    c_lib.performance_n_geki.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-    c_lib.performance_generate_state.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
-    c_lib.performance_generate_state_from_difficulty.argtypes = [ctypes.c_void_p, DifficultyAttributes]
-    c_lib.performance_calculate.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
-    c_lib.performance_calculate_from_difficulty.argtypes = [ctypes.c_void_p, DifficultyAttributes]
-    c_lib.performance_get_clock_rate.argtypes = [ctypes.c_void_p]
-    c_lib.gradual_difficulty_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
-    c_lib.gradual_difficulty_new.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_void_p]
-    c_lib.gradual_difficulty_new_with_mode.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]
+    c_lib.difficulty_hardrock_offsets.argtypes = [ctypes.c_void_p, ctypes.c_bool]
+    c_lib.difficulty_hp.argtypes = [ctypes.c_void_p, ctypes.c_float]
+    c_lib.difficulty_i_mods.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.difficulty_lazer.argtypes = [ctypes.c_void_p, ctypes.c_bool]
+    c_lib.difficulty_new.argtypes = []
+    c_lib.difficulty_od.argtypes = [ctypes.c_void_p, ctypes.c_float]
+    c_lib.difficulty_p_mods.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    c_lib.difficulty_passed_objects.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.difficulty_s_mods.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
+    c_lib.gradual_difficulty_destroy.argtypes = [ctypes.c_void_p]
+    c_lib.gradual_difficulty_len.argtypes = [ctypes.c_void_p]
+    c_lib.gradual_difficulty_new.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    c_lib.gradual_difficulty_new_with_mode.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]
     c_lib.gradual_difficulty_next.argtypes = [ctypes.c_void_p]
     c_lib.gradual_difficulty_nth.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-    c_lib.gradual_difficulty_len.argtypes = [ctypes.c_void_p]
-    c_lib.gradual_performance_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
-    c_lib.gradual_performance_new.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_void_p]
-    c_lib.gradual_performance_new_with_mode.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]
-    c_lib.gradual_performance_next.argtypes = [ctypes.c_void_p, ScoreState]
+    c_lib.gradual_performance_destroy.argtypes = [ctypes.c_void_p]
     c_lib.gradual_performance_last.argtypes = [ctypes.c_void_p, ScoreState]
-    c_lib.gradual_performance_nth.argtypes = [ctypes.c_void_p, ScoreState, ctypes.c_uint32]
     c_lib.gradual_performance_len.argtypes = [ctypes.c_void_p]
-    c_lib.string_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
-    c_lib.string_from_c_str.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_char)]
-    c_lib.string_empty.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
-    c_lib.string_is_init.argtypes = [ctypes.c_void_p]
-    c_lib.string_to_cstr.argtypes = [ctypes.c_void_p]
-    c_lib.mods_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
-    c_lib.mods_new.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_int]
-    c_lib.mods_from_acronyms.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_char), ctypes.c_int]
-    c_lib.mods_from_bits.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_uint32, ctypes.c_int]
-    c_lib.mods_from_json.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_char), ctypes.c_int, ctypes.c_bool]
-    c_lib.mods_remove_unknown_mods.argtypes = [ctypes.c_void_p]
-    c_lib.mods_sanitize.argtypes = [ctypes.c_void_p]
+    c_lib.gradual_performance_new.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    c_lib.gradual_performance_new_with_mode.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]
+    c_lib.gradual_performance_next.argtypes = [ctypes.c_void_p, ScoreState]
+    c_lib.gradual_performance_nth.argtypes = [ctypes.c_void_p, ScoreState, ctypes.c_uint32]
+    c_lib.interoptopus_string_clone.argtypes = [ctypes.POINTER(Utf8String), ctypes.POINTER(Utf8String)]
+    c_lib.interoptopus_string_create.argtypes = [ctypes.c_void_p, ctypes.c_uint64, ctypes.POINTER(Utf8String)]
+    c_lib.interoptopus_string_destroy.argtypes = [Utf8String]
+    c_lib.interoptopus_vec_create_1095792466183922639.argtypes = [ctypes.c_void_p, ctypes.c_uint64, ctypes.POINTER(VecHitObject)]
+    c_lib.interoptopus_vec_destroy_7642792079161229908.argtypes = [VecHitObject]
+    c_lib.interoptopus_wire_destroy.argtypes = [ctypes.POINTER(ctypes.c_uint8), ctypes.c_int32, ctypes.c_int32]
     c_lib.mods_bits.argtypes = [ctypes.c_void_p]
-    c_lib.mods_len.argtypes = [ctypes.c_void_p]
-    c_lib.mods_json.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
-    c_lib.mods_insert_json.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char), ctypes.c_bool]
-    c_lib.mods_insert.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
-    c_lib.mods_contains.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
     c_lib.mods_clear.argtypes = [ctypes.c_void_p]
     c_lib.mods_clock_rate.argtypes = [ctypes.c_void_p]
-    c_lib.debug_difficylty_attributes.argtypes = [ctypes.POINTER(DifficultyAttributes), ctypes.c_void_p]
-    c_lib.debug_performance_attributes.argtypes = [ctypes.POINTER(PerformanceAttributes), ctypes.c_void_p]
-    c_lib.debug_score_state.argtypes = [ctypes.POINTER(ScoreState), ctypes.c_void_p]
-    c_lib.calculate_accuacy.argtypes = [ctypes.POINTER(ScoreState), ctypes.POINTER(DifficultyAttributes), ctypes.c_int]
-
-    c_lib.beatmap_attributes_destroy.restype = ctypes.c_int
-    c_lib.beatmap_attributes_new.restype = ctypes.c_int
-    c_lib.beatmap_attributes_s_mods.restype = ctypes.c_int
-    c_lib.beatmap_attributes_get_clock_rate.restype = ctypes.c_double
-    c_lib.beatmap_attributes_build.restype = BeatmapAttributes
-    c_lib.beatmap_destroy.restype = ctypes.c_int
-    c_lib.beatmap_from_bytes.restype = ctypes.c_int
-    c_lib.beatmap_from_path.restype = ctypes.c_int
-    c_lib.beatmap_convert.restype = ctypes.c_bool
-    c_lib.beatmap_bpm.restype = ctypes.c_double
-    c_lib.beatmap_total_break_time.restype = ctypes.c_double
-    c_lib.beatmap_version.restype = ctypes.c_int32
-    c_lib.beatmap_is_convert.restype = ctypes.c_bool
-    c_lib.beatmap_stack_leniency.restype = ctypes.c_float
-    c_lib.beatmap_mode.restype = ctypes.c_int
+    c_lib.mods_contains.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
+    c_lib.mods_destroy.argtypes = [ctypes.c_void_p]
+    c_lib.mods_from_acronyms.argtypes = [ctypes.POINTER(ctypes.c_char), ctypes.c_int]
+    c_lib.mods_from_bits.argtypes = [ctypes.c_uint32, ctypes.c_int]
+    c_lib.mods_from_json.argtypes = [ctypes.POINTER(ctypes.c_char), ctypes.c_int, ctypes.c_bool]
+    c_lib.mods_insert.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
+    c_lib.mods_insert_json.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char), ctypes.c_bool]
+    c_lib.mods_json.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    c_lib.mods_len.argtypes = [ctypes.c_void_p]
+    c_lib.mods_new.argtypes = [ctypes.c_int]
+    c_lib.mods_remove_unknown_mods.argtypes = [ctypes.c_void_p]
+    c_lib.mods_sanitize.argtypes = [ctypes.c_void_p]
+    c_lib.performance_accuracy.argtypes = [ctypes.c_void_p, ctypes.c_double]
+    c_lib.performance_ar.argtypes = [ctypes.c_void_p, ctypes.c_float]
+    c_lib.performance_calculate.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    c_lib.performance_calculate_from_difficulty.argtypes = [ctypes.c_void_p, ctypes.c_int]
+    c_lib.performance_clock_rate.argtypes = [ctypes.c_void_p, ctypes.c_double]
+    c_lib.performance_combo.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_cs.argtypes = [ctypes.c_void_p, ctypes.c_float]
+    c_lib.performance_destroy.argtypes = [ctypes.c_void_p]
+    c_lib.performance_generate_state.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    c_lib.performance_generate_state_from_difficulty.argtypes = [ctypes.c_void_p, ctypes.c_int]
+    c_lib.performance_get_clock_rate.argtypes = [ctypes.c_void_p]
+    c_lib.performance_hardrock_offsets.argtypes = [ctypes.c_void_p, ctypes.c_bool]
+    c_lib.performance_hitresult_priority.argtypes = [ctypes.c_void_p, ctypes.c_int]
+    c_lib.performance_hp.argtypes = [ctypes.c_void_p, ctypes.c_float]
+    c_lib.performance_i_mods.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_large_tick_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_lazer.argtypes = [ctypes.c_void_p, ctypes.c_bool]
+    c_lib.performance_misses.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_mode.argtypes = [ctypes.c_void_p, ctypes.c_int]
+    c_lib.performance_n100.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_n300.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_n50.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_n_geki.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_n_katu.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_new.argtypes = []
+    c_lib.performance_od.argtypes = [ctypes.c_void_p, ctypes.c_float]
+    c_lib.performance_p_mods.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    c_lib.performance_passed_objects.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_s_mods.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
+    c_lib.performance_slider_end_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_small_tick_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    c_lib.performance_state.argtypes = [ctypes.c_void_p, ScoreState]
+    c_lib.string_destroy.argtypes = [ctypes.c_void_p]
+    c_lib.string_empty.argtypes = []
+    c_lib.string_from_c_str.argtypes = [ctypes.POINTER(ctypes.c_char)]
+    c_lib.string_is_init.argtypes = [ctypes.c_void_p]
+    c_lib.string_to_cstr.argtypes = [ctypes.c_void_p]
     c_lib.beatmap_ar.restype = ctypes.c_float
+    c_lib.beatmap_attributes_ar.restype = 
+    c_lib.beatmap_attributes_build.restype = BeatmapAttributes
+    c_lib.beatmap_attributes_clock_rate.restype = 
+    c_lib.beatmap_attributes_cs.restype = 
+    c_lib.beatmap_attributes_destroy.restype = ResultConstPtrBeatmapAttributesBuilderError
+    c_lib.beatmap_attributes_get_clock_rate.restype = ctypes.c_double
+    c_lib.beatmap_attributes_hp.restype = 
+    c_lib.beatmap_attributes_i_mods.restype = 
+    c_lib.beatmap_attributes_mode.restype = 
+    c_lib.beatmap_attributes_new.restype = ResultConstPtrBeatmapAttributesBuilderError
+    c_lib.beatmap_attributes_od.restype = 
+    c_lib.beatmap_attributes_p_mods.restype = 
+    c_lib.beatmap_attributes_s_mods.restype = ResultError
+    c_lib.beatmap_bpm.restype = ctypes.c_double
+    c_lib.beatmap_convert.restype = ctypes.c_bool
     c_lib.beatmap_cs.restype = ctypes.c_float
+    c_lib.beatmap_destroy.restype = ResultConstPtrBeatmapError
+    c_lib.beatmap_from_bytes.restype = ResultConstPtrBeatmapError
+    c_lib.beatmap_from_path.restype = ResultConstPtrBeatmapError
+    c_lib.beatmap_hit_objects.restype = VecHitObject
     c_lib.beatmap_hp.restype = ctypes.c_float
+    c_lib.beatmap_is_convert.restype = ctypes.c_bool
+    c_lib.beatmap_mode.restype = ctypes.c_int
     c_lib.beatmap_od.restype = ctypes.c_float
     c_lib.beatmap_slider_multiplier.restype = ctypes.c_double
     c_lib.beatmap_slider_tick_rate.restype = ctypes.c_double
-    c_lib.hitobjects_destroy.restype = ctypes.c_int
-    c_lib.hitobjects_new.restype = ctypes.c_int
-    c_lib.hitobjects_len.restype = ctypes.c_uint32
-    c_lib.hitobjects_get.restype = OptionHitObject
-    c_lib.hitobjects_next.restype = OptionHitObject
-    c_lib.hitobjects_prev.restype = OptionHitObject
-    c_lib.difficulty_destroy.restype = ctypes.c_int
-    c_lib.difficulty_new.restype = ctypes.c_int
-    c_lib.difficulty_s_mods.restype = ctypes.c_int
-    c_lib.difficulty_calculate.restype = DifficultyAttributes
+    c_lib.beatmap_stack_leniency.restype = ctypes.c_float
+    c_lib.beatmap_total_break_time.restype = ctypes.c_double
+    c_lib.beatmap_version.restype = ctypes.c_int32
+    c_lib.calculate_accuracy.restype = ctypes.c_double
+    c_lib.debug_difficulty_attributes.restype = 
+    c_lib.debug_performance_attributes.restype = 
+    c_lib.debug_score_state.restype = 
+    c_lib.difficulty_ar.restype = 
+    c_lib.difficulty_calculate.restype = ctypes.c_int
+    c_lib.difficulty_clock_rate.restype = 
+    c_lib.difficulty_cs.restype = 
+    c_lib.difficulty_destroy.restype = ResultConstPtrDifficultyError
     c_lib.difficulty_get_clock_rate.restype = ctypes.c_double
-    c_lib.performance_destroy.restype = ctypes.c_int
-    c_lib.performance_new.restype = ctypes.c_int
-    c_lib.performance_s_mods.restype = ctypes.c_int
+    c_lib.difficulty_hardrock_offsets.restype = 
+    c_lib.difficulty_hp.restype = 
+    c_lib.difficulty_i_mods.restype = 
+    c_lib.difficulty_lazer.restype = 
+    c_lib.difficulty_new.restype = ResultConstPtrDifficultyError
+    c_lib.difficulty_od.restype = 
+    c_lib.difficulty_p_mods.restype = 
+    c_lib.difficulty_passed_objects.restype = 
+    c_lib.difficulty_s_mods.restype = ResultError
+    c_lib.gradual_difficulty_destroy.restype = ResultConstPtrGradualDifficultyError
+    c_lib.gradual_difficulty_len.restype = ctypes.c_uint32
+    c_lib.gradual_difficulty_new.restype = ResultConstPtrGradualDifficultyError
+    c_lib.gradual_difficulty_new_with_mode.restype = ResultConstPtrGradualDifficultyError
+    c_lib.gradual_difficulty_next.restype = TODO
+    c_lib.gradual_difficulty_nth.restype = TODO
+    c_lib.gradual_performance_destroy.restype = ResultConstPtrGradualPerformanceError
+    c_lib.gradual_performance_last.restype = TODO
+    c_lib.gradual_performance_len.restype = ctypes.c_uint32
+    c_lib.gradual_performance_new.restype = ResultConstPtrGradualPerformanceError
+    c_lib.gradual_performance_new_with_mode.restype = ResultConstPtrGradualPerformanceError
+    c_lib.gradual_performance_next.restype = TODO
+    c_lib.gradual_performance_nth.restype = TODO
+    c_lib.interoptopus_string_clone.restype = ctypes.c_int64
+    c_lib.interoptopus_string_create.restype = ctypes.c_int64
+    c_lib.interoptopus_string_destroy.restype = ctypes.c_int64
+    c_lib.interoptopus_vec_create_1095792466183922639.restype = ctypes.c_int64
+    c_lib.interoptopus_vec_destroy_7642792079161229908.restype = ctypes.c_int64
+    c_lib.interoptopus_wire_destroy.restype = 
+    c_lib.mods_bits.restype = ctypes.c_uint32
+    c_lib.mods_clear.restype = 
+    c_lib.mods_clock_rate.restype = TODO
+    c_lib.mods_contains.restype = ctypes.c_bool
+    c_lib.mods_destroy.restype = ResultConstPtrModsError
+    c_lib.mods_from_acronyms.restype = ResultConstPtrModsError
+    c_lib.mods_from_bits.restype = ResultConstPtrModsError
+    c_lib.mods_from_json.restype = ResultConstPtrModsError
+    c_lib.mods_insert.restype = ctypes.c_bool
+    c_lib.mods_insert_json.restype = ctypes.c_bool
+    c_lib.mods_json.restype = 
+    c_lib.mods_len.restype = ctypes.c_uint32
+    c_lib.mods_new.restype = ResultConstPtrModsError
+    c_lib.mods_remove_unknown_mods.restype = 
+    c_lib.mods_sanitize.restype = 
+    c_lib.performance_accuracy.restype = 
+    c_lib.performance_ar.restype = 
+    c_lib.performance_calculate.restype = ctypes.c_int
+    c_lib.performance_calculate_from_difficulty.restype = ctypes.c_int
+    c_lib.performance_clock_rate.restype = 
+    c_lib.performance_combo.restype = 
+    c_lib.performance_cs.restype = 
+    c_lib.performance_destroy.restype = ResultConstPtrPerformanceError
     c_lib.performance_generate_state.restype = ScoreState
     c_lib.performance_generate_state_from_difficulty.restype = ScoreState
-    c_lib.performance_calculate.restype = PerformanceAttributes
-    c_lib.performance_calculate_from_difficulty.restype = PerformanceAttributes
     c_lib.performance_get_clock_rate.restype = ctypes.c_double
-    c_lib.gradual_difficulty_destroy.restype = ctypes.c_int
-    c_lib.gradual_difficulty_new.restype = ctypes.c_int
-    c_lib.gradual_difficulty_new_with_mode.restype = ctypes.c_int
-    c_lib.gradual_difficulty_next.restype = OptionDifficultyAttributes
-    c_lib.gradual_difficulty_nth.restype = OptionDifficultyAttributes
-    c_lib.gradual_difficulty_len.restype = ctypes.c_uint32
-    c_lib.gradual_performance_destroy.restype = ctypes.c_int
-    c_lib.gradual_performance_new.restype = ctypes.c_int
-    c_lib.gradual_performance_new_with_mode.restype = ctypes.c_int
-    c_lib.gradual_performance_next.restype = OptionPerformanceAttributes
-    c_lib.gradual_performance_last.restype = OptionPerformanceAttributes
-    c_lib.gradual_performance_nth.restype = OptionPerformanceAttributes
-    c_lib.gradual_performance_len.restype = ctypes.c_uint32
-    c_lib.string_destroy.restype = ctypes.c_int
-    c_lib.string_from_c_str.restype = ctypes.c_int
-    c_lib.string_empty.restype = ctypes.c_int
+    c_lib.performance_hardrock_offsets.restype = 
+    c_lib.performance_hitresult_priority.restype = 
+    c_lib.performance_hp.restype = 
+    c_lib.performance_i_mods.restype = 
+    c_lib.performance_large_tick_hits.restype = 
+    c_lib.performance_lazer.restype = 
+    c_lib.performance_misses.restype = 
+    c_lib.performance_mode.restype = 
+    c_lib.performance_n100.restype = 
+    c_lib.performance_n300.restype = 
+    c_lib.performance_n50.restype = 
+    c_lib.performance_n_geki.restype = 
+    c_lib.performance_n_katu.restype = 
+    c_lib.performance_new.restype = ResultConstPtrPerformanceError
+    c_lib.performance_od.restype = 
+    c_lib.performance_p_mods.restype = 
+    c_lib.performance_passed_objects.restype = 
+    c_lib.performance_s_mods.restype = ResultError
+    c_lib.performance_slider_end_hits.restype = 
+    c_lib.performance_small_tick_hits.restype = 
+    c_lib.performance_state.restype = 
+    c_lib.string_destroy.restype = ResultConstPtrOwnedStringError
+    c_lib.string_empty.restype = ResultConstPtrOwnedStringError
+    c_lib.string_from_c_str.restype = ResultConstPtrOwnedStringError
     c_lib.string_is_init.restype = ctypes.c_bool
     c_lib.string_to_cstr.restype = ctypes.POINTER(ctypes.c_char)
-    c_lib.mods_destroy.restype = ctypes.c_int
-    c_lib.mods_new.restype = ctypes.c_int
-    c_lib.mods_from_acronyms.restype = ctypes.c_int
-    c_lib.mods_from_bits.restype = ctypes.c_int
-    c_lib.mods_from_json.restype = ctypes.c_int
-    c_lib.mods_bits.restype = ctypes.c_uint32
-    c_lib.mods_len.restype = ctypes.c_uint32
-    c_lib.mods_insert_json.restype = ctypes.c_bool
-    c_lib.mods_insert.restype = ctypes.c_bool
-    c_lib.mods_contains.restype = ctypes.c_bool
-    c_lib.mods_clock_rate.restype = Optionf64
-    c_lib.calculate_accuacy.restype = ctypes.c_double
-
-    c_lib.beatmap_attributes_destroy.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.beatmap_attributes_new.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.beatmap_attributes_s_mods.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.beatmap_destroy.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.beatmap_from_bytes.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.beatmap_from_path.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.hitobjects_destroy.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.hitobjects_new.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.difficulty_destroy.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.difficulty_new.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.difficulty_s_mods.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.performance_destroy.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.performance_new.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.performance_s_mods.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.gradual_difficulty_destroy.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.gradual_difficulty_new.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.gradual_difficulty_new_with_mode.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.gradual_performance_destroy.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.gradual_performance_new.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.gradual_performance_new_with_mode.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.string_destroy.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.string_from_c_str.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.string_empty.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.mods_destroy.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.mods_new.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.mods_from_acronyms.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.mods_from_bits.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
-    c_lib.mods_from_json.errcheck = lambda rval, _fptr, _args: _errcheck(rval, 0)
 
 
-def debug_difficylty_attributes(res: ctypes.POINTER(DifficultyAttributes), str: ctypes.c_void_p):
-    return c_lib.debug_difficylty_attributes(res, str)
+def debug_difficulty_attributes(res: ctypes.POINTER(ctypes.c_int), str: ctypes.c_void_p):
+    return c_lib.debug_difficulty_attributes(res, str)
 
-def debug_performance_attributes(res: ctypes.POINTER(PerformanceAttributes), str: ctypes.c_void_p):
+def debug_performance_attributes(res: ctypes.POINTER(ctypes.c_int), str: ctypes.c_void_p):
     return c_lib.debug_performance_attributes(res, str)
 
 def debug_score_state(res: ctypes.POINTER(ScoreState), str: ctypes.c_void_p):
     return c_lib.debug_score_state(res, str)
 
-def calculate_accuacy(state: ctypes.POINTER(ScoreState), difficulty: ctypes.POINTER(DifficultyAttributes), origin: ctypes.c_int) -> float:
-    return c_lib.calculate_accuacy(state, difficulty, origin)
+def calculate_accuracy(state: ctypes.POINTER(ScoreState), difficulty: ctypes.POINTER(ctypes.c_int), origin: TODO) -> float:
+    return c_lib.calculate_accuracy(state, difficulty, origin)
+
+def interoptopus_string_create(utf8: ctypes.c_void_p, len: int, rval: ctypes.POINTER(Utf8String)) -> int:
+    return c_lib.interoptopus_string_create(utf8, len, rval)
+
+def interoptopus_string_destroy(utf8) -> int:
+    return c_lib.interoptopus_string_destroy(utf8)
+
+def interoptopus_string_clone(utf8: ctypes.POINTER(Utf8String), rval: ctypes.POINTER(Utf8String)) -> int:
+    return c_lib.interoptopus_string_clone(utf8, rval)
+
+def interoptopus_wire_destroy(data: ctypes.POINTER(ctypes.c_uint8), len: int, capacity: int):
+    return c_lib.interoptopus_wire_destroy(data, len, capacity)
+
+def interoptopus_vec_create_1095792466183922639(data: ctypes.c_void_p, len: int, rval: ctypes.POINTER(VecHitObject)) -> int:
+    return c_lib.interoptopus_vec_create_1095792466183922639(data, len, rval)
+
+def interoptopus_vec_destroy_7642792079161229908(ignored) -> int:
+    return c_lib.interoptopus_vec_destroy_7642792079161229908(ignored)
+
 
 
 
@@ -285,6 +323,16 @@ class _Iter(object):
         return rval
 
 
+class Error:
+    Unknown = 0
+    Null = 1
+    IO = 2
+    InvalidString = 3
+    UTF8 = 4
+    Serialize = 5
+    Convert = 6
+
+
 class HitObjectKind:
     Circle = 0
     Slider = 1
@@ -318,16 +366,52 @@ class OsuScoreOrigin:
     WithoutSliderAcc = 2
 
 
-class FFIError:
-    Ok = 0
-    Null = 100
-    Panic = 200
-    IoError = 300
-    Utf8Error = 400
-    InvalidString = 500
-    SerializeError = 600
-    ConvertError = 700
-    Unknown = 1000
+class Utf8String(ctypes.Structure):
+    """ UTF-8 string marshalling helper.
+ A highly dangerous 'use once type' that has ownership semantics!
+ Once passed over an FFI boundary 'the other side' is meant to own
+ (and free) it. Rust handles that fine, but if in C# you put this
+ in a struct and then call Rust multiple times with that struct 
+ you'll free the same pointer multiple times, and get UB!"""
+
+    # These fields represent the underlying C data layout
+    _fields_ = [
+        ("ptr", ctypes.POINTER(ctypes.c_uint8)),
+        ("len", ctypes.c_uint64),
+        ("capacity", ctypes.c_uint64),
+    ]
+
+    def __init__(self, ptr: ctypes.POINTER(ctypes.c_uint8) = None, len: int = None, capacity: int = None):
+        if ptr is not None:
+            self.ptr = ptr
+        if len is not None:
+            self.len = len
+        if capacity is not None:
+            self.capacity = capacity
+
+    @property
+    def ptr(self) -> ctypes.POINTER(ctypes.c_uint8):
+        return ctypes.Structure.__get__(self, "ptr")
+
+    @ptr.setter
+    def ptr(self, value: ctypes.POINTER(ctypes.c_uint8)):
+        return ctypes.Structure.__set__(self, "ptr", value)
+
+    @property
+    def len(self) -> int:
+        return ctypes.Structure.__get__(self, "len")
+
+    @len.setter
+    def len(self, value: int):
+        return ctypes.Structure.__set__(self, "len", value)
+
+    @property
+    def capacity(self) -> int:
+        return ctypes.Structure.__get__(self, "capacity")
+
+    @capacity.setter
+    def capacity(self, value: int):
+        return ctypes.Structure.__set__(self, "capacity", value)
 
 
 class CatchDifficultyAttributes(ctypes.Structure):
@@ -1139,29 +1223,85 @@ class TaikoDifficultyAttributes(ctypes.Structure):
         return ctypes.Structure.__set__(self, "is_convert", value)
 
 
-class Optionf64(ctypes.Structure):
-    """May optionally hold a value."""
-
+class SliceU8(ctypes.Structure):
+    # These fields represent the underlying C data layout
     _fields_ = [
-        ("_t", ctypes.c_double),
-        ("_is_some", ctypes.c_uint8),
+        ("data", ctypes.POINTER(ctypes.c_uint8)),
+        ("len", ctypes.c_uint64),
     ]
 
-    @property
-    def value(self) -> ctypes.c_double:
-        """Returns the value if it exists, or None."""
-        if self._is_some == 1:
-            return self._t
+    def __len__(self):
+        return self.len
+
+    def __getitem__(self, i) -> int:
+        if i < 0:
+            index = self.len+i
         else:
-            return None
+            index = i
 
-    def is_some(self) -> bool:
-        """Returns true if the value exists."""
-        return self._is_some == 1
+        if index >= self.len:
+            raise IndexError("Index out of range")
 
-    def is_none(self) -> bool:
-        """Returns true if the value does not exist."""
-        return self._is_some != 0
+        return self.data[index]
+
+    def copied(self) -> SliceU8:
+        """Returns a shallow, owned copy of the underlying slice.
+
+        The returned object owns the immediate data, but not the targets of any contained
+        pointers. In other words, if your struct contains any pointers the returned object
+        may only be used as long as these pointers are valid. If the struct did not contain
+        any pointers the returned object is valid indefinitely."""
+        array = (ctypes.c_uint8 * len(self))()
+        ctypes.memmove(array, self.data, len(self) * ctypes.sizeof(ctypes.c_uint8))
+        rval = SliceU8(data=ctypes.cast(array, ctypes.POINTER(ctypes.c_uint8)), len=len(self))
+        rval.owned = array  # Store array in returned slice to prevent memory deallocation
+        return rval
+
+    def __iter__(self) -> typing.Iterable[ctypes.c_uint8]:
+        return _Iter(self)
+
+    def iter(self) -> typing.Iterable[ctypes.c_uint8]:
+        """Convenience method returning a value iterator."""
+        return iter(self)
+
+    def first(self) -> int:
+        """Returns the first element of this slice."""
+        return self[0]
+
+    def last(self) -> int:
+        """Returns the last element of this slice."""
+        return self[len(self)-1]
+
+    def bytearray(self):
+        """Returns a bytearray with the content of this slice."""
+        rval = bytearray(len(self))
+        for i in range(len(self)):
+            rval[i] = self[i]
+        return rval
+
+
+class OptionF64:
+    """Option that contains Some(value) or None."""
+    # Element if Some().
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    None = 1
+
+
+class ResultError:
+    """Result that contains value or an error."""
+    # Element if err is `Ok`.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    # Error value.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    Panic = 2
+    Null = 3
+
+
+class DifficultyAttributes:
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
 
 
 class CatchPerformanceAttributes(ctypes.Structure):
@@ -1206,11 +1346,11 @@ class HitObjectData(ctypes.Structure):
     _fields_ = [
         ("kind", ctypes.c_int),
         ("repeats", ctypes.c_uint32),
-        ("expected_dist", Optionf64),
+        ("expected_dist", TODO),
         ("duration", ctypes.c_double),
     ]
 
-    def __init__(self, kind: ctypes.c_int = None, repeats: int = None, expected_dist: Optionf64 = None, duration: float = None):
+    def __init__(self, kind: TODO = None, repeats: int = None, expected_dist: TODO = None, duration: float = None):
         if kind is not None:
             self.kind = kind
         if repeats is not None:
@@ -1221,11 +1361,11 @@ class HitObjectData(ctypes.Structure):
             self.duration = duration
 
     @property
-    def kind(self) -> ctypes.c_int:
+    def kind(self) -> TODO:
         return ctypes.Structure.__get__(self, "kind")
 
     @kind.setter
-    def kind(self, value: ctypes.c_int):
+    def kind(self, value: TODO):
         return ctypes.Structure.__set__(self, "kind", value)
 
     @property
@@ -1237,11 +1377,11 @@ class HitObjectData(ctypes.Structure):
         return ctypes.Structure.__set__(self, "repeats", value)
 
     @property
-    def expected_dist(self) -> Optionf64:
+    def expected_dist(self) -> TODO:
         return ctypes.Structure.__get__(self, "expected_dist")
 
     @expected_dist.setter
-    def expected_dist(self, value: Optionf64):
+    def expected_dist(self, value: TODO):
         return ctypes.Structure.__set__(self, "expected_dist", value)
 
     @property
@@ -1260,10 +1400,10 @@ class HitWindows(ctypes.Structure):
     _fields_ = [
         ("ar", ctypes.c_double),
         ("od_great", ctypes.c_double),
-        ("od_ok", Optionf64),
+        ("od_ok", TODO),
     ]
 
-    def __init__(self, ar: float = None, od_great: float = None, od_ok: Optionf64 = None):
+    def __init__(self, ar: float = None, od_great: float = None, od_ok: TODO = None):
         if ar is not None:
             self.ar = ar
         if od_great is not None:
@@ -1292,14 +1432,14 @@ class HitWindows(ctypes.Structure):
         return ctypes.Structure.__set__(self, "od_great", value)
 
     @property
-    def od_ok(self) -> Optionf64:
+    def od_ok(self) -> TODO:
         """ Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
 
  `None` for osu!mania."""
         return ctypes.Structure.__get__(self, "od_ok")
 
     @od_ok.setter
-    def od_ok(self, value: Optionf64):
+    def od_ok(self, value: TODO):
         """ Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
 
  `None` for osu!mania."""
@@ -1367,10 +1507,10 @@ class OsuPerformanceAttributes(ctypes.Structure):
         ("pp_flashlight", ctypes.c_double),
         ("pp_speed", ctypes.c_double),
         ("effective_miss_count", ctypes.c_double),
-        ("speed_deviation", Optionf64),
+        ("speed_deviation", TODO),
     ]
 
-    def __init__(self, difficulty: OsuDifficultyAttributes = None, pp: float = None, pp_acc: float = None, pp_aim: float = None, pp_flashlight: float = None, pp_speed: float = None, effective_miss_count: float = None, speed_deviation: Optionf64 = None):
+    def __init__(self, difficulty: OsuDifficultyAttributes = None, pp: float = None, pp_acc: float = None, pp_aim: float = None, pp_flashlight: float = None, pp_speed: float = None, effective_miss_count: float = None, speed_deviation: TODO = None):
         if difficulty is not None:
             self.difficulty = difficulty
         if pp is not None:
@@ -1459,12 +1599,12 @@ class OsuPerformanceAttributes(ctypes.Structure):
         return ctypes.Structure.__set__(self, "effective_miss_count", value)
 
     @property
-    def speed_deviation(self) -> Optionf64:
+    def speed_deviation(self) -> TODO:
         """ Approximated unstable-rate"""
         return ctypes.Structure.__get__(self, "speed_deviation")
 
     @speed_deviation.setter
-    def speed_deviation(self, value: Optionf64):
+    def speed_deviation(self, value: TODO):
         """ Approximated unstable-rate"""
         return ctypes.Structure.__set__(self, "speed_deviation", value)
 
@@ -1479,10 +1619,10 @@ class TaikoPerformanceAttributes(ctypes.Structure):
         ("pp_acc", ctypes.c_double),
         ("pp_difficulty", ctypes.c_double),
         ("effective_miss_count", ctypes.c_double),
-        ("estimated_unstable_rate", Optionf64),
+        ("estimated_unstable_rate", TODO),
     ]
 
-    def __init__(self, difficulty: TaikoDifficultyAttributes = None, pp: float = None, pp_acc: float = None, pp_difficulty: float = None, effective_miss_count: float = None, estimated_unstable_rate: Optionf64 = None):
+    def __init__(self, difficulty: TaikoDifficultyAttributes = None, pp: float = None, pp_acc: float = None, pp_difficulty: float = None, effective_miss_count: float = None, estimated_unstable_rate: TODO = None):
         if difficulty is not None:
             self.difficulty = difficulty
         if pp is not None:
@@ -1547,171 +1687,101 @@ class TaikoPerformanceAttributes(ctypes.Structure):
         return ctypes.Structure.__set__(self, "effective_miss_count", value)
 
     @property
-    def estimated_unstable_rate(self) -> Optionf64:
+    def estimated_unstable_rate(self) -> TODO:
         """ Upper bound on the player's tap deviation."""
         return ctypes.Structure.__get__(self, "estimated_unstable_rate")
 
     @estimated_unstable_rate.setter
-    def estimated_unstable_rate(self, value: Optionf64):
+    def estimated_unstable_rate(self, value: TODO):
         """ Upper bound on the player's tap deviation."""
         return ctypes.Structure.__set__(self, "estimated_unstable_rate", value)
 
 
-class Sliceu8(ctypes.Structure):
-    # These fields represent the underlying C data layout
-    _fields_ = [
-        ("data", ctypes.POINTER(ctypes.c_uint8)),
-        ("len", ctypes.c_uint64),
-    ]
-
-    def __len__(self):
-        return self.len
-
-    def __getitem__(self, i) -> int:
-        if i < 0:
-            index = self.len+i
-        else:
-            index = i
-
-        if index >= self.len:
-            raise IndexError("Index out of range")
-
-        return self.data[index]
-
-    def copied(self) -> Sliceu8:
-        """Returns a shallow, owned copy of the underlying slice.
-
-        The returned object owns the immediate data, but not the targets of any contained
-        pointers. In other words, if your struct contains any pointers the returned object
-        may only be used as long as these pointers are valid. If the struct did not contain
-        any pointers the returned object is valid indefinitely."""
-        array = (ctypes.c_uint8 * len(self))()
-        ctypes.memmove(array, self.data, len(self) * ctypes.sizeof(ctypes.c_uint8))
-        rval = Sliceu8(data=ctypes.cast(array, ctypes.POINTER(ctypes.c_uint8)), len=len(self))
-        rval.owned = array  # Store array in returned slice to prevent memory deallocation
-        return rval
-
-    def __iter__(self) -> typing.Iterable[ctypes.c_uint8]:
-        return _Iter(self)
-
-    def iter(self) -> typing.Iterable[ctypes.c_uint8]:
-        """Convenience method returning a value iterator."""
-        return iter(self)
-
-    def first(self) -> int:
-        """Returns the first element of this slice."""
-        return self[0]
-
-    def last(self) -> int:
-        """Returns the last element of this slice."""
-        return self[len(self)-1]
-
-    def bytearray(self):
-        """Returns a bytearray with the content of this slice."""
-        rval = bytearray(len(self))
-        for i in range(len(self)):
-            rval[i] = self[i]
-        return rval
+class ResultConstPtrBeatmapAttributesBuilderError:
+    """Result that contains value or an error."""
+    # Element if err is `Ok`.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    # Error value.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    Panic = 2
+    Null = 3
 
 
-class OptionCatchDifficultyAttributes(ctypes.Structure):
-    """May optionally hold a value."""
-
-    _fields_ = [
-        ("_t", CatchDifficultyAttributes),
-        ("_is_some", ctypes.c_uint8),
-    ]
-
-    @property
-    def value(self) -> CatchDifficultyAttributes:
-        """Returns the value if it exists, or None."""
-        if self._is_some == 1:
-            return self._t
-        else:
-            return None
-
-    def is_some(self) -> bool:
-        """Returns true if the value exists."""
-        return self._is_some == 1
-
-    def is_none(self) -> bool:
-        """Returns true if the value does not exist."""
-        return self._is_some != 0
+class ResultConstPtrBeatmapError:
+    """Result that contains value or an error."""
+    # Element if err is `Ok`.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    # Error value.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    Panic = 2
+    Null = 3
 
 
-class OptionManiaDifficultyAttributes(ctypes.Structure):
-    """May optionally hold a value."""
-
-    _fields_ = [
-        ("_t", ManiaDifficultyAttributes),
-        ("_is_some", ctypes.c_uint8),
-    ]
-
-    @property
-    def value(self) -> ManiaDifficultyAttributes:
-        """Returns the value if it exists, or None."""
-        if self._is_some == 1:
-            return self._t
-        else:
-            return None
-
-    def is_some(self) -> bool:
-        """Returns true if the value exists."""
-        return self._is_some == 1
-
-    def is_none(self) -> bool:
-        """Returns true if the value does not exist."""
-        return self._is_some != 0
+class ResultConstPtrDifficultyError:
+    """Result that contains value or an error."""
+    # Element if err is `Ok`.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    # Error value.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    Panic = 2
+    Null = 3
 
 
-class OptionOsuDifficultyAttributes(ctypes.Structure):
-    """May optionally hold a value."""
-
-    _fields_ = [
-        ("_t", OsuDifficultyAttributes),
-        ("_is_some", ctypes.c_uint8),
-    ]
-
-    @property
-    def value(self) -> OsuDifficultyAttributes:
-        """Returns the value if it exists, or None."""
-        if self._is_some == 1:
-            return self._t
-        else:
-            return None
-
-    def is_some(self) -> bool:
-        """Returns true if the value exists."""
-        return self._is_some == 1
-
-    def is_none(self) -> bool:
-        """Returns true if the value does not exist."""
-        return self._is_some != 0
+class ResultConstPtrGradualDifficultyError:
+    """Result that contains value or an error."""
+    # Element if err is `Ok`.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    # Error value.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    Panic = 2
+    Null = 3
 
 
-class OptionTaikoDifficultyAttributes(ctypes.Structure):
-    """May optionally hold a value."""
+class ResultConstPtrGradualPerformanceError:
+    """Result that contains value or an error."""
+    # Element if err is `Ok`.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    # Error value.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    Panic = 2
+    Null = 3
 
-    _fields_ = [
-        ("_t", TaikoDifficultyAttributes),
-        ("_is_some", ctypes.c_uint8),
-    ]
 
-    @property
-    def value(self) -> TaikoDifficultyAttributes:
-        """Returns the value if it exists, or None."""
-        if self._is_some == 1:
-            return self._t
-        else:
-            return None
+class ResultConstPtrModsError:
+    """Result that contains value or an error."""
+    # Element if err is `Ok`.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    # Error value.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    Panic = 2
+    Null = 3
 
-    def is_some(self) -> bool:
-        """Returns true if the value exists."""
-        return self._is_some == 1
 
-    def is_none(self) -> bool:
-        """Returns true if the value does not exist."""
-        return self._is_some != 0
+class ResultConstPtrOwnedStringError:
+    """Result that contains value or an error."""
+    # Element if err is `Ok`.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    # Error value.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    Panic = 2
+    Null = 3
+
+
+class ResultConstPtrPerformanceError:
+    """Result that contains value or an error."""
+    # Element if err is `Ok`.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    # Error value.
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    Panic = 2
+    Null = 3
+
+
+class PerformanceAttributes:
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
 
 
 class BeatmapAttributes(ctypes.Structure):
@@ -1802,70 +1872,6 @@ class BeatmapAttributes(ctypes.Structure):
         return ctypes.Structure.__set__(self, "hit_windows", value)
 
 
-class DifficultyAttributes(ctypes.Structure):
-
-    # These fields represent the underlying C data layout
-    _fields_ = [
-        ("osu", OptionOsuDifficultyAttributes),
-        ("taiko", OptionTaikoDifficultyAttributes),
-        ("fruit", OptionCatchDifficultyAttributes),
-        ("mania", OptionManiaDifficultyAttributes),
-        ("mode", ctypes.c_int),
-    ]
-
-    def __init__(self, osu: OptionOsuDifficultyAttributes = None, taiko: OptionTaikoDifficultyAttributes = None, fruit: OptionCatchDifficultyAttributes = None, mania: OptionManiaDifficultyAttributes = None, mode: ctypes.c_int = None):
-        if osu is not None:
-            self.osu = osu
-        if taiko is not None:
-            self.taiko = taiko
-        if fruit is not None:
-            self.fruit = fruit
-        if mania is not None:
-            self.mania = mania
-        if mode is not None:
-            self.mode = mode
-
-    @property
-    def osu(self) -> OptionOsuDifficultyAttributes:
-        return ctypes.Structure.__get__(self, "osu")
-
-    @osu.setter
-    def osu(self, value: OptionOsuDifficultyAttributes):
-        return ctypes.Structure.__set__(self, "osu", value)
-
-    @property
-    def taiko(self) -> OptionTaikoDifficultyAttributes:
-        return ctypes.Structure.__get__(self, "taiko")
-
-    @taiko.setter
-    def taiko(self, value: OptionTaikoDifficultyAttributes):
-        return ctypes.Structure.__set__(self, "taiko", value)
-
-    @property
-    def fruit(self) -> OptionCatchDifficultyAttributes:
-        return ctypes.Structure.__get__(self, "fruit")
-
-    @fruit.setter
-    def fruit(self, value: OptionCatchDifficultyAttributes):
-        return ctypes.Structure.__set__(self, "fruit", value)
-
-    @property
-    def mania(self) -> OptionManiaDifficultyAttributes:
-        return ctypes.Structure.__get__(self, "mania")
-
-    @mania.setter
-    def mania(self, value: OptionManiaDifficultyAttributes):
-        return ctypes.Structure.__set__(self, "mania", value)
-
-    @property
-    def mode(self) -> ctypes.c_int:
-        return ctypes.Structure.__get__(self, "mode")
-
-    @mode.setter
-    def mode(self, value: ctypes.c_int):
-        return ctypes.Structure.__set__(self, "mode", value)
-
-
 class HitObject(ctypes.Structure):
 
     # These fields represent the underlying C data layout
@@ -1908,243 +1914,18 @@ class HitObject(ctypes.Structure):
         return ctypes.Structure.__set__(self, "data", value)
 
 
-class OptionCatchPerformanceAttributes(ctypes.Structure):
-    """May optionally hold a value."""
-
-    _fields_ = [
-        ("_t", CatchPerformanceAttributes),
-        ("_is_some", ctypes.c_uint8),
-    ]
-
-    @property
-    def value(self) -> CatchPerformanceAttributes:
-        """Returns the value if it exists, or None."""
-        if self._is_some == 1:
-            return self._t
-        else:
-            return None
-
-    def is_some(self) -> bool:
-        """Returns true if the value exists."""
-        return self._is_some == 1
-
-    def is_none(self) -> bool:
-        """Returns true if the value does not exist."""
-        return self._is_some != 0
+class OptionDifficultyAttributes:
+    """Option that contains Some(value) or None."""
+    # Element if Some().
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    None = 1
 
 
-class OptionManiaPerformanceAttributes(ctypes.Structure):
-    """May optionally hold a value."""
-
-    _fields_ = [
-        ("_t", ManiaPerformanceAttributes),
-        ("_is_some", ctypes.c_uint8),
-    ]
-
-    @property
-    def value(self) -> ManiaPerformanceAttributes:
-        """Returns the value if it exists, or None."""
-        if self._is_some == 1:
-            return self._t
-        else:
-            return None
-
-    def is_some(self) -> bool:
-        """Returns true if the value exists."""
-        return self._is_some == 1
-
-    def is_none(self) -> bool:
-        """Returns true if the value does not exist."""
-        return self._is_some != 0
-
-
-class OptionOsuPerformanceAttributes(ctypes.Structure):
-    """May optionally hold a value."""
-
-    _fields_ = [
-        ("_t", OsuPerformanceAttributes),
-        ("_is_some", ctypes.c_uint8),
-    ]
-
-    @property
-    def value(self) -> OsuPerformanceAttributes:
-        """Returns the value if it exists, or None."""
-        if self._is_some == 1:
-            return self._t
-        else:
-            return None
-
-    def is_some(self) -> bool:
-        """Returns true if the value exists."""
-        return self._is_some == 1
-
-    def is_none(self) -> bool:
-        """Returns true if the value does not exist."""
-        return self._is_some != 0
-
-
-class OptionTaikoPerformanceAttributes(ctypes.Structure):
-    """May optionally hold a value."""
-
-    _fields_ = [
-        ("_t", TaikoPerformanceAttributes),
-        ("_is_some", ctypes.c_uint8),
-    ]
-
-    @property
-    def value(self) -> TaikoPerformanceAttributes:
-        """Returns the value if it exists, or None."""
-        if self._is_some == 1:
-            return self._t
-        else:
-            return None
-
-    def is_some(self) -> bool:
-        """Returns true if the value exists."""
-        return self._is_some == 1
-
-    def is_none(self) -> bool:
-        """Returns true if the value does not exist."""
-        return self._is_some != 0
-
-
-class PerformanceAttributes(ctypes.Structure):
-
-    # These fields represent the underlying C data layout
-    _fields_ = [
-        ("osu", OptionOsuPerformanceAttributes),
-        ("taiko", OptionTaikoPerformanceAttributes),
-        ("fruit", OptionCatchPerformanceAttributes),
-        ("mania", OptionManiaPerformanceAttributes),
-        ("mode", ctypes.c_int),
-    ]
-
-    def __init__(self, osu: OptionOsuPerformanceAttributes = None, taiko: OptionTaikoPerformanceAttributes = None, fruit: OptionCatchPerformanceAttributes = None, mania: OptionManiaPerformanceAttributes = None, mode: ctypes.c_int = None):
-        if osu is not None:
-            self.osu = osu
-        if taiko is not None:
-            self.taiko = taiko
-        if fruit is not None:
-            self.fruit = fruit
-        if mania is not None:
-            self.mania = mania
-        if mode is not None:
-            self.mode = mode
-
-    @property
-    def osu(self) -> OptionOsuPerformanceAttributes:
-        return ctypes.Structure.__get__(self, "osu")
-
-    @osu.setter
-    def osu(self, value: OptionOsuPerformanceAttributes):
-        return ctypes.Structure.__set__(self, "osu", value)
-
-    @property
-    def taiko(self) -> OptionTaikoPerformanceAttributes:
-        return ctypes.Structure.__get__(self, "taiko")
-
-    @taiko.setter
-    def taiko(self, value: OptionTaikoPerformanceAttributes):
-        return ctypes.Structure.__set__(self, "taiko", value)
-
-    @property
-    def fruit(self) -> OptionCatchPerformanceAttributes:
-        return ctypes.Structure.__get__(self, "fruit")
-
-    @fruit.setter
-    def fruit(self, value: OptionCatchPerformanceAttributes):
-        return ctypes.Structure.__set__(self, "fruit", value)
-
-    @property
-    def mania(self) -> OptionManiaPerformanceAttributes:
-        return ctypes.Structure.__get__(self, "mania")
-
-    @mania.setter
-    def mania(self, value: OptionManiaPerformanceAttributes):
-        return ctypes.Structure.__set__(self, "mania", value)
-
-    @property
-    def mode(self) -> ctypes.c_int:
-        return ctypes.Structure.__get__(self, "mode")
-
-    @mode.setter
-    def mode(self, value: ctypes.c_int):
-        return ctypes.Structure.__set__(self, "mode", value)
-
-
-class OptionDifficultyAttributes(ctypes.Structure):
-    """May optionally hold a value."""
-
-    _fields_ = [
-        ("_t", DifficultyAttributes),
-        ("_is_some", ctypes.c_uint8),
-    ]
-
-    @property
-    def value(self) -> DifficultyAttributes:
-        """Returns the value if it exists, or None."""
-        if self._is_some == 1:
-            return self._t
-        else:
-            return None
-
-    def is_some(self) -> bool:
-        """Returns true if the value exists."""
-        return self._is_some == 1
-
-    def is_none(self) -> bool:
-        """Returns true if the value does not exist."""
-        return self._is_some != 0
-
-
-class OptionHitObject(ctypes.Structure):
-    """May optionally hold a value."""
-
-    _fields_ = [
-        ("_t", HitObject),
-        ("_is_some", ctypes.c_uint8),
-    ]
-
-    @property
-    def value(self) -> HitObject:
-        """Returns the value if it exists, or None."""
-        if self._is_some == 1:
-            return self._t
-        else:
-            return None
-
-    def is_some(self) -> bool:
-        """Returns true if the value exists."""
-        return self._is_some == 1
-
-    def is_none(self) -> bool:
-        """Returns true if the value does not exist."""
-        return self._is_some != 0
-
-
-class OptionPerformanceAttributes(ctypes.Structure):
-    """May optionally hold a value."""
-
-    _fields_ = [
-        ("_t", PerformanceAttributes),
-        ("_is_some", ctypes.c_uint8),
-    ]
-
-    @property
-    def value(self) -> PerformanceAttributes:
-        """Returns the value if it exists, or None."""
-        if self._is_some == 1:
-            return self._t
-        else:
-            return None
-
-    def is_some(self) -> bool:
-        """Returns true if the value exists."""
-        return self._is_some == 1
-
-    def is_none(self) -> bool:
-        """Returns true if the value does not exist."""
-        return self._is_some != 0
+class OptionPerformanceAttributes:
+    """Option that contains Some(value) or None."""
+    # Element if Some().
+# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
+    None = 1
 
 
 
@@ -2167,14 +1948,13 @@ class BeatmapAttributesBuilder:
     @staticmethod
     def new() -> BeatmapAttributesBuilder:
         """"""
-        ctx = ctypes.c_void_p()
-        c_lib.beatmap_attributes_new(ctx, )
+        ctx = c_lib.beatmap_attributes_new().t
         self = BeatmapAttributesBuilder(BeatmapAttributesBuilder.__api_lock, ctx)
         return self
 
     def __del__(self):
         c_lib.beatmap_attributes_destroy(self._ctx, )
-    def mode(self, mode: ctypes.c_int):
+    def mode(self, mode: TODO):
         """"""
         return c_lib.beatmap_attributes_mode(self._ctx, mode)
 
@@ -2234,29 +2014,27 @@ class Beatmap:
         return self._ctx
 
     @staticmethod
-    def from_bytes(data: Sliceu8 | ctypes.Array[ctypes.c_uint8]) -> Beatmap:
+    def from_bytes() -> Beatmap:
         """"""
-        ctx = ctypes.c_void_p()
         if hasattr(data, "_length_") and getattr(data, "_type_", "") == ctypes.c_uint8:
-            data = Sliceu8(data=ctypes.cast(data, ctypes.POINTER(ctypes.c_uint8)), len=len(data))
+            data = SliceU8(data=ctypes.cast(data, ctypes.POINTER(ctypes.c_uint8)), len=len(data))
 
-        c_lib.beatmap_from_bytes(ctx, data)
+        ctx = c_lib.beatmap_from_bytes().t
         self = Beatmap(Beatmap.__api_lock, ctx)
         return self
 
     @staticmethod
-    def from_path(path: bytes) -> Beatmap:
+    def from_path() -> Beatmap:
         """"""
-        ctx = ctypes.c_void_p()
         if not hasattr(path, "__ctypes_from_outparam__"):
             path = ctypes.cast(path, ctypes.POINTER(ctypes.c_char))
-        c_lib.beatmap_from_path(ctx, path)
+        ctx = c_lib.beatmap_from_path().t
         self = Beatmap(Beatmap.__api_lock, ctx)
         return self
 
     def __del__(self):
         c_lib.beatmap_destroy(self._ctx, )
-    def convert(self, mode: ctypes.c_int, mods: ctypes.c_void_p) -> bool:
+    def convert(self, mode: TODO, mods: ctypes.c_void_p) -> bool:
         """ Convert a Beatmap to the specified mode"""
         return c_lib.beatmap_convert(self._ctx, mode, mods)
 
@@ -2280,7 +2058,7 @@ class Beatmap:
         """"""
         return c_lib.beatmap_stack_leniency(self._ctx, )
 
-    def mode(self, ) -> ctypes.c_int:
+    def mode(self, ) -> TODO:
         """"""
         return c_lib.beatmap_mode(self._ctx, )
 
@@ -2308,48 +2086,9 @@ class Beatmap:
         """"""
         return c_lib.beatmap_slider_tick_rate(self._ctx, )
 
-
-
-class HitObjects:
-    __api_lock = object()
-
-    def __init__(self, api_lock, ctx):
-        assert(api_lock == HitObjects.__api_lock), "You must create this with a static constructor." 
-        self._ctx = ctx
-
-    @property
-    def _as_parameter_(self):
-        return self._ctx
-
-    @staticmethod
-    def new(beatmap: ctypes.c_void_p) -> HitObjects:
+    def hit_objects(self, ):
         """"""
-        ctx = ctypes.c_void_p()
-        c_lib.hitobjects_new(ctx, beatmap)
-        self = HitObjects(HitObjects.__api_lock, ctx)
-        return self
-
-    def __del__(self):
-        c_lib.hitobjects_destroy(self._ctx, )
-    def len(self, ) -> int:
-        """"""
-        return c_lib.hitobjects_len(self._ctx, )
-
-    def get(self, index: int) -> OptionHitObject:
-        """"""
-        return c_lib.hitobjects_get(self._ctx, index)
-
-    def next(self, ) -> OptionHitObject:
-        """"""
-        return c_lib.hitobjects_next(self._ctx, )
-
-    def prev(self, ) -> OptionHitObject:
-        """"""
-        return c_lib.hitobjects_prev(self._ctx, )
-
-    def reset(self, ):
-        """"""
-        return c_lib.hitobjects_reset(self._ctx, )
+        return c_lib.beatmap_hit_objects(self._ctx, )
 
 
 
@@ -2367,8 +2106,7 @@ class Difficulty:
     @staticmethod
     def new() -> Difficulty:
         """"""
-        ctx = ctypes.c_void_p()
-        c_lib.difficulty_new(ctx, )
+        ctx = c_lib.difficulty_new().t
         self = Difficulty(Difficulty.__api_lock, ctx)
         return self
 
@@ -2420,7 +2158,7 @@ class Difficulty:
         """"""
         return c_lib.difficulty_lazer(self._ctx, lazer)
 
-    def calculate(self, beatmap: ctypes.c_void_p) -> DifficultyAttributes:
+    def calculate(self, beatmap: ctypes.c_void_p) -> TODO:
         """"""
         return c_lib.difficulty_calculate(self._ctx, beatmap)
 
@@ -2444,14 +2182,13 @@ class Performance:
     @staticmethod
     def new() -> Performance:
         """"""
-        ctx = ctypes.c_void_p()
-        c_lib.performance_new(ctx, )
+        ctx = c_lib.performance_new().t
         self = Performance(Performance.__api_lock, ctx)
         return self
 
     def __del__(self):
         c_lib.performance_destroy(self._ctx, )
-    def mode(self, mode: ctypes.c_int):
+    def mode(self, mode: TODO):
         """"""
         return c_lib.performance_mode(self._ctx, mode)
 
@@ -2513,7 +2250,7 @@ class Performance:
         """"""
         return c_lib.performance_combo(self._ctx, combo)
 
-    def hitresult_priority(self, hitresult_priority: ctypes.c_int):
+    def hitresult_priority(self, hitresult_priority: TODO):
         """"""
         return c_lib.performance_hitresult_priority(self._ctx, hitresult_priority)
 
@@ -2557,15 +2294,15 @@ class Performance:
         """"""
         return c_lib.performance_generate_state(self._ctx, beatmap)
 
-    def generate_state_from_difficulty(self, difficulty_attr: DifficultyAttributes) -> ScoreState:
+    def generate_state_from_difficulty(self, difficulty_attr: TODO) -> ScoreState:
         """"""
         return c_lib.performance_generate_state_from_difficulty(self._ctx, difficulty_attr)
 
-    def calculate(self, beatmap: ctypes.c_void_p) -> PerformanceAttributes:
+    def calculate(self, beatmap: ctypes.c_void_p) -> TODO:
         """"""
         return c_lib.performance_calculate(self._ctx, beatmap)
 
-    def calculate_from_difficulty(self, difficulty_attr: DifficultyAttributes) -> PerformanceAttributes:
+    def calculate_from_difficulty(self, difficulty_attr: TODO) -> TODO:
         """"""
         return c_lib.performance_calculate_from_difficulty(self._ctx, difficulty_attr)
 
@@ -2587,28 +2324,26 @@ class GradualDifficulty:
         return self._ctx
 
     @staticmethod
-    def new(difficulty: ctypes.c_void_p, beatmap: ctypes.c_void_p) -> GradualDifficulty:
+    def new(beatmap: ctypes.c_void_p) -> GradualDifficulty:
         """ Create a [`GradualDifficulty`] for a map of any mode."""
-        ctx = ctypes.c_void_p()
-        c_lib.gradual_difficulty_new(ctx, difficulty, beatmap)
+        ctx = c_lib.gradual_difficulty_new(beatmap).t
         self = GradualDifficulty(GradualDifficulty.__api_lock, ctx)
         return self
 
     @staticmethod
-    def new_with_mode(difficulty: ctypes.c_void_p, beatmap: ctypes.c_void_p, mode: ctypes.c_int) -> GradualDifficulty:
+    def new_with_mode(beatmap: ctypes.c_void_p, mode: TODO) -> GradualDifficulty:
         """ Create a [`GradualDifficulty`] for a [`Beatmap`] on a specific [`GameMode`]."""
-        ctx = ctypes.c_void_p()
-        c_lib.gradual_difficulty_new_with_mode(ctx, difficulty, beatmap, mode)
+        ctx = c_lib.gradual_difficulty_new_with_mode(beatmap, mode).t
         self = GradualDifficulty(GradualDifficulty.__api_lock, ctx)
         return self
 
     def __del__(self):
         c_lib.gradual_difficulty_destroy(self._ctx, )
-    def next(self, ) -> OptionDifficultyAttributes:
+    def next(self, ) -> TODO:
         """"""
         return c_lib.gradual_difficulty_next(self._ctx, )
 
-    def nth(self, n: int) -> OptionDifficultyAttributes:
+    def nth(self, n: int) -> TODO:
         """"""
         return c_lib.gradual_difficulty_nth(self._ctx, n)
 
@@ -2630,38 +2365,36 @@ class GradualPerformance:
         return self._ctx
 
     @staticmethod
-    def new(difficulty: ctypes.c_void_p, beatmap: ctypes.c_void_p) -> GradualPerformance:
+    def new(beatmap: ctypes.c_void_p) -> GradualPerformance:
         """ Create a [`GradualPerformance`] for a map of any mode."""
-        ctx = ctypes.c_void_p()
-        c_lib.gradual_performance_new(ctx, difficulty, beatmap)
+        ctx = c_lib.gradual_performance_new(beatmap).t
         self = GradualPerformance(GradualPerformance.__api_lock, ctx)
         return self
 
     @staticmethod
-    def new_with_mode(difficulty: ctypes.c_void_p, beatmap: ctypes.c_void_p, mode: ctypes.c_int) -> GradualPerformance:
+    def new_with_mode(beatmap: ctypes.c_void_p, mode: TODO) -> GradualPerformance:
         """ Create a [`GradualPerformance`] for a [`Beatmap`] on a specific [`GameMode`]."""
-        ctx = ctypes.c_void_p()
-        c_lib.gradual_performance_new_with_mode(ctx, difficulty, beatmap, mode)
+        ctx = c_lib.gradual_performance_new_with_mode(beatmap, mode).t
         self = GradualPerformance(GradualPerformance.__api_lock, ctx)
         return self
 
     def __del__(self):
         c_lib.gradual_performance_destroy(self._ctx, )
-    def next(self, state: ScoreState) -> OptionPerformanceAttributes:
+    def next(self, state: ScoreState) -> TODO:
         """ Process the next hit object and calculate the performance attributes
  for the resulting score state."""
         return c_lib.gradual_performance_next(self._ctx, state)
 
-    def last(self, state: ScoreState) -> OptionPerformanceAttributes:
+    def last(self, state: ScoreState) -> TODO:
         """ Process all remaining hit objects and calculate the final performance
  attributes."""
         return c_lib.gradual_performance_last(self._ctx, state)
 
-    def nth(self, state: ScoreState, n: int) -> OptionPerformanceAttributes:
+    def nth(self, state: ScoreState, n: int) -> TODO:
         """ Process everything up to the next `n`th hitobject and calculate the
  performance attributes for the resulting score state.
 
- Note that the count is zero-indexed, so `n=0` will process 1 object,
+ Note that the count is zero indexed
  `n=1` will process 2, and so on."""
         return c_lib.gradual_performance_nth(self._ctx, state, n)
 
@@ -2683,20 +2416,18 @@ class OwnedString:
         return self._ctx
 
     @staticmethod
-    def from_c_str(str: bytes) -> OwnedString:
+    def from_c_str() -> OwnedString:
         """"""
-        ctx = ctypes.c_void_p()
         if not hasattr(str, "__ctypes_from_outparam__"):
             str = ctypes.cast(str, ctypes.POINTER(ctypes.c_char))
-        c_lib.string_from_c_str(ctx, str)
+        ctx = c_lib.string_from_c_str().t
         self = OwnedString(OwnedString.__api_lock, ctx)
         return self
 
     @staticmethod
     def empty() -> OwnedString:
         """"""
-        ctx = ctypes.c_void_p()
-        c_lib.string_empty(ctx, )
+        ctx = c_lib.string_empty().t
         self = OwnedString(OwnedString.__api_lock, ctx)
         return self
 
@@ -2725,38 +2456,34 @@ class Mods:
         return self._ctx
 
     @staticmethod
-    def new(mode: ctypes.c_int) -> Mods:
+    def new() -> Mods:
         """"""
-        ctx = ctypes.c_void_p()
-        c_lib.mods_new(ctx, mode)
+        ctx = c_lib.mods_new().t
         self = Mods(Mods.__api_lock, ctx)
         return self
 
     @staticmethod
-    def from_acronyms(str: bytes, mode: ctypes.c_int) -> Mods:
+    def from_acronyms(mode: TODO) -> Mods:
         """"""
-        ctx = ctypes.c_void_p()
         if not hasattr(str, "__ctypes_from_outparam__"):
             str = ctypes.cast(str, ctypes.POINTER(ctypes.c_char))
-        c_lib.mods_from_acronyms(ctx, str, mode)
+        ctx = c_lib.mods_from_acronyms(mode).t
         self = Mods(Mods.__api_lock, ctx)
         return self
 
     @staticmethod
-    def from_bits(bits: int, mode: ctypes.c_int) -> Mods:
+    def from_bits(mode: TODO) -> Mods:
         """"""
-        ctx = ctypes.c_void_p()
-        c_lib.mods_from_bits(ctx, bits, mode)
+        ctx = c_lib.mods_from_bits(mode).t
         self = Mods(Mods.__api_lock, ctx)
         return self
 
     @staticmethod
-    def from_json(str: bytes, mode: ctypes.c_int, deny_unknown_fields: bool) -> Mods:
+    def from_json(mode: TODO, deny_unknown_fields: bool) -> Mods:
         """"""
-        ctx = ctypes.c_void_p()
         if not hasattr(str, "__ctypes_from_outparam__"):
             str = ctypes.cast(str, ctypes.POINTER(ctypes.c_char))
-        c_lib.mods_from_json(ctx, str, mode, deny_unknown_fields)
+        ctx = c_lib.mods_from_json(mode, deny_unknown_fields).t
         self = Mods(Mods.__api_lock, ctx)
         return self
 
@@ -2804,7 +2531,7 @@ class Mods:
         """"""
         return c_lib.mods_clear(self._ctx, )
 
-    def clock_rate(self, ) -> Optionf64:
+    def clock_rate(self, ) -> TODO:
         """"""
         return c_lib.mods_clock_rate(self._ctx, )
 
