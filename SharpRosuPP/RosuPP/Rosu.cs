@@ -274,14 +274,6 @@ public partial class BeatmapAttributesBuilder
     }
 }
 
-public partial class OwnedString
-{
-    public override string? ToString()
-    {
-        return Marshal.PtrToStringUTF8(ToCstr());
-    }
-}
-
 public partial class Beatmap
 {
     public static Beatmap FromBytes(byte[] data)
