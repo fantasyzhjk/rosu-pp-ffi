@@ -28,9 +28,7 @@ public static class Extensions
     }
 
     public static OsuPP.Calculater Mods(this OsuPP.Calculater c, Mods mods) {
-        using var s = OwnedString.Empty();
-        mods.Json(s);
-        c.Mods(s.ToString()!);
+        c.Mods(mods.Json().IntoString());
         return c;
     }
 

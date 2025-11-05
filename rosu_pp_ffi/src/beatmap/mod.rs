@@ -7,7 +7,6 @@ use interoptopus::{
     ffi::CStrPtr,
     ffi::Slice as FFISlice,
     ffi_service, ffi_type,
-    ffi,
     pattern::result::{result_to_ffi, Result},
     ffi::Vec
 };

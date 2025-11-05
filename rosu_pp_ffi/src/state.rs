@@ -1,6 +1,6 @@
-use interoptopus::{ffi_function, ffi_type};
+use interoptopus::{ffi, ffi_function, ffi_type};
 
-use crate::{attributes, mode::Mode, owned_string::OwnedString};
+use crate::{attributes, mode::Mode};
 
 /// Type to pass [`OsuScoreState::accuracy`] and specify the origin of a score.
 #[allow(dead_code)]
@@ -143,10 +143,9 @@ impl From<ScoreState> for rosu_pp::any::ScoreState {
 
 
 #[ffi_function]
-pub fn debug_score_state(res: &ScoreState, str: &mut OwnedString) {
-    str.replace(format!("{res:#?}"))
+pub fn debug_score_state(res: &ScoreState) -> ffi::String {
+    ffi::String::from_string(format!("{res:#?}"))
 }
-
 
 #[ffi_function]
 pub fn calculate_accuracy(

@@ -143,9 +143,7 @@ public partial struct DifficultyAttributes
 {
     public string? Debug()
     {
-        using var str = OwnedString.Empty();
-        Interop.debug_difficulty_attributes(ref this, str.Context);
-        return str.ToString();
+        return Interop.debug_difficulty_attributes(ref this).IntoString();
     }
 }
 
@@ -153,9 +151,7 @@ public partial struct PerformanceAttributes
 {
     public string? Debug()
     {
-        using var str = OwnedString.Empty();
-        Interop.debug_performance_attributes(ref this, str.Context);
-        return str.ToString();
+        return Interop.debug_performance_attributes(ref this).IntoString();
     }
 }
 
@@ -163,9 +159,7 @@ public partial struct ScoreState
 {
     public string? Debug()
     {
-        using var str = OwnedString.Empty();
-        Interop.debug_score_state(ref this, str.Context);
-        return str.ToString();
+        return Interop.debug_score_state(ref this).IntoString();
     }
 }
 
@@ -311,10 +305,6 @@ public partial class Beatmap
 
 public partial class Mods
 {
-    public void Json(OwnedString str) {
-        this.Json(str.Context);
-    }
-
     public static Mods FromJson(string str, Mode mode) {
         return Mods.FromJson(str, mode, false);
     }

@@ -1,12 +1,8 @@
 use crate::*;
 use interoptopus::{
-    ffi_service, ffi_type,
-    pattern::option::Option as FFIOption,
-    ffi::CStrPtr,
-    pattern::result::{Result, result_to_ffi}
+    ffi::{self, CStrPtr}, ffi_service, ffi_type, pattern::{option::Option as FFIOption, result::{Result, result_to_ffi}}
 };
 use mode::Mode;
-use owned_string::OwnedString;
 use rosu_mods::{generated_mods::UnknownMod, serde::{GameModSeed, GameModsSeed}, Acronym, GameMod};
 use serde::de::DeserializeSeed;
 
@@ -84,8 +80,8 @@ impl Mods {
     }
 
     
-    pub fn json(&mut self, str: &mut OwnedString) {
-        str.replace(serde_json::to_string_pretty(&self.mods).unwrap())
+    pub fn json(&mut self) -> ffi::String {
+        ffi::String::from_string(serde_json::to_string_pretty(&self.mods).unwrap_or_default())
     }
 
     

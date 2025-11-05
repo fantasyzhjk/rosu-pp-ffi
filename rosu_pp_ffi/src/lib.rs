@@ -4,14 +4,10 @@ use interoptopus::inventory::Inventory;
 
 mod error;
 mod mode;
-// mod calculator;
-// mod params;
-// mod result;
 mod beatmap;
 mod difficulty;
 mod osu;
 mod attributes;
-mod owned_string;
 mod mania;
 mod fruit;
 mod taiko;
@@ -45,7 +41,6 @@ pub fn ffi_inventory() -> Inventory {
         .register(pattern!(performance::Performance))
         .register(pattern!(gradual::GradualDifficulty))
         .register(pattern!(gradual::GradualPerformance))
-        .register(pattern!(owned_string::OwnedString))
         .register(pattern!(mods::Mods))
         .register(function!(attributes::debug_difficulty_attributes))
         .register(function!(attributes::debug_performance_attributes))

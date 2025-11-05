@@ -40,9 +40,9 @@ def init_lib(path):
     c_lib.beatmap_total_break_time.argtypes = [ctypes.c_void_p]
     c_lib.beatmap_version.argtypes = [ctypes.c_void_p]
     c_lib.calculate_accuracy.argtypes = [ctypes.POINTER(ScoreState), ctypes.POINTER(ctypes.c_int), ctypes.c_int]
-    c_lib.debug_difficulty_attributes.argtypes = [ctypes.POINTER(ctypes.c_int), ctypes.c_void_p]
-    c_lib.debug_performance_attributes.argtypes = [ctypes.POINTER(ctypes.c_int), ctypes.c_void_p]
-    c_lib.debug_score_state.argtypes = [ctypes.POINTER(ScoreState), ctypes.c_void_p]
+    c_lib.debug_difficulty_attributes.argtypes = [ctypes.POINTER(ctypes.c_int)]
+    c_lib.debug_performance_attributes.argtypes = [ctypes.POINTER(ctypes.c_int)]
+    c_lib.debug_score_state.argtypes = [ctypes.POINTER(ScoreState)]
     c_lib.difficulty_ar.argtypes = [ctypes.c_void_p, ctypes.c_float]
     c_lib.difficulty_calculate.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
     c_lib.difficulty_clock_rate.argtypes = [ctypes.c_void_p, ctypes.c_double]
@@ -87,7 +87,7 @@ def init_lib(path):
     c_lib.mods_from_json.argtypes = [ctypes.POINTER(ctypes.c_char), ctypes.c_int, ctypes.c_bool]
     c_lib.mods_insert.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
     c_lib.mods_insert_json.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char), ctypes.c_bool]
-    c_lib.mods_json.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    c_lib.mods_json.argtypes = [ctypes.c_void_p]
     c_lib.mods_len.argtypes = [ctypes.c_void_p]
     c_lib.mods_new.argtypes = [ctypes.c_int]
     c_lib.mods_remove_unknown_mods.argtypes = [ctypes.c_void_p]
@@ -124,11 +124,6 @@ def init_lib(path):
     c_lib.performance_slider_end_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_small_tick_hits.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_state.argtypes = [ctypes.c_void_p, ScoreState]
-    c_lib.string_destroy.argtypes = [ctypes.c_void_p]
-    c_lib.string_empty.argtypes = []
-    c_lib.string_from_c_str.argtypes = [ctypes.POINTER(ctypes.c_char)]
-    c_lib.string_is_init.argtypes = [ctypes.c_void_p]
-    c_lib.string_to_cstr.argtypes = [ctypes.c_void_p]
     c_lib.beatmap_ar.restype = ctypes.c_float
     c_lib.beatmap_attributes_ar.restype = 
     c_lib.beatmap_attributes_build.restype = BeatmapAttributes
@@ -160,9 +155,9 @@ def init_lib(path):
     c_lib.beatmap_total_break_time.restype = ctypes.c_double
     c_lib.beatmap_version.restype = ctypes.c_int32
     c_lib.calculate_accuracy.restype = ctypes.c_double
-    c_lib.debug_difficulty_attributes.restype = 
-    c_lib.debug_performance_attributes.restype = 
-    c_lib.debug_score_state.restype = 
+    c_lib.debug_difficulty_attributes.restype = Utf8String
+    c_lib.debug_performance_attributes.restype = Utf8String
+    c_lib.debug_score_state.restype = Utf8String
     c_lib.difficulty_ar.restype = 
     c_lib.difficulty_calculate.restype = ctypes.c_int
     c_lib.difficulty_clock_rate.restype = 
@@ -207,7 +202,7 @@ def init_lib(path):
     c_lib.mods_from_json.restype = ResultConstPtrModsError
     c_lib.mods_insert.restype = ctypes.c_bool
     c_lib.mods_insert_json.restype = ctypes.c_bool
-    c_lib.mods_json.restype = 
+    c_lib.mods_json.restype = Utf8String
     c_lib.mods_len.restype = ctypes.c_uint32
     c_lib.mods_new.restype = ResultConstPtrModsError
     c_lib.mods_remove_unknown_mods.restype = 
@@ -244,21 +239,16 @@ def init_lib(path):
     c_lib.performance_slider_end_hits.restype = 
     c_lib.performance_small_tick_hits.restype = 
     c_lib.performance_state.restype = 
-    c_lib.string_destroy.restype = ResultConstPtrOwnedStringError
-    c_lib.string_empty.restype = ResultConstPtrOwnedStringError
-    c_lib.string_from_c_str.restype = ResultConstPtrOwnedStringError
-    c_lib.string_is_init.restype = ctypes.c_bool
-    c_lib.string_to_cstr.restype = ctypes.POINTER(ctypes.c_char)
 
 
-def debug_difficulty_attributes(res: ctypes.POINTER(ctypes.c_int), str: ctypes.c_void_p):
-    return c_lib.debug_difficulty_attributes(res, str)
+def debug_difficulty_attributes(res: ctypes.POINTER(ctypes.c_int)):
+    return c_lib.debug_difficulty_attributes(res)
 
-def debug_performance_attributes(res: ctypes.POINTER(ctypes.c_int), str: ctypes.c_void_p):
-    return c_lib.debug_performance_attributes(res, str)
+def debug_performance_attributes(res: ctypes.POINTER(ctypes.c_int)):
+    return c_lib.debug_performance_attributes(res)
 
-def debug_score_state(res: ctypes.POINTER(ScoreState), str: ctypes.c_void_p):
-    return c_lib.debug_score_state(res, str)
+def debug_score_state(res: ctypes.POINTER(ScoreState)):
+    return c_lib.debug_score_state(res)
 
 def calculate_accuracy(state: ctypes.POINTER(ScoreState), difficulty: ctypes.POINTER(ctypes.c_int), origin: TODO) -> float:
     return c_lib.calculate_accuracy(state, difficulty, origin)
@@ -1757,16 +1747,6 @@ class ResultConstPtrModsError:
     Null = 3
 
 
-class ResultConstPtrOwnedStringError:
-    """Result that contains value or an error."""
-    # Element if err is `Ok`.
-# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
-    # Error value.
-# TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
-    Panic = 2
-    Null = 3
-
-
 class ResultConstPtrPerformanceError:
     """Result that contains value or an error."""
     # Element if err is `Ok`.
@@ -2404,46 +2384,6 @@ class GradualPerformance:
 
 
 
-class OwnedString:
-    __api_lock = object()
-
-    def __init__(self, api_lock, ctx):
-        assert(api_lock == OwnedString.__api_lock), "You must create this with a static constructor." 
-        self._ctx = ctx
-
-    @property
-    def _as_parameter_(self):
-        return self._ctx
-
-    @staticmethod
-    def from_c_str() -> OwnedString:
-        """"""
-        if not hasattr(str, "__ctypes_from_outparam__"):
-            str = ctypes.cast(str, ctypes.POINTER(ctypes.c_char))
-        ctx = c_lib.string_from_c_str().t
-        self = OwnedString(OwnedString.__api_lock, ctx)
-        return self
-
-    @staticmethod
-    def empty() -> OwnedString:
-        """"""
-        ctx = c_lib.string_empty().t
-        self = OwnedString(OwnedString.__api_lock, ctx)
-        return self
-
-    def __del__(self):
-        c_lib.string_destroy(self._ctx, )
-    def is_init(self, ) -> bool:
-        """"""
-        return c_lib.string_is_init(self._ctx, )
-
-    def to_cstr(self, ) -> bytes:
-        """"""
-        rval = c_lib.string_to_cstr(self._ctx, )
-        return ctypes.string_at(rval)
-
-
-
 class Mods:
     __api_lock = object()
 
@@ -2505,9 +2445,9 @@ class Mods:
         """"""
         return c_lib.mods_len(self._ctx, )
 
-    def json(self, str: ctypes.c_void_p):
+    def json(self, ):
         """"""
-        return c_lib.mods_json(self._ctx, str)
+        return c_lib.mods_json(self._ctx, )
 
     def insert_json(self, str: bytes, deny_unknown_fields: bool) -> bool:
         """"""

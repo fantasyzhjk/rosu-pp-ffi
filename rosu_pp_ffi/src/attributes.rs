@@ -1,6 +1,5 @@
-use crate::owned_string::OwnedString;
 use interoptopus::{
-    ffi_function, ffi_type,
+    ffi, ffi_function, ffi_type
 };
 
 #[ffi_type]
@@ -68,11 +67,11 @@ impl From<PerformanceAttributes> for rosu_pp::any::PerformanceAttributes {
 
 
 #[ffi_function]
-pub fn debug_difficulty_attributes(res: &DifficultyAttributes, str: &mut OwnedString) {
-    str.replace(format!("{res:#?}"))
+pub fn debug_difficulty_attributes(res: &DifficultyAttributes) -> ffi::String {
+    ffi::String::from_string(format!("{res:#?}"))
 }
 
 #[ffi_function]
-pub fn debug_performance_attributes(res: &PerformanceAttributes, str: &mut OwnedString) {
-    str.replace(format!("{res:#?}"))
+pub fn debug_performance_attributes(res: &PerformanceAttributes) -> ffi::String {
+    ffi::String::from_string(format!("{res:#?}"))
 }

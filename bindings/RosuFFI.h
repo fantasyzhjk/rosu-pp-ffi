@@ -74,8 +74,6 @@ typedef struct GRADUALPERFORMANCE GRADUALPERFORMANCE;
 
 typedef struct MODS MODS;
 
-typedef struct OWNEDSTRING OWNEDSTRING;
-
 typedef struct PERFORMANCE PERFORMANCE;
 
 ///  UTF-8 string marshalling helper.
@@ -443,17 +441,6 @@ typedef enum RESULTCONSTPTRMODSERROR
     } RESULTCONSTPTRMODSERROR;
 
 /// Result that contains value or an error.
-typedef enum RESULTCONSTPTROWNEDSTRINGERROR
-    {
-    /// Element if err is `Ok`.
-    // TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
-    /// Error value.
-    // TODO - OMITTED DATA VARIANT - BINDINGS ARE BROKEN
-    RESULTCONSTPTROWNEDSTRINGERROR_PANIC = 2,
-    RESULTCONSTPTROWNEDSTRINGERROR_NULL = 3,
-    } RESULTCONSTPTROWNEDSTRINGERROR;
-
-/// Result that contains value or an error.
 typedef enum RESULTCONSTPTRPERFORMANCEERROR
     {
     /// Element if err is `Ok`.
@@ -763,22 +750,6 @@ uint32_t gradual_performance_len(const GRADUALPERFORMANCE* _CONTEXT);
 /// 
 ///  The passed parameter MUST have been created with the corresponding init function;
 ///  passing any other value results in undefined behavior.
-RESULTCONSTPTROWNEDSTRINGERROR string_destroy(const OWNEDSTRING* _CONTEXT);
-
-RESULTCONSTPTROWNEDSTRINGERROR string_from_c_str(const char* STR);
-
-RESULTCONSTPTROWNEDSTRINGERROR string_empty();
-
-bool string_is_init(const OWNEDSTRING* _CONTEXT);
-
-const char* string_to_cstr(const OWNEDSTRING* _CONTEXT);
-
-///  Destroys the given instance.
-/// 
-///  # Safety
-/// 
-///  The passed parameter MUST have been created with the corresponding init function;
-///  passing any other value results in undefined behavior.
 RESULTCONSTPTRMODSERROR mods_destroy(const MODS* _CONTEXT);
 
 RESULTCONSTPTRMODSERROR mods_new(MODE MODE);
@@ -797,7 +768,7 @@ uint32_t mods_bits(MODS* _CONTEXT);
 
 uint32_t mods_len(MODS* _CONTEXT);
 
-void mods_json(MODS* _CONTEXT, OWNEDSTRING* STR);
+UTF8STRING mods_json(MODS* _CONTEXT);
 
 bool mods_insert_json(MODS* _CONTEXT, const char* STR, bool DENY_UNKNOWN_FIELDS);
 
@@ -809,11 +780,11 @@ void mods_clear(MODS* _CONTEXT);
 
 OPTIONF64 mods_clock_rate(MODS* _CONTEXT);
 
-void debug_difficulty_attributes(const DIFFICULTYATTRIBUTES* RES, OWNEDSTRING* STR);
+UTF8STRING debug_difficulty_attributes(const DIFFICULTYATTRIBUTES* RES);
 
-void debug_performance_attributes(const PERFORMANCEATTRIBUTES* RES, OWNEDSTRING* STR);
+UTF8STRING debug_performance_attributes(const PERFORMANCEATTRIBUTES* RES);
 
-void debug_score_state(const SCORESTATE* RES, OWNEDSTRING* STR);
+UTF8STRING debug_score_state(const SCORESTATE* RES);
 
 double calculate_accuracy(const SCORESTATE* STATE, const DIFFICULTYATTRIBUTES* DIFFICULTY, OSUSCOREORIGIN ORIGIN);
 

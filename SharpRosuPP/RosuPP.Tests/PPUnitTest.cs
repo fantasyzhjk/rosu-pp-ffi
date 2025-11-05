@@ -282,7 +282,6 @@ public class PPUnitTest(ITestOutputHelper output)
     [Fact]
     public void ModsTest()
     {
-        using var s = OwnedString.Empty();
         var j = """
             [
                 { "acronym": "HD" },
@@ -297,8 +296,7 @@ public class PPUnitTest(ITestOutputHelper output)
 
         Assert.Equal(1.5, mods.ClockRate().AsSome());
 
-        mods.Json(s);
-        var res = s.ToString();
+        var res = mods.Json().IntoString();
         output.WriteLine(res);
 
         var parsed_json = JsonConvert.DeserializeObject<JArray>(res!);
