@@ -259,6 +259,8 @@ public class RosuFFI {
         public static native int performance_s_mods(Pointer context, String str);
 
         public static native void performance_passed_objects(Pointer context, long passed_objects);
+        
+        public static native void performance_legacy_total_score(Pointer context, long legacy_total_score);
 
         public static native void performance_clock_rate(Pointer context, double clock_rate);
 
@@ -1040,7 +1042,7 @@ public class RosuFFI {
         }
 
         // Method to set passed objects (using uint)
-        public void setPassedObjects(int passedObjects) {
+        public void setPassedObjects(long passedObjects) {
             RosuPPLib.difficulty_passed_objects(getContext(), passedObjects);
         }
 
@@ -1138,8 +1140,13 @@ public class RosuFFI {
             }
         }
 
+        // Method to set legacy total score (using uint)
+        public void setLegacyTotalScore(long legacyTotalScore) {
+            RosuPPLib.performance_legacy_total_score(getContext(), legacyTotalScore);
+        }
+
         // Method to set passed objects (using uint)
-        public void setPassedObjects(int passedObjects) {
+        public void setPassedObjects(long passedObjects) {
             RosuPPLib.performance_passed_objects(getContext(), passedObjects);
         }
 
