@@ -462,6 +462,19 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({"t", "is_some"})
+        public static class Optionu32 extends Structure {
+            public int t;
+            public byte is_some;
+
+            public static class ByReference extends Optionu32 implements Structure.ByReference {}
+            public static class ByValue extends Optionu32 implements Structure.ByValue {}
+
+            public Optional<Integer> toOptional() {
+                return is_some == 1 ? Optional.of(t) : Optional.empty();
+            }
+        }
+
+        @Structure.FieldOrder({"t", "is_some"})
         public static class OptionDifficultyAttributes extends Structure {
             public DifficultyAttributes t;
             public byte is_some;
@@ -488,7 +501,9 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "aim", "aim_difficult_slider_count", "speed", "flashlight", "slider_factor",
-                "speed_note_count", "aim_difficult_strain_count", "speed_difficult_strain_count",
+            "aim_top_weighted_slider_factor", "speed_top_weighted_slider_factor",
+            "speed_note_count", "aim_difficult_strain_count", "speed_difficult_strain_count",
+            "nested_score_per_object", "legacy_score_base_multiplier", "maximum_legacy_combo_score",
                 "ar", "great_hit_window", "ok_hit_window", "meh_hit_window", "hp",
                 "n_circles", "n_sliders", "n_large_ticks", "n_spinners",
                 "stars", "max_combo" })
@@ -498,9 +513,14 @@ public class RosuFFI {
             public double speed;                         // Difficulty of the speed skill
             public double flashlight;                   // Difficulty of the flashlight skill
             public double slider_factor;                // Ratio of aim strain with/without sliders
+            public double aim_top_weighted_slider_factor;
+            public double speed_top_weighted_slider_factor;
             public double speed_note_count;             // Number of clickable objects weighted by difficulty
             public double aim_difficult_strain_count;   // Weighted sum of aim strains
             public double speed_difficult_strain_count; // Weighted sum of speed strains
+            public double nested_score_per_object;
+            public double legacy_score_base_multiplier;
+            public double maximum_legacy_combo_score;
             public double ar;                           // Approach rate
             public double great_hit_window;             // great hit window.
             public double ok_hit_window;                // ok hit window.
@@ -518,7 +538,9 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "difficulty", "pp", "pp_acc", "pp_aim",
-                "pp_flashlight", "pp_speed", "effective_miss_count", "speed_deviation" })
+            "pp_flashlight", "pp_speed", "effective_miss_count", "speed_deviation",
+            "combo_based_estimated_miss_count", "score_based_estimated_miss_count",
+            "aim_estimated_slider_breaks", "speed_estimated_slider_breaks" })
         public static class OsuPerformanceAttributes extends Structure {
             public OsuDifficultyAttributes difficulty; // Nested structure for difficulty attributes
             public double pp;                          // Final performance points
@@ -528,13 +550,18 @@ public class RosuFFI {
             public double pp_speed;                    // Speed portion of the final pp
             public double effective_miss_count;        // Misses including approximated slider breaks
             public Optionf64 speed_deviation;          // Approximated unstable-rate
+            public double combo_based_estimated_miss_count;
+            public Optionf64 score_based_estimated_miss_count;
+            public double aim_estimated_slider_breaks;
+            public double speed_estimated_slider_breaks;
 
             public static class ByReference extends OsuPerformanceAttributes implements Structure.ByReference {}
             public static class ByValue extends OsuPerformanceAttributes implements Structure.ByValue {}
         }
 
         @Structure.FieldOrder({ "stamina", "rhythm", "color", "reading",
-                "great_hit_window", "ok_hit_window", "mono_stamina_factor",
+            "great_hit_window", "ok_hit_window", "mono_stamina_factor",
+            "mechanical_difficulty", "consistency_factor",
                 "stars", "max_combo", "is_convert" })
         public static class TaikoDifficultyAttributes extends Structure {
             public double stamina;               // Difficulty of the stamina skill
@@ -544,6 +571,8 @@ public class RosuFFI {
             public double great_hit_window;      // Hit window for an n300 inclusive of mods
             public double ok_hit_window;         // Hit window for an n100 inclusive of mods
             public double mono_stamina_factor;   // Stamina difficulty ratio for mono-color streams
+            public double mechanical_difficulty;
+            public double consistency_factor;
             public double stars;                 // Final star rating
             public int max_combo;                // Maximum combo (unsigned int -> int)
             public boolean is_convert;           // Whether the beatmap is a convert (osu!standard)
@@ -553,23 +582,22 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "difficulty", "pp", "pp_acc", "pp_difficulty",
-                "effective_miss_count", "estimated_unstable_rate" })
+            "estimated_unstable_rate" })
         public static class TaikoPerformanceAttributes extends Structure {
             public TaikoDifficultyAttributes difficulty;   // Difficulty attributes used for performance calculation
             public double pp;                              // Final performance points
             public double pp_acc;                          // Accuracy portion of the final pp
             public double pp_difficulty;                   // Strain portion of the final pp
-            public double effective_miss_count;            // Scaled miss count based on total hits
             public Optionf64 estimated_unstable_rate;      // Estimated unstable rate (optional value)
 
             public static class ByReference extends TaikoPerformanceAttributes implements Structure.ByReference {}
             public static class ByValue extends TaikoPerformanceAttributes implements Structure.ByValue {}
         }
 
-        @Structure.FieldOrder({ "stars", "ar", "n_fruits", "n_droplets", "n_tiny_droplets", "is_convert" })
+        @Structure.FieldOrder({ "stars", "preempt", "n_fruits", "n_droplets", "n_tiny_droplets", "is_convert" })
         public static class CatchDifficultyAttributes extends Structure {
             public double stars;        // Final star rating
-            public double ar;           // Approach rate
+            public double preempt;      // Time preempt (AR time window)
             public int n_fruits;        // Number of fruits (unsigned int -> use int in Java)
             public int n_droplets;      // Number of droplets (unsigned int -> use int in Java)
             public int n_tiny_droplets; // Number of tiny droplets (unsigned int -> use int in Java)
@@ -738,16 +766,20 @@ public class RosuFFI {
             public static class ByValue extends PerformanceAttributes implements Structure.ByValue {}
         }
 
-        @Structure.FieldOrder({ "ar", "od_great", "od_ok" })
+        @Structure.FieldOrder({ "ar", "od_perfect", "od_great", "od_good", "od_ok", "od_meh" })
         public static class HitWindows extends Structure {
             /// Hit window for approach rate i.e. `TimePreempt` in milliseconds.
-            public double ar;
+            public Optionf64 ar;
+            /// Hit window for overall difficulty i.e. time to hit a "Perfect" in milliseconds.
+            public Optionf64 od_perfect;
             /// Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds.
-            public double od_great;
+            public Optionf64 od_great;
+            /// Hit window for overall difficulty i.e. time to hit a "Good" in milliseconds.
+            public Optionf64 od_good;
             /// Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
-            ///
-            /// `None` for osu!mania.
             public Optionf64 od_ok;
+            /// Hit window for overall difficulty i.e. time to hit a 50 ("Meh") in milliseconds.
+            public Optionf64 od_meh;
 
             public static class ByReference extends HitWindows implements Structure.ByReference {}
             public static class ByValue extends HitWindows implements Structure.ByValue {}
@@ -767,7 +799,7 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "max_combo", "osu_large_tick_hits", "osu_small_tick_hits", "slider_end_hits",
-                "n_geki", "n_katu", "n300", "n100", "n50", "misses" })
+            "n_geki", "n_katu", "n300", "n100", "n50", "misses", "legacy_total_score" })
         public static class ScoreState extends Structure {
             public int max_combo;            // Maximum combo (unsigned int -> int)
             /// "Large tick" hits for osu!standard.
@@ -798,6 +830,7 @@ public class RosuFFI {
             public int n100;                 // Current 100s (unsigned int -> int)
             public int n50;                  // Current 50s (unsigned int -> int)
             public int misses;               // Current misses (unsigned int -> int)
+            public Optionu32 legacy_total_score;
 
             public static class ByReference extends ScoreState implements Structure.ByReference {}
             public static class ByValue extends ScoreState implements Structure.ByValue {}

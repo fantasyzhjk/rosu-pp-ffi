@@ -1,4 +1,4 @@
-use interoptopus::{ffi_function, ffi_type};
+use interoptopus::{ffi_function, ffi_type, patterns::option::FFIOption};
 
 use crate::{attributes, mode::Mode, owned_string::OwnedString};
 
@@ -34,7 +34,7 @@ impl OsuScoreOrigin {
 
 
 /// Aggregation for a score's current state.
-#[derive(Clone, Default, Debug, Eq, PartialEq)]
+#[derive(Clone, Default, Debug, PartialEq)]
 #[repr(C)]
 #[ffi_type]
 pub struct ScoreState {
@@ -81,6 +81,10 @@ pub struct ScoreState {
     pub n50: u32,
     /// Amount of current misses (fruits + droplets for osu!catch).
     pub misses: u32,
+    /// Legacy total score.
+    ///
+    /// Only relevant for osu!standard in stable.
+    pub legacy_total_score: FFIOption<u32>,
 }
 
 impl ScoreState {
@@ -115,6 +119,7 @@ impl From<rosu_pp::any::ScoreState> for ScoreState {
             n100: value.n100,
             n50: value.n50,
             misses: value.misses,
+            legacy_total_score: value.legacy_total_score.into(),
         }
     }
 }
@@ -132,6 +137,7 @@ impl From<&ScoreState> for rosu_pp::any::ScoreState {
             n100: value.n100,
             n50: value.n50,
             misses: value.misses,
+            legacy_total_score: value.legacy_total_score.into_option(),
         }
     }
 }
@@ -157,15 +163,15 @@ pub extern "C" fn calculate_accuacy(state: &ScoreState, difficulty: &attributes:
         Mode::Osu => {
             let attrs: rosu_pp::osu::OsuDifficultyAttributes = difficulty.osu.clone().into_option().unwrap_or_default().into();
             let state: rosu_pp::osu::OsuScoreState = rosu_pp::any::ScoreState::from(state).into();
-            state.accuracy(origin.to_rosu(&attrs))
+            state.hitresults.accuracy(origin.to_rosu(&attrs))
         },
         Mode::Taiko => {
             let state: rosu_pp::taiko::TaikoScoreState = rosu_pp::any::ScoreState::from(state).into();
-            state.accuracy()
+            state.hitresults.accuracy()
         },
         Mode::Catch => {
             let state: rosu_pp::catch::CatchScoreState = rosu_pp::any::ScoreState::from(state).into();
-            state.accuracy()
+            state.hitresults.accuracy()
         },
         Mode::Mania => {
             let state: rosu_pp::mania::ManiaScoreState = rosu_pp::any::ScoreState::from(state).into();

@@ -67,6 +67,7 @@ def init_lib(path):
     c_lib.performance_p_mods.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
     c_lib.performance_i_mods.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_s_mods.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char)]
+    c_lib.performance_legacy_total_score.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_passed_objects.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     c_lib.performance_clock_rate.argtypes = [ctypes.c_void_p, ctypes.c_double]
     c_lib.performance_ar.argtypes = [ctypes.c_void_p, ctypes.c_float]
@@ -336,18 +337,18 @@ class CatchDifficultyAttributes(ctypes.Structure):
     # These fields represent the underlying C data layout
     _fields_ = [
         ("stars", ctypes.c_double),
-        ("ar", ctypes.c_double),
+        ("preempt", ctypes.c_double),
         ("n_fruits", ctypes.c_uint32),
         ("n_droplets", ctypes.c_uint32),
         ("n_tiny_droplets", ctypes.c_uint32),
         ("is_convert", ctypes.c_bool),
     ]
 
-    def __init__(self, stars: float = None, ar: float = None, n_fruits: int = None, n_droplets: int = None, n_tiny_droplets: int = None, is_convert: bool = None):
+    def __init__(self, stars: float = None, preempt: float = None, n_fruits: int = None, n_droplets: int = None, n_tiny_droplets: int = None, is_convert: bool = None):
         if stars is not None:
             self.stars = stars
-        if ar is not None:
-            self.ar = ar
+        if preempt is not None:
+            self.preempt = preempt
         if n_fruits is not None:
             self.n_fruits = n_fruits
         if n_droplets is not None:
@@ -368,14 +369,14 @@ class CatchDifficultyAttributes(ctypes.Structure):
         return ctypes.Structure.__set__(self, "stars", value)
 
     @property
-    def ar(self) -> float:
-        """ The approach rate."""
-        return ctypes.Structure.__get__(self, "ar")
+    def preempt(self) -> float:
+        """ Time preempt (AR time window)."""
+        return ctypes.Structure.__get__(self, "preempt")
 
-    @ar.setter
-    def ar(self, value: float):
-        """ The approach rate."""
-        return ctypes.Structure.__set__(self, "ar", value)
+    @preempt.setter
+    def preempt(self, value: float):
+        """ Time preempt (AR time window)."""
+        return ctypes.Structure.__set__(self, "preempt", value)
 
     @property
     def n_fruits(self) -> int:
@@ -511,9 +512,14 @@ class OsuDifficultyAttributes(ctypes.Structure):
         ("speed", ctypes.c_double),
         ("flashlight", ctypes.c_double),
         ("slider_factor", ctypes.c_double),
+        ("aim_top_weighted_slider_factor", ctypes.c_double),
+        ("speed_top_weighted_slider_factor", ctypes.c_double),
         ("speed_note_count", ctypes.c_double),
         ("aim_difficult_strain_count", ctypes.c_double),
         ("speed_difficult_strain_count", ctypes.c_double),
+        ("nested_score_per_object", ctypes.c_double),
+        ("legacy_score_base_multiplier", ctypes.c_double),
+        ("maximum_legacy_combo_score", ctypes.c_double),
         ("ar", ctypes.c_double),
         ("great_hit_window", ctypes.c_double),
         ("ok_hit_window", ctypes.c_double),
@@ -527,7 +533,7 @@ class OsuDifficultyAttributes(ctypes.Structure):
         ("max_combo", ctypes.c_uint32),
     ]
 
-    def __init__(self, aim: float = None, aim_difficult_slider_count: float = None, speed: float = None, flashlight: float = None, slider_factor: float = None, speed_note_count: float = None, aim_difficult_strain_count: float = None, speed_difficult_strain_count: float = None, ar: float = None, great_hit_window: float = None, ok_hit_window: float = None, meh_hit_window: float = None, hp: float = None, n_circles: int = None, n_sliders: int = None, n_large_ticks: int = None, n_spinners: int = None, stars: float = None, max_combo: int = None):
+    def __init__(self, aim: float = None, aim_difficult_slider_count: float = None, speed: float = None, flashlight: float = None, slider_factor: float = None, aim_top_weighted_slider_factor: float = None, speed_top_weighted_slider_factor: float = None, speed_note_count: float = None, aim_difficult_strain_count: float = None, speed_difficult_strain_count: float = None, nested_score_per_object: float = None, legacy_score_base_multiplier: float = None, maximum_legacy_combo_score: float = None, ar: float = None, great_hit_window: float = None, ok_hit_window: float = None, meh_hit_window: float = None, hp: float = None, n_circles: int = None, n_sliders: int = None, n_large_ticks: int = None, n_spinners: int = None, stars: float = None, max_combo: int = None):
         if aim is not None:
             self.aim = aim
         if aim_difficult_slider_count is not None:
@@ -538,12 +544,22 @@ class OsuDifficultyAttributes(ctypes.Structure):
             self.flashlight = flashlight
         if slider_factor is not None:
             self.slider_factor = slider_factor
+        if aim_top_weighted_slider_factor is not None:
+            self.aim_top_weighted_slider_factor = aim_top_weighted_slider_factor
+        if speed_top_weighted_slider_factor is not None:
+            self.speed_top_weighted_slider_factor = speed_top_weighted_slider_factor
         if speed_note_count is not None:
             self.speed_note_count = speed_note_count
         if aim_difficult_strain_count is not None:
             self.aim_difficult_strain_count = aim_difficult_strain_count
         if speed_difficult_strain_count is not None:
             self.speed_difficult_strain_count = speed_difficult_strain_count
+        if nested_score_per_object is not None:
+            self.nested_score_per_object = nested_score_per_object
+        if legacy_score_base_multiplier is not None:
+            self.legacy_score_base_multiplier = legacy_score_base_multiplier
+        if maximum_legacy_combo_score is not None:
+            self.maximum_legacy_combo_score = maximum_legacy_combo_score
         if ar is not None:
             self.ar = ar
         if great_hit_window is not None:
@@ -618,6 +634,26 @@ class OsuDifficultyAttributes(ctypes.Structure):
         return ctypes.Structure.__set__(self, "slider_factor", value)
 
     @property
+    def aim_top_weighted_slider_factor(self) -> float:
+        """ Describes how much of aim's difficult strain count is contributed to by sliders."""
+        return ctypes.Structure.__get__(self, "aim_top_weighted_slider_factor")
+
+    @aim_top_weighted_slider_factor.setter
+    def aim_top_weighted_slider_factor(self, value: float):
+        """ Describes how much of aim's difficult strain count is contributed to by sliders."""
+        return ctypes.Structure.__set__(self, "aim_top_weighted_slider_factor", value)
+
+    @property
+    def speed_top_weighted_slider_factor(self) -> float:
+        """ Describes how much of speed's difficult strain count is contributed to by sliders."""
+        return ctypes.Structure.__get__(self, "speed_top_weighted_slider_factor")
+
+    @speed_top_weighted_slider_factor.setter
+    def speed_top_weighted_slider_factor(self, value: float):
+        """ Describes how much of speed's difficult strain count is contributed to by sliders."""
+        return ctypes.Structure.__set__(self, "speed_top_weighted_slider_factor", value)
+
+    @property
     def speed_note_count(self) -> float:
         """ The number of clickable objects weighted by difficulty."""
         return ctypes.Structure.__get__(self, "speed_note_count")
@@ -646,6 +682,36 @@ class OsuDifficultyAttributes(ctypes.Structure):
     def speed_difficult_strain_count(self, value: float):
         """ Weighted sum of speed strains."""
         return ctypes.Structure.__set__(self, "speed_difficult_strain_count", value)
+
+    @property
+    def nested_score_per_object(self) -> float:
+        """ The amount of nested score per object."""
+        return ctypes.Structure.__get__(self, "nested_score_per_object")
+
+    @nested_score_per_object.setter
+    def nested_score_per_object(self, value: float):
+        """ The amount of nested score per object."""
+        return ctypes.Structure.__set__(self, "nested_score_per_object", value)
+
+    @property
+    def legacy_score_base_multiplier(self) -> float:
+        """ The legacy score base multiplier."""
+        return ctypes.Structure.__get__(self, "legacy_score_base_multiplier")
+
+    @legacy_score_base_multiplier.setter
+    def legacy_score_base_multiplier(self, value: float):
+        """ The legacy score base multiplier."""
+        return ctypes.Structure.__set__(self, "legacy_score_base_multiplier", value)
+
+    @property
+    def maximum_legacy_combo_score(self) -> float:
+        """ The maximum legacy combo score."""
+        return ctypes.Structure.__get__(self, "maximum_legacy_combo_score")
+
+    @maximum_legacy_combo_score.setter
+    def maximum_legacy_combo_score(self, value: float):
+        """ The maximum legacy combo score."""
+        return ctypes.Structure.__set__(self, "maximum_legacy_combo_score", value)
 
     @property
     def ar(self) -> float:
@@ -807,6 +873,612 @@ class Pos(ctypes.Structure):
         return ctypes.Structure.__set__(self, "y", value)
 
 
+class TaikoDifficultyAttributes(ctypes.Structure):
+    """ The result of a difficulty calculation on an osu!taiko map."""
+
+    # These fields represent the underlying C data layout
+    _fields_ = [
+        ("stamina", ctypes.c_double),
+        ("rhythm", ctypes.c_double),
+        ("color", ctypes.c_double),
+        ("reading", ctypes.c_double),
+        ("great_hit_window", ctypes.c_double),
+        ("ok_hit_window", ctypes.c_double),
+        ("mono_stamina_factor", ctypes.c_double),
+        ("mechanical_difficulty", ctypes.c_double),
+        ("consistency_factor", ctypes.c_double),
+        ("stars", ctypes.c_double),
+        ("max_combo", ctypes.c_uint32),
+        ("is_convert", ctypes.c_bool),
+    ]
+
+    def __init__(self, stamina: float = None, rhythm: float = None, color: float = None, reading: float = None, great_hit_window: float = None, ok_hit_window: float = None, mono_stamina_factor: float = None, mechanical_difficulty: float = None, consistency_factor: float = None, stars: float = None, max_combo: int = None, is_convert: bool = None):
+        if stamina is not None:
+            self.stamina = stamina
+        if rhythm is not None:
+            self.rhythm = rhythm
+        if color is not None:
+            self.color = color
+        if reading is not None:
+            self.reading = reading
+        if great_hit_window is not None:
+            self.great_hit_window = great_hit_window
+        if ok_hit_window is not None:
+            self.ok_hit_window = ok_hit_window
+        if mono_stamina_factor is not None:
+            self.mono_stamina_factor = mono_stamina_factor
+        if mechanical_difficulty is not None:
+            self.mechanical_difficulty = mechanical_difficulty
+        if consistency_factor is not None:
+            self.consistency_factor = consistency_factor
+        if stars is not None:
+            self.stars = stars
+        if max_combo is not None:
+            self.max_combo = max_combo
+        if is_convert is not None:
+            self.is_convert = is_convert
+
+    @property
+    def stamina(self) -> float:
+        """ The difficulty of the stamina skill."""
+        return ctypes.Structure.__get__(self, "stamina")
+
+    @stamina.setter
+    def stamina(self, value: float):
+        """ The difficulty of the stamina skill."""
+        return ctypes.Structure.__set__(self, "stamina", value)
+
+    @property
+    def rhythm(self) -> float:
+        """ The difficulty of the rhythm skill."""
+        return ctypes.Structure.__get__(self, "rhythm")
+
+    @rhythm.setter
+    def rhythm(self, value: float):
+        """ The difficulty of the rhythm skill."""
+        return ctypes.Structure.__set__(self, "rhythm", value)
+
+    @property
+    def color(self) -> float:
+        """ The difficulty of the color skill."""
+        return ctypes.Structure.__get__(self, "color")
+
+    @color.setter
+    def color(self, value: float):
+        """ The difficulty of the color skill."""
+        return ctypes.Structure.__set__(self, "color", value)
+
+    @property
+    def reading(self) -> float:
+        """ The difficulty of the reading skill."""
+        return ctypes.Structure.__get__(self, "reading")
+
+    @reading.setter
+    def reading(self, value: float):
+        """ The difficulty of the reading skill."""
+        return ctypes.Structure.__set__(self, "reading", value)
+
+    @property
+    def great_hit_window(self) -> float:
+        """ The perceived hit window for an n300 inclusive of rate-adjusting mods (DT/HT/etc)"""
+        return ctypes.Structure.__get__(self, "great_hit_window")
+
+    @great_hit_window.setter
+    def great_hit_window(self, value: float):
+        """ The perceived hit window for an n300 inclusive of rate-adjusting mods (DT/HT/etc)"""
+        return ctypes.Structure.__set__(self, "great_hit_window", value)
+
+    @property
+    def ok_hit_window(self) -> float:
+        """ The perceived hit window for an n100 inclusive of rate-adjusting mods (DT/HT/etc)"""
+        return ctypes.Structure.__get__(self, "ok_hit_window")
+
+    @ok_hit_window.setter
+    def ok_hit_window(self, value: float):
+        """ The perceived hit window for an n100 inclusive of rate-adjusting mods (DT/HT/etc)"""
+        return ctypes.Structure.__set__(self, "ok_hit_window", value)
+
+    @property
+    def mono_stamina_factor(self) -> float:
+        """ The ratio of stamina difficulty from mono-color (single color) streams to total
+ stamina difficulty."""
+        return ctypes.Structure.__get__(self, "mono_stamina_factor")
+
+    @mono_stamina_factor.setter
+    def mono_stamina_factor(self, value: float):
+        """ The ratio of stamina difficulty from mono-color (single color) streams to total
+ stamina difficulty."""
+        return ctypes.Structure.__set__(self, "mono_stamina_factor", value)
+
+    @property
+    def mechanical_difficulty(self) -> float:
+        """ The difficulty corresponding to the mechanical skills."""
+        return ctypes.Structure.__get__(self, "mechanical_difficulty")
+
+    @mechanical_difficulty.setter
+    def mechanical_difficulty(self, value: float):
+        """ The difficulty corresponding to the mechanical skills."""
+        return ctypes.Structure.__set__(self, "mechanical_difficulty", value)
+
+    @property
+    def consistency_factor(self) -> float:
+        """ The factor corresponding to the consistency of a map."""
+        return ctypes.Structure.__get__(self, "consistency_factor")
+
+    @consistency_factor.setter
+    def consistency_factor(self, value: float):
+        """ The factor corresponding to the consistency of a map."""
+        return ctypes.Structure.__set__(self, "consistency_factor", value)
+
+    @property
+    def stars(self) -> float:
+        """ The final star rating."""
+        return ctypes.Structure.__get__(self, "stars")
+
+    @stars.setter
+    def stars(self, value: float):
+        """ The final star rating."""
+        return ctypes.Structure.__set__(self, "stars", value)
+
+    @property
+    def max_combo(self) -> int:
+        """ The maximum combo."""
+        return ctypes.Structure.__get__(self, "max_combo")
+
+    @max_combo.setter
+    def max_combo(self, value: int):
+        """ The maximum combo."""
+        return ctypes.Structure.__set__(self, "max_combo", value)
+
+    @property
+    def is_convert(self) -> bool:
+        """ Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
+
+ [`Beatmap`]: crate::model::beatmap::Beatmap"""
+        return ctypes.Structure.__get__(self, "is_convert")
+
+    @is_convert.setter
+    def is_convert(self, value: bool):
+        """ Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
+
+ [`Beatmap`]: crate::model::beatmap::Beatmap"""
+        return ctypes.Structure.__set__(self, "is_convert", value)
+
+
+class Optionf64(ctypes.Structure):
+    """May optionally hold a value."""
+
+    _fields_ = [
+        ("_t", ctypes.c_double),
+        ("_is_some", ctypes.c_uint8),
+    ]
+
+    @property
+    def value(self) -> ctypes.c_double:
+        """Returns the value if it exists, or None."""
+        if self._is_some == 1:
+            return self._t
+        else:
+            return None
+
+    def is_some(self) -> bool:
+        """Returns true if the value exists."""
+        return self._is_some == 1
+
+    def is_none(self) -> bool:
+        """Returns true if the value does not exist."""
+        return self._is_some != 0
+
+
+class Optionu32(ctypes.Structure):
+    """May optionally hold a value."""
+
+    _fields_ = [
+        ("_t", ctypes.c_uint32),
+        ("_is_some", ctypes.c_uint8),
+    ]
+
+    @property
+    def value(self) -> ctypes.c_uint32:
+        """Returns the value if it exists, or None."""
+        if self._is_some == 1:
+            return self._t
+        else:
+            return None
+
+    def is_some(self) -> bool:
+        """Returns true if the value exists."""
+        return self._is_some == 1
+
+    def is_none(self) -> bool:
+        """Returns true if the value does not exist."""
+        return self._is_some != 0
+
+
+class CatchPerformanceAttributes(ctypes.Structure):
+    """ The result of a performance calculation on an osu!catch map."""
+
+    # These fields represent the underlying C data layout
+    _fields_ = [
+        ("difficulty", CatchDifficultyAttributes),
+        ("pp", ctypes.c_double),
+    ]
+
+    def __init__(self, difficulty: CatchDifficultyAttributes = None, pp: float = None):
+        if difficulty is not None:
+            self.difficulty = difficulty
+        if pp is not None:
+            self.pp = pp
+
+    @property
+    def difficulty(self) -> CatchDifficultyAttributes:
+        """ The difficulty attributes that were used for the performance calculation"""
+        return ctypes.Structure.__get__(self, "difficulty")
+
+    @difficulty.setter
+    def difficulty(self, value: CatchDifficultyAttributes):
+        """ The difficulty attributes that were used for the performance calculation"""
+        return ctypes.Structure.__set__(self, "difficulty", value)
+
+    @property
+    def pp(self) -> float:
+        """ The final performance points."""
+        return ctypes.Structure.__get__(self, "pp")
+
+    @pp.setter
+    def pp(self, value: float):
+        """ The final performance points."""
+        return ctypes.Structure.__set__(self, "pp", value)
+
+
+class HitObjectData(ctypes.Structure):
+
+    # These fields represent the underlying C data layout
+    _fields_ = [
+        ("kind", ctypes.c_int),
+        ("repeats", ctypes.c_uint32),
+        ("expected_dist", Optionf64),
+        ("duration", ctypes.c_double),
+    ]
+
+    def __init__(self, kind: ctypes.c_int = None, repeats: int = None, expected_dist: Optionf64 = None, duration: float = None):
+        if kind is not None:
+            self.kind = kind
+        if repeats is not None:
+            self.repeats = repeats
+        if expected_dist is not None:
+            self.expected_dist = expected_dist
+        if duration is not None:
+            self.duration = duration
+
+    @property
+    def kind(self) -> ctypes.c_int:
+        return ctypes.Structure.__get__(self, "kind")
+
+    @kind.setter
+    def kind(self, value: ctypes.c_int):
+        return ctypes.Structure.__set__(self, "kind", value)
+
+    @property
+    def repeats(self) -> int:
+        return ctypes.Structure.__get__(self, "repeats")
+
+    @repeats.setter
+    def repeats(self, value: int):
+        return ctypes.Structure.__set__(self, "repeats", value)
+
+    @property
+    def expected_dist(self) -> Optionf64:
+        return ctypes.Structure.__get__(self, "expected_dist")
+
+    @expected_dist.setter
+    def expected_dist(self, value: Optionf64):
+        return ctypes.Structure.__set__(self, "expected_dist", value)
+
+    @property
+    def duration(self) -> float:
+        return ctypes.Structure.__get__(self, "duration")
+
+    @duration.setter
+    def duration(self, value: float):
+        return ctypes.Structure.__set__(self, "duration", value)
+
+
+class HitWindows(ctypes.Structure):
+    """ AR and OD hit windows"""
+
+    # These fields represent the underlying C data layout
+    _fields_ = [
+        ("ar", Optionf64),
+        ("od_perfect", Optionf64),
+        ("od_great", Optionf64),
+        ("od_good", Optionf64),
+        ("od_ok", Optionf64),
+        ("od_meh", Optionf64),
+    ]
+
+    def __init__(self, ar: Optionf64 = None, od_perfect: Optionf64 = None, od_great: Optionf64 = None, od_good: Optionf64 = None, od_ok: Optionf64 = None, od_meh: Optionf64 = None):
+        if ar is not None:
+            self.ar = ar
+        if od_perfect is not None:
+            self.od_perfect = od_perfect
+        if od_great is not None:
+            self.od_great = od_great
+        if od_good is not None:
+            self.od_good = od_good
+        if od_ok is not None:
+            self.od_ok = od_ok
+        if od_meh is not None:
+            self.od_meh = od_meh
+
+    @property
+    def ar(self) -> Optionf64:
+        """ Hit window for approach rate i.e. `TimePreempt` in milliseconds."""
+        return ctypes.Structure.__get__(self, "ar")
+
+    @ar.setter
+    def ar(self, value: Optionf64):
+        """ Hit window for approach rate i.e. `TimePreempt` in milliseconds."""
+        return ctypes.Structure.__set__(self, "ar", value)
+
+    @property
+    def od_perfect(self) -> Optionf64:
+        """ Hit window for overall difficulty i.e. time to hit a "Perfect" in milliseconds."""
+        return ctypes.Structure.__get__(self, "od_perfect")
+
+    @od_perfect.setter
+    def od_perfect(self, value: Optionf64):
+        """ Hit window for overall difficulty i.e. time to hit a "Perfect" in milliseconds."""
+        return ctypes.Structure.__set__(self, "od_perfect", value)
+
+    @property
+    def od_great(self) -> Optionf64:
+        """ Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds."""
+        return ctypes.Structure.__get__(self, "od_great")
+
+    @od_great.setter
+    def od_great(self, value: Optionf64):
+        """ Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds."""
+        return ctypes.Structure.__set__(self, "od_great", value)
+
+    @property
+    def od_good(self) -> Optionf64:
+        """ Hit window for overall difficulty i.e. time to hit a "Good" in milliseconds."""
+        return ctypes.Structure.__get__(self, "od_good")
+
+    @od_good.setter
+    def od_good(self, value: Optionf64):
+        """ Hit window for overall difficulty i.e. time to hit a "Good" in milliseconds."""
+        return ctypes.Structure.__set__(self, "od_good", value)
+
+    @property
+    def od_ok(self) -> Optionf64:
+        """ Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds."""
+        return ctypes.Structure.__get__(self, "od_ok")
+
+    @od_ok.setter
+    def od_ok(self, value: Optionf64):
+        """ Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds."""
+        return ctypes.Structure.__set__(self, "od_ok", value)
+
+    @property
+    def od_meh(self) -> Optionf64:
+        """ Hit window for overall difficulty i.e. time to hit a 50 ("Meh") in milliseconds."""
+        return ctypes.Structure.__get__(self, "od_meh")
+
+    @od_meh.setter
+    def od_meh(self, value: Optionf64):
+        """ Hit window for overall difficulty i.e. time to hit a 50 ("Meh") in milliseconds."""
+        return ctypes.Structure.__set__(self, "od_meh", value)
+
+
+class ManiaPerformanceAttributes(ctypes.Structure):
+    """ The result of a performance calculation on an osu!mania map."""
+
+    # These fields represent the underlying C data layout
+    _fields_ = [
+        ("difficulty", ManiaDifficultyAttributes),
+        ("pp", ctypes.c_double),
+        ("pp_difficulty", ctypes.c_double),
+    ]
+
+    def __init__(self, difficulty: ManiaDifficultyAttributes = None, pp: float = None, pp_difficulty: float = None):
+        if difficulty is not None:
+            self.difficulty = difficulty
+        if pp is not None:
+            self.pp = pp
+        if pp_difficulty is not None:
+            self.pp_difficulty = pp_difficulty
+
+    @property
+    def difficulty(self) -> ManiaDifficultyAttributes:
+        """ The difficulty attributes that were used for the performance calculation."""
+        return ctypes.Structure.__get__(self, "difficulty")
+
+    @difficulty.setter
+    def difficulty(self, value: ManiaDifficultyAttributes):
+        """ The difficulty attributes that were used for the performance calculation."""
+        return ctypes.Structure.__set__(self, "difficulty", value)
+
+    @property
+    def pp(self) -> float:
+        """ The final performance points."""
+        return ctypes.Structure.__get__(self, "pp")
+
+    @pp.setter
+    def pp(self, value: float):
+        """ The final performance points."""
+        return ctypes.Structure.__set__(self, "pp", value)
+
+    @property
+    def pp_difficulty(self) -> float:
+        """ The difficulty portion of the final pp."""
+        return ctypes.Structure.__get__(self, "pp_difficulty")
+
+    @pp_difficulty.setter
+    def pp_difficulty(self, value: float):
+        """ The difficulty portion of the final pp."""
+        return ctypes.Structure.__set__(self, "pp_difficulty", value)
+
+
+class OsuPerformanceAttributes(ctypes.Structure):
+    """ The result of a performance calculation on an osu!standard map."""
+
+    # These fields represent the underlying C data layout
+    _fields_ = [
+        ("difficulty", OsuDifficultyAttributes),
+        ("pp", ctypes.c_double),
+        ("pp_acc", ctypes.c_double),
+        ("pp_aim", ctypes.c_double),
+        ("pp_flashlight", ctypes.c_double),
+        ("pp_speed", ctypes.c_double),
+        ("effective_miss_count", ctypes.c_double),
+        ("speed_deviation", Optionf64),
+        ("combo_based_estimated_miss_count", ctypes.c_double),
+        ("score_based_estimated_miss_count", Optionf64),
+        ("aim_estimated_slider_breaks", ctypes.c_double),
+        ("speed_estimated_slider_breaks", ctypes.c_double),
+    ]
+
+    def __init__(self, difficulty: OsuDifficultyAttributes = None, pp: float = None, pp_acc: float = None, pp_aim: float = None, pp_flashlight: float = None, pp_speed: float = None, effective_miss_count: float = None, speed_deviation: Optionf64 = None, combo_based_estimated_miss_count: float = None, score_based_estimated_miss_count: Optionf64 = None, aim_estimated_slider_breaks: float = None, speed_estimated_slider_breaks: float = None):
+        if difficulty is not None:
+            self.difficulty = difficulty
+        if pp is not None:
+            self.pp = pp
+        if pp_acc is not None:
+            self.pp_acc = pp_acc
+        if pp_aim is not None:
+            self.pp_aim = pp_aim
+        if pp_flashlight is not None:
+            self.pp_flashlight = pp_flashlight
+        if pp_speed is not None:
+            self.pp_speed = pp_speed
+        if effective_miss_count is not None:
+            self.effective_miss_count = effective_miss_count
+        if speed_deviation is not None:
+            self.speed_deviation = speed_deviation
+        if combo_based_estimated_miss_count is not None:
+            self.combo_based_estimated_miss_count = combo_based_estimated_miss_count
+        if score_based_estimated_miss_count is not None:
+            self.score_based_estimated_miss_count = score_based_estimated_miss_count
+        if aim_estimated_slider_breaks is not None:
+            self.aim_estimated_slider_breaks = aim_estimated_slider_breaks
+        if speed_estimated_slider_breaks is not None:
+            self.speed_estimated_slider_breaks = speed_estimated_slider_breaks
+
+    @property
+    def difficulty(self) -> OsuDifficultyAttributes:
+        """ The difficulty attributes that were used for the performance calculation"""
+        return ctypes.Structure.__get__(self, "difficulty")
+
+    @difficulty.setter
+    def difficulty(self, value: OsuDifficultyAttributes):
+        """ The difficulty attributes that were used for the performance calculation"""
+        return ctypes.Structure.__set__(self, "difficulty", value)
+
+    @property
+    def pp(self) -> float:
+        """ The final performance points."""
+        return ctypes.Structure.__get__(self, "pp")
+
+    @pp.setter
+    def pp(self, value: float):
+        """ The final performance points."""
+        return ctypes.Structure.__set__(self, "pp", value)
+
+    @property
+    def pp_acc(self) -> float:
+        """ The accuracy portion of the final pp."""
+        return ctypes.Structure.__get__(self, "pp_acc")
+
+    @pp_acc.setter
+    def pp_acc(self, value: float):
+        """ The accuracy portion of the final pp."""
+        return ctypes.Structure.__set__(self, "pp_acc", value)
+
+    @property
+    def pp_aim(self) -> float:
+        """ The aim portion of the final pp."""
+        return ctypes.Structure.__get__(self, "pp_aim")
+
+    @pp_aim.setter
+    def pp_aim(self, value: float):
+        """ The aim portion of the final pp."""
+        return ctypes.Structure.__set__(self, "pp_aim", value)
+
+    @property
+    def pp_flashlight(self) -> float:
+        """ The flashlight portion of the final pp."""
+        return ctypes.Structure.__get__(self, "pp_flashlight")
+
+    @pp_flashlight.setter
+    def pp_flashlight(self, value: float):
+        """ The flashlight portion of the final pp."""
+        return ctypes.Structure.__set__(self, "pp_flashlight", value)
+
+    @property
+    def pp_speed(self) -> float:
+        """ The speed portion of the final pp."""
+        return ctypes.Structure.__get__(self, "pp_speed")
+
+    @pp_speed.setter
+    def pp_speed(self, value: float):
+        """ The speed portion of the final pp."""
+        return ctypes.Structure.__set__(self, "pp_speed", value)
+
+    @property
+    def effective_miss_count(self) -> float:
+        """ Misses including an approximated amount of slider breaks"""
+        return ctypes.Structure.__get__(self, "effective_miss_count")
+
+    @effective_miss_count.setter
+    def effective_miss_count(self, value: float):
+        """ Misses including an approximated amount of slider breaks"""
+        return ctypes.Structure.__set__(self, "effective_miss_count", value)
+
+    @property
+    def speed_deviation(self) -> Optionf64:
+        """ Approximated unstable-rate"""
+        return ctypes.Structure.__get__(self, "speed_deviation")
+
+    @speed_deviation.setter
+    def speed_deviation(self, value: Optionf64):
+        """ Approximated unstable-rate"""
+        return ctypes.Structure.__set__(self, "speed_deviation", value)
+
+    @property
+    def combo_based_estimated_miss_count(self) -> float:
+        return ctypes.Structure.__get__(self, "combo_based_estimated_miss_count")
+
+    @combo_based_estimated_miss_count.setter
+    def combo_based_estimated_miss_count(self, value: float):
+        return ctypes.Structure.__set__(self, "combo_based_estimated_miss_count", value)
+
+    @property
+    def score_based_estimated_miss_count(self) -> Optionf64:
+        return ctypes.Structure.__get__(self, "score_based_estimated_miss_count")
+
+    @score_based_estimated_miss_count.setter
+    def score_based_estimated_miss_count(self, value: Optionf64):
+        return ctypes.Structure.__set__(self, "score_based_estimated_miss_count", value)
+
+    @property
+    def aim_estimated_slider_breaks(self) -> float:
+        return ctypes.Structure.__get__(self, "aim_estimated_slider_breaks")
+
+    @aim_estimated_slider_breaks.setter
+    def aim_estimated_slider_breaks(self, value: float):
+        return ctypes.Structure.__set__(self, "aim_estimated_slider_breaks", value)
+
+    @property
+    def speed_estimated_slider_breaks(self) -> float:
+        return ctypes.Structure.__get__(self, "speed_estimated_slider_breaks")
+
+    @speed_estimated_slider_breaks.setter
+    def speed_estimated_slider_breaks(self, value: float):
+        return ctypes.Structure.__set__(self, "speed_estimated_slider_breaks", value)
+
+
 class ScoreState(ctypes.Structure):
     """ Aggregation for a score's current state."""
 
@@ -822,9 +1494,10 @@ class ScoreState(ctypes.Structure):
         ("n100", ctypes.c_uint32),
         ("n50", ctypes.c_uint32),
         ("misses", ctypes.c_uint32),
+        ("legacy_total_score", Optionu32),
     ]
 
-    def __init__(self, max_combo: int = None, osu_large_tick_hits: int = None, osu_small_tick_hits: int = None, slider_end_hits: int = None, n_geki: int = None, n_katu: int = None, n300: int = None, n100: int = None, n50: int = None, misses: int = None):
+    def __init__(self, max_combo: int = None, osu_large_tick_hits: int = None, osu_small_tick_hits: int = None, slider_end_hits: int = None, n_geki: int = None, n_katu: int = None, n300: int = None, n100: int = None, n50: int = None, misses: int = None, legacy_total_score: Optionu32 = None):
         if max_combo is not None:
             self.max_combo = max_combo
         if osu_large_tick_hits is not None:
@@ -845,6 +1518,8 @@ class ScoreState(ctypes.Structure):
             self.n50 = n50
         if misses is not None:
             self.misses = misses
+        if legacy_total_score is not None:
+            self.legacy_total_score = legacy_total_score
 
     @property
     def max_combo(self) -> int:
@@ -992,481 +1667,19 @@ class ScoreState(ctypes.Structure):
         """ Amount of current misses (fruits + droplets for osu!catch)."""
         return ctypes.Structure.__set__(self, "misses", value)
 
-
-class TaikoDifficultyAttributes(ctypes.Structure):
-    """ The result of a difficulty calculation on an osu!taiko map."""
-
-    # These fields represent the underlying C data layout
-    _fields_ = [
-        ("stamina", ctypes.c_double),
-        ("rhythm", ctypes.c_double),
-        ("color", ctypes.c_double),
-        ("reading", ctypes.c_double),
-        ("great_hit_window", ctypes.c_double),
-        ("ok_hit_window", ctypes.c_double),
-        ("mono_stamina_factor", ctypes.c_double),
-        ("stars", ctypes.c_double),
-        ("max_combo", ctypes.c_uint32),
-        ("is_convert", ctypes.c_bool),
-    ]
-
-    def __init__(self, stamina: float = None, rhythm: float = None, color: float = None, reading: float = None, great_hit_window: float = None, ok_hit_window: float = None, mono_stamina_factor: float = None, stars: float = None, max_combo: int = None, is_convert: bool = None):
-        if stamina is not None:
-            self.stamina = stamina
-        if rhythm is not None:
-            self.rhythm = rhythm
-        if color is not None:
-            self.color = color
-        if reading is not None:
-            self.reading = reading
-        if great_hit_window is not None:
-            self.great_hit_window = great_hit_window
-        if ok_hit_window is not None:
-            self.ok_hit_window = ok_hit_window
-        if mono_stamina_factor is not None:
-            self.mono_stamina_factor = mono_stamina_factor
-        if stars is not None:
-            self.stars = stars
-        if max_combo is not None:
-            self.max_combo = max_combo
-        if is_convert is not None:
-            self.is_convert = is_convert
-
     @property
-    def stamina(self) -> float:
-        """ The difficulty of the stamina skill."""
-        return ctypes.Structure.__get__(self, "stamina")
+    def legacy_total_score(self) -> Optionu32:
+        """ Legacy total score.
 
-    @stamina.setter
-    def stamina(self, value: float):
-        """ The difficulty of the stamina skill."""
-        return ctypes.Structure.__set__(self, "stamina", value)
+ Only relevant for osu!standard in stable."""
+        return ctypes.Structure.__get__(self, "legacy_total_score")
 
-    @property
-    def rhythm(self) -> float:
-        """ The difficulty of the rhythm skill."""
-        return ctypes.Structure.__get__(self, "rhythm")
+    @legacy_total_score.setter
+    def legacy_total_score(self, value: Optionu32):
+        """ Legacy total score.
 
-    @rhythm.setter
-    def rhythm(self, value: float):
-        """ The difficulty of the rhythm skill."""
-        return ctypes.Structure.__set__(self, "rhythm", value)
-
-    @property
-    def color(self) -> float:
-        """ The difficulty of the color skill."""
-        return ctypes.Structure.__get__(self, "color")
-
-    @color.setter
-    def color(self, value: float):
-        """ The difficulty of the color skill."""
-        return ctypes.Structure.__set__(self, "color", value)
-
-    @property
-    def reading(self) -> float:
-        """ The difficulty of the reading skill."""
-        return ctypes.Structure.__get__(self, "reading")
-
-    @reading.setter
-    def reading(self, value: float):
-        """ The difficulty of the reading skill."""
-        return ctypes.Structure.__set__(self, "reading", value)
-
-    @property
-    def great_hit_window(self) -> float:
-        """ The perceived hit window for an n300 inclusive of rate-adjusting mods (DT/HT/etc)"""
-        return ctypes.Structure.__get__(self, "great_hit_window")
-
-    @great_hit_window.setter
-    def great_hit_window(self, value: float):
-        """ The perceived hit window for an n300 inclusive of rate-adjusting mods (DT/HT/etc)"""
-        return ctypes.Structure.__set__(self, "great_hit_window", value)
-
-    @property
-    def ok_hit_window(self) -> float:
-        """ The perceived hit window for an n100 inclusive of rate-adjusting mods (DT/HT/etc)"""
-        return ctypes.Structure.__get__(self, "ok_hit_window")
-
-    @ok_hit_window.setter
-    def ok_hit_window(self, value: float):
-        """ The perceived hit window for an n100 inclusive of rate-adjusting mods (DT/HT/etc)"""
-        return ctypes.Structure.__set__(self, "ok_hit_window", value)
-
-    @property
-    def mono_stamina_factor(self) -> float:
-        """ The ratio of stamina difficulty from mono-color (single color) streams to total
- stamina difficulty."""
-        return ctypes.Structure.__get__(self, "mono_stamina_factor")
-
-    @mono_stamina_factor.setter
-    def mono_stamina_factor(self, value: float):
-        """ The ratio of stamina difficulty from mono-color (single color) streams to total
- stamina difficulty."""
-        return ctypes.Structure.__set__(self, "mono_stamina_factor", value)
-
-    @property
-    def stars(self) -> float:
-        """ The final star rating."""
-        return ctypes.Structure.__get__(self, "stars")
-
-    @stars.setter
-    def stars(self, value: float):
-        """ The final star rating."""
-        return ctypes.Structure.__set__(self, "stars", value)
-
-    @property
-    def max_combo(self) -> int:
-        """ The maximum combo."""
-        return ctypes.Structure.__get__(self, "max_combo")
-
-    @max_combo.setter
-    def max_combo(self, value: int):
-        """ The maximum combo."""
-        return ctypes.Structure.__set__(self, "max_combo", value)
-
-    @property
-    def is_convert(self) -> bool:
-        """ Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
-
- [`Beatmap`]: crate::model::beatmap::Beatmap"""
-        return ctypes.Structure.__get__(self, "is_convert")
-
-    @is_convert.setter
-    def is_convert(self, value: bool):
-        """ Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
-
- [`Beatmap`]: crate::model::beatmap::Beatmap"""
-        return ctypes.Structure.__set__(self, "is_convert", value)
-
-
-class Optionf64(ctypes.Structure):
-    """May optionally hold a value."""
-
-    _fields_ = [
-        ("_t", ctypes.c_double),
-        ("_is_some", ctypes.c_uint8),
-    ]
-
-    @property
-    def value(self) -> ctypes.c_double:
-        """Returns the value if it exists, or None."""
-        if self._is_some == 1:
-            return self._t
-        else:
-            return None
-
-    def is_some(self) -> bool:
-        """Returns true if the value exists."""
-        return self._is_some == 1
-
-    def is_none(self) -> bool:
-        """Returns true if the value does not exist."""
-        return self._is_some != 0
-
-
-class CatchPerformanceAttributes(ctypes.Structure):
-    """ The result of a performance calculation on an osu!catch map."""
-
-    # These fields represent the underlying C data layout
-    _fields_ = [
-        ("difficulty", CatchDifficultyAttributes),
-        ("pp", ctypes.c_double),
-    ]
-
-    def __init__(self, difficulty: CatchDifficultyAttributes = None, pp: float = None):
-        if difficulty is not None:
-            self.difficulty = difficulty
-        if pp is not None:
-            self.pp = pp
-
-    @property
-    def difficulty(self) -> CatchDifficultyAttributes:
-        """ The difficulty attributes that were used for the performance calculation"""
-        return ctypes.Structure.__get__(self, "difficulty")
-
-    @difficulty.setter
-    def difficulty(self, value: CatchDifficultyAttributes):
-        """ The difficulty attributes that were used for the performance calculation"""
-        return ctypes.Structure.__set__(self, "difficulty", value)
-
-    @property
-    def pp(self) -> float:
-        """ The final performance points."""
-        return ctypes.Structure.__get__(self, "pp")
-
-    @pp.setter
-    def pp(self, value: float):
-        """ The final performance points."""
-        return ctypes.Structure.__set__(self, "pp", value)
-
-
-class HitObjectData(ctypes.Structure):
-
-    # These fields represent the underlying C data layout
-    _fields_ = [
-        ("kind", ctypes.c_int),
-        ("repeats", ctypes.c_uint32),
-        ("expected_dist", Optionf64),
-        ("duration", ctypes.c_double),
-    ]
-
-    def __init__(self, kind: ctypes.c_int = None, repeats: int = None, expected_dist: Optionf64 = None, duration: float = None):
-        if kind is not None:
-            self.kind = kind
-        if repeats is not None:
-            self.repeats = repeats
-        if expected_dist is not None:
-            self.expected_dist = expected_dist
-        if duration is not None:
-            self.duration = duration
-
-    @property
-    def kind(self) -> ctypes.c_int:
-        return ctypes.Structure.__get__(self, "kind")
-
-    @kind.setter
-    def kind(self, value: ctypes.c_int):
-        return ctypes.Structure.__set__(self, "kind", value)
-
-    @property
-    def repeats(self) -> int:
-        return ctypes.Structure.__get__(self, "repeats")
-
-    @repeats.setter
-    def repeats(self, value: int):
-        return ctypes.Structure.__set__(self, "repeats", value)
-
-    @property
-    def expected_dist(self) -> Optionf64:
-        return ctypes.Structure.__get__(self, "expected_dist")
-
-    @expected_dist.setter
-    def expected_dist(self, value: Optionf64):
-        return ctypes.Structure.__set__(self, "expected_dist", value)
-
-    @property
-    def duration(self) -> float:
-        return ctypes.Structure.__get__(self, "duration")
-
-    @duration.setter
-    def duration(self, value: float):
-        return ctypes.Structure.__set__(self, "duration", value)
-
-
-class HitWindows(ctypes.Structure):
-    """ AR and OD hit windows"""
-
-    # These fields represent the underlying C data layout
-    _fields_ = [
-        ("ar", ctypes.c_double),
-        ("od_great", ctypes.c_double),
-        ("od_ok", Optionf64),
-    ]
-
-    def __init__(self, ar: float = None, od_great: float = None, od_ok: Optionf64 = None):
-        if ar is not None:
-            self.ar = ar
-        if od_great is not None:
-            self.od_great = od_great
-        if od_ok is not None:
-            self.od_ok = od_ok
-
-    @property
-    def ar(self) -> float:
-        """ Hit window for approach rate i.e. `TimePreempt` in milliseconds."""
-        return ctypes.Structure.__get__(self, "ar")
-
-    @ar.setter
-    def ar(self, value: float):
-        """ Hit window for approach rate i.e. `TimePreempt` in milliseconds."""
-        return ctypes.Structure.__set__(self, "ar", value)
-
-    @property
-    def od_great(self) -> float:
-        """ Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds."""
-        return ctypes.Structure.__get__(self, "od_great")
-
-    @od_great.setter
-    def od_great(self, value: float):
-        """ Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds."""
-        return ctypes.Structure.__set__(self, "od_great", value)
-
-    @property
-    def od_ok(self) -> Optionf64:
-        """ Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
-
- `None` for osu!mania."""
-        return ctypes.Structure.__get__(self, "od_ok")
-
-    @od_ok.setter
-    def od_ok(self, value: Optionf64):
-        """ Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
-
- `None` for osu!mania."""
-        return ctypes.Structure.__set__(self, "od_ok", value)
-
-
-class ManiaPerformanceAttributes(ctypes.Structure):
-    """ The result of a performance calculation on an osu!mania map."""
-
-    # These fields represent the underlying C data layout
-    _fields_ = [
-        ("difficulty", ManiaDifficultyAttributes),
-        ("pp", ctypes.c_double),
-        ("pp_difficulty", ctypes.c_double),
-    ]
-
-    def __init__(self, difficulty: ManiaDifficultyAttributes = None, pp: float = None, pp_difficulty: float = None):
-        if difficulty is not None:
-            self.difficulty = difficulty
-        if pp is not None:
-            self.pp = pp
-        if pp_difficulty is not None:
-            self.pp_difficulty = pp_difficulty
-
-    @property
-    def difficulty(self) -> ManiaDifficultyAttributes:
-        """ The difficulty attributes that were used for the performance calculation."""
-        return ctypes.Structure.__get__(self, "difficulty")
-
-    @difficulty.setter
-    def difficulty(self, value: ManiaDifficultyAttributes):
-        """ The difficulty attributes that were used for the performance calculation."""
-        return ctypes.Structure.__set__(self, "difficulty", value)
-
-    @property
-    def pp(self) -> float:
-        """ The final performance points."""
-        return ctypes.Structure.__get__(self, "pp")
-
-    @pp.setter
-    def pp(self, value: float):
-        """ The final performance points."""
-        return ctypes.Structure.__set__(self, "pp", value)
-
-    @property
-    def pp_difficulty(self) -> float:
-        """ The difficulty portion of the final pp."""
-        return ctypes.Structure.__get__(self, "pp_difficulty")
-
-    @pp_difficulty.setter
-    def pp_difficulty(self, value: float):
-        """ The difficulty portion of the final pp."""
-        return ctypes.Structure.__set__(self, "pp_difficulty", value)
-
-
-class OsuPerformanceAttributes(ctypes.Structure):
-    """ The result of a performance calculation on an osu!standard map."""
-
-    # These fields represent the underlying C data layout
-    _fields_ = [
-        ("difficulty", OsuDifficultyAttributes),
-        ("pp", ctypes.c_double),
-        ("pp_acc", ctypes.c_double),
-        ("pp_aim", ctypes.c_double),
-        ("pp_flashlight", ctypes.c_double),
-        ("pp_speed", ctypes.c_double),
-        ("effective_miss_count", ctypes.c_double),
-        ("speed_deviation", Optionf64),
-    ]
-
-    def __init__(self, difficulty: OsuDifficultyAttributes = None, pp: float = None, pp_acc: float = None, pp_aim: float = None, pp_flashlight: float = None, pp_speed: float = None, effective_miss_count: float = None, speed_deviation: Optionf64 = None):
-        if difficulty is not None:
-            self.difficulty = difficulty
-        if pp is not None:
-            self.pp = pp
-        if pp_acc is not None:
-            self.pp_acc = pp_acc
-        if pp_aim is not None:
-            self.pp_aim = pp_aim
-        if pp_flashlight is not None:
-            self.pp_flashlight = pp_flashlight
-        if pp_speed is not None:
-            self.pp_speed = pp_speed
-        if effective_miss_count is not None:
-            self.effective_miss_count = effective_miss_count
-        if speed_deviation is not None:
-            self.speed_deviation = speed_deviation
-
-    @property
-    def difficulty(self) -> OsuDifficultyAttributes:
-        """ The difficulty attributes that were used for the performance calculation"""
-        return ctypes.Structure.__get__(self, "difficulty")
-
-    @difficulty.setter
-    def difficulty(self, value: OsuDifficultyAttributes):
-        """ The difficulty attributes that were used for the performance calculation"""
-        return ctypes.Structure.__set__(self, "difficulty", value)
-
-    @property
-    def pp(self) -> float:
-        """ The final performance points."""
-        return ctypes.Structure.__get__(self, "pp")
-
-    @pp.setter
-    def pp(self, value: float):
-        """ The final performance points."""
-        return ctypes.Structure.__set__(self, "pp", value)
-
-    @property
-    def pp_acc(self) -> float:
-        """ The accuracy portion of the final pp."""
-        return ctypes.Structure.__get__(self, "pp_acc")
-
-    @pp_acc.setter
-    def pp_acc(self, value: float):
-        """ The accuracy portion of the final pp."""
-        return ctypes.Structure.__set__(self, "pp_acc", value)
-
-    @property
-    def pp_aim(self) -> float:
-        """ The aim portion of the final pp."""
-        return ctypes.Structure.__get__(self, "pp_aim")
-
-    @pp_aim.setter
-    def pp_aim(self, value: float):
-        """ The aim portion of the final pp."""
-        return ctypes.Structure.__set__(self, "pp_aim", value)
-
-    @property
-    def pp_flashlight(self) -> float:
-        """ The flashlight portion of the final pp."""
-        return ctypes.Structure.__get__(self, "pp_flashlight")
-
-    @pp_flashlight.setter
-    def pp_flashlight(self, value: float):
-        """ The flashlight portion of the final pp."""
-        return ctypes.Structure.__set__(self, "pp_flashlight", value)
-
-    @property
-    def pp_speed(self) -> float:
-        """ The speed portion of the final pp."""
-        return ctypes.Structure.__get__(self, "pp_speed")
-
-    @pp_speed.setter
-    def pp_speed(self, value: float):
-        """ The speed portion of the final pp."""
-        return ctypes.Structure.__set__(self, "pp_speed", value)
-
-    @property
-    def effective_miss_count(self) -> float:
-        """ Misses including an approximated amount of slider breaks"""
-        return ctypes.Structure.__get__(self, "effective_miss_count")
-
-    @effective_miss_count.setter
-    def effective_miss_count(self, value: float):
-        """ Misses including an approximated amount of slider breaks"""
-        return ctypes.Structure.__set__(self, "effective_miss_count", value)
-
-    @property
-    def speed_deviation(self) -> Optionf64:
-        """ Approximated unstable-rate"""
-        return ctypes.Structure.__get__(self, "speed_deviation")
-
-    @speed_deviation.setter
-    def speed_deviation(self, value: Optionf64):
-        """ Approximated unstable-rate"""
-        return ctypes.Structure.__set__(self, "speed_deviation", value)
+ Only relevant for osu!standard in stable."""
+        return ctypes.Structure.__set__(self, "legacy_total_score", value)
 
 
 class TaikoPerformanceAttributes(ctypes.Structure):
@@ -1478,11 +1691,10 @@ class TaikoPerformanceAttributes(ctypes.Structure):
         ("pp", ctypes.c_double),
         ("pp_acc", ctypes.c_double),
         ("pp_difficulty", ctypes.c_double),
-        ("effective_miss_count", ctypes.c_double),
         ("estimated_unstable_rate", Optionf64),
     ]
 
-    def __init__(self, difficulty: TaikoDifficultyAttributes = None, pp: float = None, pp_acc: float = None, pp_difficulty: float = None, effective_miss_count: float = None, estimated_unstable_rate: Optionf64 = None):
+    def __init__(self, difficulty: TaikoDifficultyAttributes = None, pp: float = None, pp_acc: float = None, pp_difficulty: float = None, estimated_unstable_rate: Optionf64 = None):
         if difficulty is not None:
             self.difficulty = difficulty
         if pp is not None:
@@ -1491,8 +1703,6 @@ class TaikoPerformanceAttributes(ctypes.Structure):
             self.pp_acc = pp_acc
         if pp_difficulty is not None:
             self.pp_difficulty = pp_difficulty
-        if effective_miss_count is not None:
-            self.effective_miss_count = effective_miss_count
         if estimated_unstable_rate is not None:
             self.estimated_unstable_rate = estimated_unstable_rate
 
@@ -1535,16 +1745,6 @@ class TaikoPerformanceAttributes(ctypes.Structure):
     def pp_difficulty(self, value: float):
         """ The strain portion of the final pp."""
         return ctypes.Structure.__set__(self, "pp_difficulty", value)
-
-    @property
-    def effective_miss_count(self) -> float:
-        """ Scaled miss count based on total hits."""
-        return ctypes.Structure.__get__(self, "effective_miss_count")
-
-    @effective_miss_count.setter
-    def effective_miss_count(self, value: float):
-        """ Scaled miss count based on total hits."""
-        return ctypes.Structure.__set__(self, "effective_miss_count", value)
 
     @property
     def estimated_unstable_rate(self) -> Optionf64:
@@ -1721,8 +1921,8 @@ class BeatmapAttributes(ctypes.Structure):
     _fields_ = [
         ("ar", ctypes.c_double),
         ("od", ctypes.c_double),
-        ("cs", ctypes.c_double),
-        ("hp", ctypes.c_double),
+        ("cs", ctypes.c_float),
+        ("hp", ctypes.c_float),
         ("clock_rate", ctypes.c_double),
         ("hit_windows", HitWindows),
     ]
@@ -2468,6 +2668,10 @@ class Performance:
         if not hasattr(str, "__ctypes_from_outparam__"):
             str = ctypes.cast(str, ctypes.POINTER(ctypes.c_char))
         return c_lib.performance_s_mods(self._ctx, str)
+
+    def legacy_total_score(self, legacy_total_score: int):
+        """"""
+        return c_lib.performance_legacy_total_score(self._ctx, legacy_total_score)
 
     def passed_objects(self, passed_objects: int):
         """"""

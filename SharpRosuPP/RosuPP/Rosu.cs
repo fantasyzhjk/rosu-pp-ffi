@@ -81,7 +81,7 @@ public partial struct ScoreState
             if (mode is not Mode.Osu)
             {
                 amount += n_katu;
-                amount += mode is Mode.Catch ? n_geki : 0;
+                amount += mode is not Mode.Catch ? n_geki : 0;
             }
         }
 

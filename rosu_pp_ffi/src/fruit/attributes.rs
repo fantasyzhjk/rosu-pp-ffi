@@ -7,8 +7,8 @@ use interoptopus::ffi_type;
 pub struct CatchDifficultyAttributes {
     /// The final star rating
     pub stars: f64,
-    /// The approach rate.
-    pub ar: f64,
+    /// Time preempt (AR time window).
+    pub preempt: f64,
     /// The amount of fruits.
     pub n_fruits: u32,
     /// The amount of droplets.
@@ -39,7 +39,7 @@ impl From<rosu_pp::catch::CatchDifficultyAttributes> for CatchDifficultyAttribut
     fn from(attributes: rosu_pp::catch::CatchDifficultyAttributes) -> Self {
         Self {
             stars: attributes.stars,
-            ar: attributes.ar,
+            preempt: attributes.preempt,
             n_fruits: attributes.n_fruits,
             n_droplets: attributes.n_droplets,
             n_tiny_droplets: attributes.n_tiny_droplets,
@@ -52,7 +52,7 @@ impl From<CatchDifficultyAttributes> for rosu_pp::catch::CatchDifficultyAttribut
     fn from(attributes: CatchDifficultyAttributes) -> Self {
         Self {
             stars: attributes.stars,
-            ar: attributes.ar,
+            preempt: attributes.preempt,
             n_fruits: attributes.n_fruits,
             n_droplets: attributes.n_droplets,
             n_tiny_droplets: attributes.n_tiny_droplets,

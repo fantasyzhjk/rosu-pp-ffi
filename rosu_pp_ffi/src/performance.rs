@@ -20,6 +20,7 @@ pub struct Performance {
     pub mods: Option<GameMods>,
     pub mods_intermode: Option<GameModsIntermode>,
     pub passed_objects: Option<u32>,
+    pub legacy_total_score: Option<u32>,
     pub clock_rate: Option<f64>,
     pub ar: Option<f32>,
     pub cs: Option<f32>,
@@ -72,6 +73,11 @@ impl Performance {
             str.as_str()?,
         ));
         Ok(())
+    }
+
+    #[ffi_service_method(on_panic = "undefined_behavior")]
+    pub fn legacy_total_score(&mut self, legacy_total_score: u32) {
+        self.legacy_total_score = Some(legacy_total_score);
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
@@ -234,6 +240,7 @@ impl Performance {
             mods,
             mods_intermode,
             passed_objects,
+            legacy_total_score,
             clock_rate,
             ar,
             cs,
@@ -268,6 +275,10 @@ impl Performance {
 
         if let Some(passed_objects) = *passed_objects {
             perf = perf.passed_objects(passed_objects);
+        }
+
+        if let Some(legacy_total_score) = *legacy_total_score {
+            perf = perf.legacy_total_score(legacy_total_score);
         }
 
         if let Some(clock_rate) = *clock_rate {

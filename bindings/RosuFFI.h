@@ -86,8 +86,8 @@ typedef struct catchdifficultyattributes
     {
     /// The final star rating
     double stars;
-    /// The approach rate.
-    double ar;
+    /// Time preempt (AR time window).
+    double preempt;
     /// The amount of fruits.
     uint32_t n_fruits;
     /// The amount of droplets.
@@ -130,12 +130,22 @@ typedef struct osudifficultyattributes
     double flashlight;
     /// The ratio of the aim strain with and without considering sliders
     double slider_factor;
+    /// Describes how much of aim's difficult strain count is contributed to by sliders.
+    double aim_top_weighted_slider_factor;
+    /// Describes how much of speed's difficult strain count is contributed to by sliders.
+    double speed_top_weighted_slider_factor;
     /// The number of clickable objects weighted by difficulty.
     double speed_note_count;
     /// Weighted sum of aim strains.
     double aim_difficult_strain_count;
     /// Weighted sum of speed strains.
     double speed_difficult_strain_count;
+    /// The amount of nested score per object.
+    double nested_score_per_object;
+    /// The legacy score base multiplier.
+    double legacy_score_base_multiplier;
+    /// The maximum legacy combo score.
+    double maximum_legacy_combo_score;
     /// The approach rate.
     double ar;
     /// The great hit window.
@@ -174,6 +184,126 @@ typedef struct pos
     /// Position on the y-axis.
     float y;
     } pos;
+
+/// The result of a difficulty calculation on an osu!taiko map.
+typedef struct taikodifficultyattributes
+    {
+    /// The difficulty of the stamina skill.
+    double stamina;
+    /// The difficulty of the rhythm skill.
+    double rhythm;
+    /// The difficulty of the color skill.
+    double color;
+    /// The difficulty of the reading skill.
+    double reading;
+    /// The perceived hit window for an n300 inclusive of rate-adjusting mods (DT/HT/etc)
+    double great_hit_window;
+    /// The perceived hit window for an n100 inclusive of rate-adjusting mods (DT/HT/etc)
+    double ok_hit_window;
+    /// The ratio of stamina difficulty from mono-color (single color) streams to total
+    /// stamina difficulty.
+    double mono_stamina_factor;
+    /// The difficulty corresponding to the mechanical skills.
+    double mechanical_difficulty;
+    /// The factor corresponding to the consistency of a map.
+    double consistency_factor;
+    /// The final star rating.
+    double stars;
+    /// The maximum combo.
+    uint32_t max_combo;
+    /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
+    ///
+    /// [`Beatmap`]: crate::model::beatmap::Beatmap
+    bool is_convert;
+    } taikodifficultyattributes;
+
+///Option type containing boolean flag and maybe valid data.
+typedef struct optionf64
+    {
+    ///Element that is maybe valid.
+    double t;
+    ///Byte where `1` means element `t` is valid.
+    uint8_t is_some;
+    } optionf64;
+
+///Option type containing boolean flag and maybe valid data.
+typedef struct optionu32
+    {
+    ///Element that is maybe valid.
+    uint32_t t;
+    ///Byte where `1` means element `t` is valid.
+    uint8_t is_some;
+    } optionu32;
+
+/// The result of a performance calculation on an osu!catch map.
+typedef struct catchperformanceattributes
+    {
+    /// The difficulty attributes that were used for the performance calculation
+    catchdifficultyattributes difficulty;
+    /// The final performance points.
+    double pp;
+    } catchperformanceattributes;
+
+typedef struct hitobjectdata
+    {
+    hitobjectkind kind;
+    uint32_t repeats;
+    optionf64 expected_dist;
+    double duration;
+    } hitobjectdata;
+
+/// AR and OD hit windows
+typedef struct hitwindows
+    {
+    /// Hit window for approach rate i.e. `TimePreempt` in milliseconds.
+    optionf64 ar;
+    /// Hit window for overall difficulty i.e. time to hit a "Perfect" in milliseconds.
+    optionf64 od_perfect;
+    /// Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds.
+    optionf64 od_great;
+    /// Hit window for overall difficulty i.e. time to hit a "Good" in milliseconds.
+    optionf64 od_good;
+    /// Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
+    optionf64 od_ok;
+    /// Hit window for overall difficulty i.e. time to hit a 50 ("Meh") in milliseconds.
+    optionf64 od_meh;
+    } hitwindows;
+
+/// The result of a performance calculation on an osu!mania map.
+typedef struct maniaperformanceattributes
+    {
+    /// The difficulty attributes that were used for the performance calculation.
+    maniadifficultyattributes difficulty;
+    /// The final performance points.
+    double pp;
+    /// The difficulty portion of the final pp.
+    double pp_difficulty;
+    } maniaperformanceattributes;
+
+/// The result of a performance calculation on an osu!standard map.
+typedef struct osuperformanceattributes
+    {
+    /// The difficulty attributes that were used for the performance calculation
+    osudifficultyattributes difficulty;
+    /// The final performance points.
+    double pp;
+    /// The accuracy portion of the final pp.
+    double pp_acc;
+    /// The aim portion of the final pp.
+    double pp_aim;
+    /// The flashlight portion of the final pp.
+    double pp_flashlight;
+    /// The speed portion of the final pp.
+    double pp_speed;
+    /// Misses including an approximated amount of slider breaks
+    double effective_miss_count;
+    /// Approximated unstable-rate
+    optionf64 speed_deviation;
+    double combo_based_estimated_miss_count;
+    optionf64 score_based_estimated_miss_count;
+    double aim_estimated_slider_breaks;
+    double speed_estimated_slider_breaks;
+    } osuperformanceattributes;
 
 /// Aggregation for a score's current state.
 typedef struct scorestate
@@ -221,106 +351,11 @@ typedef struct scorestate
     uint32_t n50;
     /// Amount of current misses (fruits + droplets for osu!catch).
     uint32_t misses;
+    /// Legacy total score.
+    ///
+    /// Only relevant for osu!standard in stable.
+    optionu32 legacy_total_score;
     } scorestate;
-
-/// The result of a difficulty calculation on an osu!taiko map.
-typedef struct taikodifficultyattributes
-    {
-    /// The difficulty of the stamina skill.
-    double stamina;
-    /// The difficulty of the rhythm skill.
-    double rhythm;
-    /// The difficulty of the color skill.
-    double color;
-    /// The difficulty of the reading skill.
-    double reading;
-    /// The perceived hit window for an n300 inclusive of rate-adjusting mods (DT/HT/etc)
-    double great_hit_window;
-    /// The perceived hit window for an n100 inclusive of rate-adjusting mods (DT/HT/etc)
-    double ok_hit_window;
-    /// The ratio of stamina difficulty from mono-color (single color) streams to total
-    /// stamina difficulty.
-    double mono_stamina_factor;
-    /// The final star rating.
-    double stars;
-    /// The maximum combo.
-    uint32_t max_combo;
-    /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
-    ///
-    /// [`Beatmap`]: crate::model::beatmap::Beatmap
-    bool is_convert;
-    } taikodifficultyattributes;
-
-///Option type containing boolean flag and maybe valid data.
-typedef struct optionf64
-    {
-    ///Element that is maybe valid.
-    double t;
-    ///Byte where `1` means element `t` is valid.
-    uint8_t is_some;
-    } optionf64;
-
-/// The result of a performance calculation on an osu!catch map.
-typedef struct catchperformanceattributes
-    {
-    /// The difficulty attributes that were used for the performance calculation
-    catchdifficultyattributes difficulty;
-    /// The final performance points.
-    double pp;
-    } catchperformanceattributes;
-
-typedef struct hitobjectdata
-    {
-    hitobjectkind kind;
-    uint32_t repeats;
-    optionf64 expected_dist;
-    double duration;
-    } hitobjectdata;
-
-/// AR and OD hit windows
-typedef struct hitwindows
-    {
-    /// Hit window for approach rate i.e. `TimePreempt` in milliseconds.
-    double ar;
-    /// Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds.
-    double od_great;
-    /// Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
-    ///
-    /// `None` for osu!mania.
-    optionf64 od_ok;
-    } hitwindows;
-
-/// The result of a performance calculation on an osu!mania map.
-typedef struct maniaperformanceattributes
-    {
-    /// The difficulty attributes that were used for the performance calculation.
-    maniadifficultyattributes difficulty;
-    /// The final performance points.
-    double pp;
-    /// The difficulty portion of the final pp.
-    double pp_difficulty;
-    } maniaperformanceattributes;
-
-/// The result of a performance calculation on an osu!standard map.
-typedef struct osuperformanceattributes
-    {
-    /// The difficulty attributes that were used for the performance calculation
-    osudifficultyattributes difficulty;
-    /// The final performance points.
-    double pp;
-    /// The accuracy portion of the final pp.
-    double pp_acc;
-    /// The aim portion of the final pp.
-    double pp_aim;
-    /// The flashlight portion of the final pp.
-    double pp_flashlight;
-    /// The speed portion of the final pp.
-    double pp_speed;
-    /// Misses including an approximated amount of slider breaks
-    double effective_miss_count;
-    /// Approximated unstable-rate
-    optionf64 speed_deviation;
-    } osuperformanceattributes;
 
 /// The result of a performance calculation on an osu!taiko map.
 typedef struct taikoperformanceattributes
@@ -333,8 +368,6 @@ typedef struct taikoperformanceattributes
     double pp_acc;
     /// The strain portion of the final pp.
     double pp_difficulty;
-    /// Scaled miss count based on total hits.
-    double effective_miss_count;
     /// Upper bound on the player's tap deviation.
     optionf64 estimated_unstable_rate;
     } taikoperformanceattributes;
@@ -392,9 +425,9 @@ typedef struct beatmapattributes
     /// The overall difficulty.
     double od;
     /// The circle size.
-    double cs;
+    float cs;
     /// The health drain rate
-    double hp;
+    float hp;
     /// The clock rate with respect to mods.
     double clock_rate;
     /// The hit windows for approach rate and overall difficulty.
@@ -634,6 +667,8 @@ void performance_p_mods(performance* context, const mods* mods);
 void performance_i_mods(performance* context, uint32_t mods);
 
 ffierror performance_s_mods(performance* context, const char* str);
+
+void performance_legacy_total_score(performance* context, uint32_t legacy_total_score);
 
 void performance_passed_objects(performance* context, uint32_t passed_objects);
 

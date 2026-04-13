@@ -15,12 +15,22 @@ pub struct OsuDifficultyAttributes {
     pub flashlight: f64,
     /// The ratio of the aim strain with and without considering sliders
     pub slider_factor: f64,
+    /// Describes how much of aim's difficult strain count is contributed to by sliders.
+    pub aim_top_weighted_slider_factor: f64,
+    /// Describes how much of speed's difficult strain count is contributed to by sliders.
+    pub speed_top_weighted_slider_factor: f64,
     /// The number of clickable objects weighted by difficulty.
     pub speed_note_count: f64,
     /// Weighted sum of aim strains.
     pub aim_difficult_strain_count: f64,
     /// Weighted sum of speed strains.
     pub speed_difficult_strain_count: f64,
+    /// The amount of nested score per object.
+    pub nested_score_per_object: f64,
+    /// The legacy score base multiplier.
+    pub legacy_score_base_multiplier: f64,
+    /// The maximum legacy combo score.
+    pub maximum_legacy_combo_score: f64,
     /// The approach rate.
     pub ar: f64,
     /// The great hit window.
@@ -72,9 +82,14 @@ impl From<rosu_pp::osu::OsuDifficultyAttributes> for OsuDifficultyAttributes {
             speed: attributes.speed,
             flashlight: attributes.flashlight,
             slider_factor: attributes.slider_factor,
+            aim_top_weighted_slider_factor: attributes.aim_top_weighted_slider_factor,
+            speed_top_weighted_slider_factor: attributes.speed_top_weighted_slider_factor,
             speed_note_count: attributes.speed_note_count,
             aim_difficult_strain_count: attributes.aim_difficult_strain_count,
             speed_difficult_strain_count: attributes.speed_difficult_strain_count,
+            nested_score_per_object: attributes.nested_score_per_object,
+            legacy_score_base_multiplier: attributes.legacy_score_base_multiplier,
+            maximum_legacy_combo_score: attributes.maximum_legacy_combo_score,
             ar: attributes.ar,
             great_hit_window: attributes.great_hit_window,
             ok_hit_window: attributes.ok_hit_window,
@@ -98,9 +113,14 @@ impl From<OsuDifficultyAttributes> for rosu_pp::osu::OsuDifficultyAttributes {
             speed: attributes.speed,
             flashlight: attributes.flashlight,
             slider_factor: attributes.slider_factor,
+            aim_top_weighted_slider_factor: attributes.aim_top_weighted_slider_factor,
+            speed_top_weighted_slider_factor: attributes.speed_top_weighted_slider_factor,
             speed_note_count: attributes.speed_note_count,
             aim_difficult_strain_count: attributes.aim_difficult_strain_count,
             speed_difficult_strain_count: attributes.speed_difficult_strain_count,
+            nested_score_per_object: attributes.nested_score_per_object,
+            legacy_score_base_multiplier: attributes.legacy_score_base_multiplier,
+            maximum_legacy_combo_score: attributes.maximum_legacy_combo_score,
             ar: attributes.ar,
             great_hit_window: attributes.great_hit_window,
             ok_hit_window: attributes.ok_hit_window,
@@ -137,6 +157,10 @@ pub struct OsuPerformanceAttributes {
     pub effective_miss_count: f64,
     /// Approximated unstable-rate
     pub speed_deviation: FFIOption<f64>,
+    pub combo_based_estimated_miss_count: f64,
+    pub score_based_estimated_miss_count: FFIOption<f64>,
+    pub aim_estimated_slider_breaks: f64,
+    pub speed_estimated_slider_breaks: f64,
 }
 
 impl OsuPerformanceAttributes {
@@ -171,6 +195,10 @@ impl From<rosu_pp::osu::OsuPerformanceAttributes> for OsuPerformanceAttributes {
             pp_speed: attributes.pp_speed,
             effective_miss_count: attributes.effective_miss_count,
             speed_deviation: attributes.speed_deviation.into(),
+            combo_based_estimated_miss_count: attributes.combo_based_estimated_miss_count,
+            score_based_estimated_miss_count: attributes.score_based_estimated_miss_count.into(),
+            aim_estimated_slider_breaks: attributes.aim_estimated_slider_breaks,
+            speed_estimated_slider_breaks: attributes.speed_estimated_slider_breaks,
         }
     }
 }
@@ -186,6 +214,10 @@ impl From<OsuPerformanceAttributes> for rosu_pp::osu::OsuPerformanceAttributes {
             pp_speed: attributes.pp_speed,
             effective_miss_count: attributes.effective_miss_count,
             speed_deviation: attributes.speed_deviation.into_option(),
+            combo_based_estimated_miss_count: attributes.combo_based_estimated_miss_count,
+            score_based_estimated_miss_count: attributes.score_based_estimated_miss_count.into_option(),
+            aim_estimated_slider_breaks: attributes.aim_estimated_slider_breaks,
+            speed_estimated_slider_breaks: attributes.speed_estimated_slider_breaks,
         }
     }
 }

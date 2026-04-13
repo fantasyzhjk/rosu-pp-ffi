@@ -385,6 +385,9 @@ namespace RosuPP
             }
         }
 
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_legacy_total_score")]
+        public static extern void performance_legacy_total_score(IntPtr context, uint legacy_total_score);
+
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "performance_passed_objects")]
         public static extern void performance_passed_objects(IntPtr context, uint passed_objects);
 
@@ -815,9 +818,9 @@ namespace RosuPP
         /// The overall difficulty.
         public double od;
         /// The circle size.
-        public double cs;
+        public float cs;
         /// The health drain rate
-        public double hp;
+        public float hp;
         /// The clock rate with respect to mods.
         public double clock_rate;
         /// The hit windows for approach rate and overall difficulty.
@@ -831,8 +834,8 @@ namespace RosuPP
     {
         /// The final star rating
         public double stars;
-        /// The approach rate.
-        public double ar;
+        /// Time preempt (AR time window).
+        public double preempt;
         /// The amount of fruits.
         public uint n_fruits;
         /// The amount of droplets.
@@ -893,13 +896,17 @@ namespace RosuPP
     public partial struct HitWindows
     {
         /// Hit window for approach rate i.e. `TimePreempt` in milliseconds.
-        public double ar;
+        public Optionf64 ar;
+        /// Hit window for overall difficulty i.e. time to hit a "Perfect" in milliseconds.
+        public Optionf64 od_perfect;
         /// Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds.
-        public double od_great;
+        public Optionf64 od_great;
+        /// Hit window for overall difficulty i.e. time to hit a "Good" in milliseconds.
+        public Optionf64 od_good;
         /// Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
-        ///
-        /// `None` for osu!mania.
         public Optionf64 od_ok;
+        /// Hit window for overall difficulty i.e. time to hit a 50 ("Meh") in milliseconds.
+        public Optionf64 od_meh;
     }
 
     /// The result of a difficulty calculation on an osu!mania map.
@@ -950,12 +957,22 @@ namespace RosuPP
         public double flashlight;
         /// The ratio of the aim strain with and without considering sliders
         public double slider_factor;
+        /// Describes how much of aim's difficult strain count is contributed to by sliders.
+        public double aim_top_weighted_slider_factor;
+        /// Describes how much of speed's difficult strain count is contributed to by sliders.
+        public double speed_top_weighted_slider_factor;
         /// The number of clickable objects weighted by difficulty.
         public double speed_note_count;
         /// Weighted sum of aim strains.
         public double aim_difficult_strain_count;
         /// Weighted sum of speed strains.
         public double speed_difficult_strain_count;
+        /// The amount of nested score per object.
+        public double nested_score_per_object;
+        /// The legacy score base multiplier.
+        public double legacy_score_base_multiplier;
+        /// The maximum legacy combo score.
+        public double maximum_legacy_combo_score;
         /// The approach rate.
         public double ar;
         /// The great hit window.
@@ -1008,6 +1025,10 @@ namespace RosuPP
         public double effective_miss_count;
         /// Approximated unstable-rate
         public Optionf64 speed_deviation;
+        public double combo_based_estimated_miss_count;
+        public Optionf64 score_based_estimated_miss_count;
+        public double aim_estimated_slider_breaks;
+        public double speed_estimated_slider_breaks;
     }
 
     [Serializable]
@@ -1079,6 +1100,10 @@ namespace RosuPP
         public uint n50;
         /// Amount of current misses (fruits + droplets for osu!catch).
         public uint misses;
+        /// Legacy total score.
+        ///
+        /// Only relevant for osu!standard in stable.
+        public Optionu32 legacy_total_score;
     }
 
     /// The result of a difficulty calculation on an osu!taiko map.
@@ -1101,6 +1126,10 @@ namespace RosuPP
         /// The ratio of stamina difficulty from mono-color (single color) streams to total
         /// stamina difficulty.
         public double mono_stamina_factor;
+        /// The difficulty corresponding to the mechanical skills.
+        public double mechanical_difficulty;
+        /// The factor corresponding to the consistency of a map.
+        public double consistency_factor;
         /// The final star rating.
         public double stars;
         /// The maximum combo.
@@ -1125,8 +1154,6 @@ namespace RosuPP
         public double pp_acc;
         /// The strain portion of the final pp.
         public double pp_difficulty;
-        /// Scaled miss count based on total hits.
-        public double effective_miss_count;
         /// Upper bound on the player's tap deviation.
         public Optionf64 estimated_unstable_rate;
     }
@@ -1612,6 +1639,38 @@ namespace RosuPP
     }
 
 
+    ///Option type containing boolean flag and maybe valid data.
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
+    public partial struct Optionu32
+    {
+        ///Element that is maybe valid.
+        uint t;
+        ///Byte where `1` means element `t` is valid.
+        byte is_some;
+    }
+
+    public partial struct Optionu32
+    {
+        public static Optionu32 FromNullable(uint? nullable)
+        {
+            var result = new Optionu32();
+            if (nullable.HasValue)
+            {
+                result.is_some = 1;
+                result.t = nullable.Value;
+            }
+
+            return result;
+        }
+
+        public uint? ToNullable()
+        {
+            return this.is_some == 1 ? this.t : (uint?)null;
+        }
+    }
+
+
 
     public partial class BeatmapAttributesBuilder : IDisposable
     {
@@ -2011,6 +2070,11 @@ namespace RosuPP
             {
                 throw new InteropException<FFIError>(rval);
             }
+        }
+
+        public void LegacyTotalScore(uint legacy_total_score)
+        {
+            RosuLibrary.performance_legacy_total_score(_context, legacy_total_score);
         }
 
         public void PassedObjects(uint passed_objects)

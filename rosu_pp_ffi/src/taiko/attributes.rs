@@ -20,6 +20,10 @@ pub struct TaikoDifficultyAttributes {
     /// The ratio of stamina difficulty from mono-color (single color) streams to total
     /// stamina difficulty.
     pub mono_stamina_factor: f64,
+    /// The difficulty corresponding to the mechanical skills.
+    pub mechanical_difficulty: f64,
+    /// The factor corresponding to the consistency of a map.
+    pub consistency_factor: f64,
     /// The final star rating.
     pub stars: f64,
     /// The maximum combo.
@@ -54,6 +58,8 @@ impl From<rosu_pp::taiko::TaikoDifficultyAttributes> for TaikoDifficultyAttribut
             great_hit_window: attributes.great_hit_window,
             ok_hit_window: attributes.ok_hit_window,
             mono_stamina_factor: attributes.mono_stamina_factor,
+            mechanical_difficulty: attributes.mechanical_difficulty,
+            consistency_factor: attributes.consistency_factor,
             stars: attributes.stars,
             max_combo: attributes.max_combo,
             is_convert: attributes.is_convert,
@@ -71,6 +77,8 @@ impl From<TaikoDifficultyAttributes> for rosu_pp::taiko::TaikoDifficultyAttribut
             great_hit_window: attributes.great_hit_window,
             ok_hit_window: attributes.ok_hit_window,
             mono_stamina_factor: attributes.mono_stamina_factor,
+            mechanical_difficulty: attributes.mechanical_difficulty,
+            consistency_factor: attributes.consistency_factor,
             stars: attributes.stars,
             max_combo: attributes.max_combo,
             is_convert: attributes.is_convert,
@@ -91,8 +99,6 @@ pub struct TaikoPerformanceAttributes {
     pub pp_acc: f64,
     /// The strain portion of the final pp.
     pub pp_difficulty: f64,
-    /// Scaled miss count based on total hits.
-    pub effective_miss_count: f64,
     /// Upper bound on the player's tap deviation.
     pub estimated_unstable_rate: FFIOption<f64>,
 }
@@ -128,7 +134,6 @@ impl From<rosu_pp::taiko::TaikoPerformanceAttributes> for TaikoPerformanceAttrib
             pp: attributes.pp,
             pp_acc: attributes.pp_acc,
             pp_difficulty: attributes.pp_difficulty,
-            effective_miss_count: attributes.effective_miss_count,
             estimated_unstable_rate: attributes.estimated_unstable_rate.into(),
         }
     }
@@ -141,7 +146,6 @@ impl From<TaikoPerformanceAttributes> for rosu_pp::taiko::TaikoPerformanceAttrib
             pp: attributes.pp,
             pp_acc: attributes.pp_acc,
             pp_difficulty: attributes.pp_difficulty,
-            effective_miss_count: attributes.effective_miss_count,
             estimated_unstable_rate: attributes.estimated_unstable_rate.into_option(),
         }
     }
