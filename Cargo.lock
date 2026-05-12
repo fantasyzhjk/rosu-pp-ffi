@@ -293,21 +293,34 @@ checksum = "6b92ea634d8b3eaa4d7fba7bd12045dda1a50ce81401c96af0d9c851b0737544"
 
 [[package]]
 name = "rosu-mods"
-version = "0.3.1"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cdc002dd5c7baef181e98980615ef27df55f35ff291c088cb37e6a339f2777e1"
+checksum = "cc58d42f8f2308b4b241de147827af84179d0a318de250495c7c5e47cb701cd9"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "rosu-pp"
-version = "3.0.0"
-source = "git+https://github.com/ppy-sb/rosu-pp?rev=74ad31ce24c84c3704ac80820f4fbfe3d93c792e#74ad31ce24c84c3704ac80820f4fbfe3d93c792e"
+version = "4.0.1"
+source = "git+https://github.com/ppy-sb/rosu-pp?rev=bb1a4dfa77595e98858b7a8336df9b77a183104e#bb1a4dfa77595e98858b7a8336df9b77a183104e"
 dependencies = [
  "divan",
  "rosu-map",
  "rosu-mods",
+]
+
+[[package]]
+name = "rustix"
+version = "1.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b6fe4565b9518b83ef4f91bb47ce29620ca828bd32cb7e408f0062e9930ba190"
+dependencies = [
+ "bitflags",
+ "errno",
+ "libc",
+ "linux-raw-sys",
+ "windows-sys",
 ]
 
 [[package]]
