@@ -25,7 +25,6 @@ internal static unsafe partial class NativeMethods
         NativeLibrary.SetDllImportResolver(typeof(NativeMethods).Assembly, DllImportResolver);
     }
 
-
     private static byte[] ComputeFileChecksum(string filePath)
     {
         using var md5 = MD5.Create();
@@ -68,9 +67,16 @@ internal static unsafe partial class NativeMethods
         return tempFile;
     }
 
-    static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+    static IntPtr DllImportResolver(
+        string libraryName,
+        Assembly assembly,
+        DllImportSearchPath? searchPath
+    )
     {
-        if (libraryName != RosuLibrary.NativeLib) { return IntPtr.Zero; }
+        if (libraryName != RosuLibrary.NativeLib)
+        {
+            return IntPtr.Zero;
+        }
 
         string name;
         string extension;
@@ -98,6 +104,10 @@ internal static unsafe partial class NativeMethods
         // string tempPath = ExtractDllToFile(resourceName, filePath);
 
         // 加载库
-        return NativeLibrary.Load(Path.Combine(AppContext.BaseDirectory, filePath), assembly, searchPath);
+        return NativeLibrary.Load(
+            Path.Combine(AppContext.BaseDirectory, filePath),
+            assembly,
+            searchPath
+        );
     }
 }

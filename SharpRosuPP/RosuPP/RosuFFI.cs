@@ -193,6 +193,9 @@ namespace SBRosuPP
         [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_slider_tick_rate")]
         public static extern double beatmap_slider_tick_rate(IntPtr context);
 
+        [DllImport(NativeLib, CallingConvention = CallingConvention.Cdecl, EntryPoint = "beatmap_check_suspicious")]
+        public static extern OptionTooSuspicious beatmap_check_suspicious(IntPtr context);
+
         /// Destroys the given instance.
         ///
         /// # Safety
@@ -806,6 +809,22 @@ namespace SBRosuPP
         WithSliderAcc = 1,
         /// For scores set on osu!lazer without slider accuracy
         WithoutSliderAcc = 2,
+    }
+
+    public enum TooSuspicious
+    {
+        /// Notes are too dense time-wise.
+        Density = 0,
+        /// The map seems too long.
+        Length = 1,
+        /// Too many objects.
+        ObjectCount = 2,
+        /// General red flag.
+        RedFlag = 3,
+        /// Too many sliders' positions were suspicious.
+        SliderPositions = 4,
+        /// Too many sliders had a very high amount of repeats.
+        SliderRepeats = 5,
     }
 
     /// Summary struct for a [`Beatmap`]'s attributes.
@@ -1610,6 +1629,38 @@ namespace SBRosuPP
     ///Option type containing boolean flag and maybe valid data.
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
+    public partial struct OptionTooSuspicious
+    {
+        ///Element that is maybe valid.
+        TooSuspicious t;
+        ///Byte where `1` means element `t` is valid.
+        byte is_some;
+    }
+
+    public partial struct OptionTooSuspicious
+    {
+        public static OptionTooSuspicious FromNullable(TooSuspicious? nullable)
+        {
+            var result = new OptionTooSuspicious();
+            if (nullable.HasValue)
+            {
+                result.is_some = 1;
+                result.t = nullable.Value;
+            }
+
+            return result;
+        }
+
+        public TooSuspicious? ToNullable()
+        {
+            return this.is_some == 1 ? this.t : (TooSuspicious?)null;
+        }
+    }
+
+
+    ///Option type containing boolean flag and maybe valid data.
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
     public partial struct Optionf64
     {
         ///Element that is maybe valid.
@@ -1862,6 +1913,11 @@ namespace SBRosuPP
         public double SliderTickRate()
         {
             return RosuLibrary.beatmap_slider_tick_rate(_context);
+        }
+
+        public OptionTooSuspicious CheckSuspicious()
+        {
+            return RosuLibrary.beatmap_check_suspicious(_context);
         }
 
         public IntPtr Context => _context;

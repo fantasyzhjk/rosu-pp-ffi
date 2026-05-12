@@ -5,12 +5,19 @@ using SBRosuPP;
 
 namespace SBRosuPP;
 
-public static class Extensions {
-    public static double Acc(ref this ScoreState state, ref DifficultyAttributes attr, OsuScoreOrigin origin) {
+public static class Extensions
+{
+    public static double Acc(
+        ref this ScoreState state,
+        ref DifficultyAttributes attr,
+        OsuScoreOrigin origin
+    )
+    {
         return RosuLibrary.calculate_accuacy(ref state, ref attr, origin);
     }
 
-    public static double Acc(ref this ScoreState state, ref DifficultyAttributes attr) {
+    public static double Acc(ref this ScoreState state, ref DifficultyAttributes attr)
+    {
         return RosuLibrary.calculate_accuacy(ref state, ref attr, OsuScoreOrigin.WithSliderAcc);
     }
 }
@@ -151,46 +158,81 @@ public partial struct PerformanceAttributes
     }
 }
 
-public partial struct OptionDifficultyAttributes {
-    public DifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(DifficultyAttributes)} is null");
+public partial struct OptionDifficultyAttributes
+{
+    public DifficultyAttributes Unwrap() =>
+        this.ToNullable()
+        ?? throw new NullReferenceException($"{nameof(DifficultyAttributes)} is null");
 }
 
-public partial struct OptionOsuDifficultyAttributes {
-    public OsuDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(OsuDifficultyAttributes)} is null");
+public partial struct OptionOsuDifficultyAttributes
+{
+    public OsuDifficultyAttributes Unwrap() =>
+        this.ToNullable()
+        ?? throw new NullReferenceException($"{nameof(OsuDifficultyAttributes)} is null");
 }
 
-public partial struct OptionTaikoDifficultyAttributes {
-    public TaikoDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(TaikoDifficultyAttributes)} is null");
+public partial struct OptionTaikoDifficultyAttributes
+{
+    public TaikoDifficultyAttributes Unwrap() =>
+        this.ToNullable()
+        ?? throw new NullReferenceException($"{nameof(TaikoDifficultyAttributes)} is null");
 }
 
-public partial struct OptionCatchDifficultyAttributes {
-    public CatchDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(CatchDifficultyAttributes)} is null");
+public partial struct OptionCatchDifficultyAttributes
+{
+    public CatchDifficultyAttributes Unwrap() =>
+        this.ToNullable()
+        ?? throw new NullReferenceException($"{nameof(CatchDifficultyAttributes)} is null");
 }
 
-public partial struct OptionManiaDifficultyAttributes {
-    public ManiaDifficultyAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(ManiaDifficultyAttributes)} is null");
+public partial struct OptionManiaDifficultyAttributes
+{
+    public ManiaDifficultyAttributes Unwrap() =>
+        this.ToNullable()
+        ?? throw new NullReferenceException($"{nameof(ManiaDifficultyAttributes)} is null");
 }
 
-public partial struct OptionPerformanceAttributes {
-    public PerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(PerformanceAttributes)} is null");
+public partial struct OptionPerformanceAttributes
+{
+    public PerformanceAttributes Unwrap() =>
+        this.ToNullable()
+        ?? throw new NullReferenceException($"{nameof(PerformanceAttributes)} is null");
 }
 
-public partial struct OptionOsuPerformanceAttributes {
-    public OsuPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(OsuPerformanceAttributes)} is null");
+public partial struct OptionOsuPerformanceAttributes
+{
+    public OsuPerformanceAttributes Unwrap() =>
+        this.ToNullable()
+        ?? throw new NullReferenceException($"{nameof(OsuPerformanceAttributes)} is null");
 }
 
-public partial struct OptionTaikoPerformanceAttributes {
-    public TaikoPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(TaikoPerformanceAttributes)} is null");
+public partial struct OptionTaikoPerformanceAttributes
+{
+    public TaikoPerformanceAttributes Unwrap() =>
+        this.ToNullable()
+        ?? throw new NullReferenceException($"{nameof(TaikoPerformanceAttributes)} is null");
 }
 
-public partial struct OptionCatchPerformanceAttributes {
-    public CatchPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(CatchPerformanceAttributes)} is null");
+public partial struct OptionCatchPerformanceAttributes
+{
+    public CatchPerformanceAttributes Unwrap() =>
+        this.ToNullable()
+        ?? throw new NullReferenceException($"{nameof(CatchPerformanceAttributes)} is null");
 }
 
-public partial struct OptionManiaPerformanceAttributes {
-    public ManiaPerformanceAttributes Unwrap() => this.ToNullable() ?? throw new NullReferenceException($"{nameof(ManiaPerformanceAttributes)} is null");
+public partial struct OptionManiaPerformanceAttributes
+{
+    public ManiaPerformanceAttributes Unwrap() =>
+        this.ToNullable()
+        ?? throw new NullReferenceException($"{nameof(ManiaPerformanceAttributes)} is null");
 }
 
+public partial struct OptionTooSuspicious
+{
+    public TooSuspicious Unwrap() =>
+        this.ToNullable() ?? throw new NullReferenceException($"{nameof(TooSuspicious)} is null");
+}
 
 public partial struct ScoreState
 {
@@ -245,7 +287,7 @@ public partial class Performance
     {
         return Calculate(beatmap.Context);
     }
-    
+
     public ScoreState GenerateState(Beatmap beatmap)
     {
         return GenerateState(beatmap.Context);
@@ -274,22 +316,26 @@ public partial class Performance
 
 public partial class GradualDifficulty
 {
-    public static GradualDifficulty New(Difficulty difficulty, Beatmap beatmap) {
+    public static GradualDifficulty New(Difficulty difficulty, Beatmap beatmap)
+    {
         return GradualDifficulty.New(difficulty.Context, beatmap.Context);
     }
 
-    public static GradualDifficulty NewWithMode(Difficulty difficulty, Beatmap beatmap, Mode mode) {
+    public static GradualDifficulty NewWithMode(Difficulty difficulty, Beatmap beatmap, Mode mode)
+    {
         return GradualDifficulty.NewWithMode(difficulty.Context, beatmap.Context, mode);
     }
 }
 
 public partial class GradualPerformance
 {
-    public static GradualPerformance New(Difficulty difficulty, Beatmap beatmap) {
+    public static GradualPerformance New(Difficulty difficulty, Beatmap beatmap)
+    {
         return GradualPerformance.New(difficulty.Context, beatmap.Context);
     }
 
-    public static GradualPerformance NewWithMode(Difficulty difficulty, Beatmap beatmap, Mode mode) {
+    public static GradualPerformance NewWithMode(Difficulty difficulty, Beatmap beatmap, Mode mode)
+    {
         return GradualPerformance.NewWithMode(difficulty.Context, beatmap.Context, mode);
     }
 }
@@ -350,21 +396,22 @@ public partial class Beatmap
     {
         return Convert(mode, Mods.New(mode));
     }
-
 }
 
 public partial class Mods
 {
-    public void Json(OwnedString str) {
+    public void Json(OwnedString str)
+    {
         this.Json(str.Context);
     }
 
-    public static Mods FromJson(string str, Mode mode) {
+    public static Mods FromJson(string str, Mode mode)
+    {
         return Mods.FromJson(str, mode, false);
     }
 
-    public bool InsertJson(string str) {
+    public bool InsertJson(string str)
+    {
         return this.InsertJson(str, false);
     }
 }
-
