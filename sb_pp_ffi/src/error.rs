@@ -7,7 +7,9 @@ use interoptopus::ffi_type;
 // almost any way you want.
 #[ffi_type(patterns(ffi_error))]
 #[repr(C)]
+#[derive(Default)]
 pub enum FFIError {
+    #[default]
     Ok = 0,
     Null = 100,
     Panic = 200,
@@ -20,11 +22,6 @@ pub enum FFIError {
 }
 
 // Implement Default so we know what the "good" case is.
-impl Default for FFIError {
-    fn default() -> Self {
-        Self::Ok
-    }
-}
 
 // Implement Interoptopus' `FFIError` trait for your FFIError enum.
 // Here you must map 3 "well known" variants to your enum.
@@ -37,8 +34,10 @@ impl interoptopus::patterns::result::FFIError for FFIError {
 
 use thiserror::Error;
 #[derive(Error, Debug)]
+#[derive(Default)]
 pub enum Error {
     #[error("UnknownError")]
+    #[default]
     Unknown,
     #[error("NullPointer")]
     Null,
@@ -52,14 +51,8 @@ pub enum Error {
     Serialize(#[from] serde_json::Error),
     #[error("ConvertError")]
     Convert(#[from] rosu_pp::model::mode::ConvertError),
-
 }
 
-impl Default for Error {
-    fn default() -> Self {
-        Self::Unknown
-    }
-}
 
 /// Provide a mapping how your Rust error enums translate
 /// to your FFI error enums.

@@ -18,9 +18,9 @@ pub struct BeatmapAttributes {
     /// The overall difficulty.
     pub od: f64,
     /// The circle size.
-    pub cs: f64,
+    pub cs: f32,
     /// The health drain rate
-    pub hp: f64,
+    pub hp: f32,
     /// The clock rate with respect to mods.
     pub clock_rate: f64,
     /// The hit windows for approach rate and overall difficulty.
@@ -29,13 +29,14 @@ pub struct BeatmapAttributes {
 
 impl From<rosu_pp::model::beatmap::BeatmapAttributes> for BeatmapAttributes {
     fn from(attributes: rosu_pp::model::beatmap::BeatmapAttributes) -> Self {
+        let ajustedbeatmaptrributes = attributes.apply_clock_rate();
         Self {
-            ar: attributes.ar,
-            od: attributes.od,
-            cs: attributes.cs,
-            hp: attributes.hp,
-            clock_rate: attributes.clock_rate,
-            hit_windows: attributes.hit_windows.into(),
+            ar: ajustedbeatmaptrributes.ar,
+            od: ajustedbeatmaptrributes.od,
+            cs: ajustedbeatmaptrributes.cs,
+            hp: ajustedbeatmaptrributes.hp,
+            clock_rate: attributes.clock_rate(),
+            hit_windows: attributes.hit_windows().into(),
         }
     }
 }
@@ -46,21 +47,28 @@ impl From<rosu_pp::model::beatmap::BeatmapAttributes> for BeatmapAttributes {
 #[ffi_type]
 pub struct HitWindows {
     /// Hit window for approach rate i.e. `TimePreempt` in milliseconds.
-    pub ar: f64,
+    pub ar: FFIOption<f64>,
+    /// Hit window for overall difficulty i.e. time to hit a "Perfect" in milliseconds.
+    pub od_perfect: FFIOption<f64>,
     /// Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds.
-    pub od_great: f64,
+    pub od_great: FFIOption<f64>,
+    /// Hit window for overall difficulty i.e. time to hit a "Good" in milliseconds.
+    pub od_good: FFIOption<f64>,
     /// Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
-    ///
-    /// `None` for osu!mania.
     pub od_ok: FFIOption<f64>,
+    /// Hit window for overall difficulty i.e. time to hit a 50 ("Meh") in milliseconds.
+    pub od_meh: FFIOption<f64>,
 }
 
 impl From<rosu_pp::model::beatmap::HitWindows> for HitWindows {
     fn from(attributes: rosu_pp::model::beatmap::HitWindows) -> Self {
         Self {
-            ar: attributes.ar,
-            od_great: attributes.od_great,
+            ar: attributes.ar.into(),
+            od_perfect: attributes.od_perfect.into(),
+            od_great: attributes.od_great.into(),
+            od_good: attributes.od_good.into(),
             od_ok: attributes.od_ok.into(),
+            od_meh: attributes.od_meh.into(),
         }
     }
 }
@@ -155,7 +163,8 @@ impl BeatmapAttributesBuilder {
                 .unwrap_or_else(|| panic!("beatmap: {beatmap:?}"))
         };
 
-        let mut builder = rosu_pp::model::beatmap::BeatmapAttributesBuilder::new().map(&beatmap.inner);
+        let mut builder_binding = rosu_pp::model::beatmap::BeatmapAttributesBuilder::new();
+        let mut builder = builder_binding.map(&beatmap.inner);
         let BeatmapAttributesBuilder {
             mode,
             mods,

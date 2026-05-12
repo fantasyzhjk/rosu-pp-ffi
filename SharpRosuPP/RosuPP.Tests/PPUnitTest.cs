@@ -318,7 +318,7 @@ public class PPUnitTest(ITestOutputHelper output)
         Assert.Equal(4.5, bmattr.cs);
         Assert.Equal(10.311111238267687, bmattr.od);
         Assert.Equal(5, bmattr.hp);
-        Assert.Equal(10.53333346048991, bmattr.ar);
+        Assert.Equal(10.533333460489908, bmattr.ar);
         Assert.Equal(1.5, bmattr.clock_rate);
     }
 
