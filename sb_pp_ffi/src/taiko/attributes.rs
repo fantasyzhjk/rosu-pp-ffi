@@ -1,4 +1,4 @@
-use interoptopus::{ffi_type, patterns::option::FFIOption};
+use interoptopus::{ffi_type, patterns::{option::FFIOption, primitives::FFIBool}};
 
 /// The result of a difficulty calculation on an osu!taiko map.
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -31,7 +31,7 @@ pub struct TaikoDifficultyAttributes {
     /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
     ///
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
-    pub is_convert: bool,
+    pub is_convert: FFIBool,
 }
 
 impl TaikoDifficultyAttributes {
@@ -43,8 +43,8 @@ impl TaikoDifficultyAttributes {
     /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
     ///
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
-    pub const fn is_convert(&self) -> bool {
-        self.is_convert
+    pub fn is_convert(&self) -> bool {
+        self.is_convert.is()
     }
 }
 
@@ -62,7 +62,7 @@ impl From<rosu_pp::taiko::TaikoDifficultyAttributes> for TaikoDifficultyAttribut
             consistency_factor: attributes.consistency_factor,
             stars: attributes.stars,
             max_combo: attributes.max_combo,
-            is_convert: attributes.is_convert,
+            is_convert: attributes.is_convert.into(),
         }
     }
 }
@@ -81,7 +81,7 @@ impl From<TaikoDifficultyAttributes> for rosu_pp::taiko::TaikoDifficultyAttribut
             consistency_factor: attributes.consistency_factor,
             stars: attributes.stars,
             max_combo: attributes.max_combo,
-            is_convert: attributes.is_convert,
+            is_convert: attributes.is_convert.into(),
         }
     }
 }
@@ -122,8 +122,8 @@ impl TaikoPerformanceAttributes {
     /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
     ///
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
-    pub const fn is_convert(&self) -> bool {
-        self.difficulty.is_convert
+    pub fn is_convert(&self) -> bool {
+        self.difficulty.is_convert.is()
     }
 }
 

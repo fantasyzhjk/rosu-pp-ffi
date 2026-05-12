@@ -864,8 +864,7 @@ namespace SBRosuPP
         /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
         ///
         /// [`Beatmap`]: crate::model::beatmap::Beatmap
-        [MarshalAs(UnmanagedType.I1)]
-        public bool is_convert;
+        public Bool is_convert;
     }
 
     /// The result of a performance calculation on an osu!catch map.
@@ -944,8 +943,7 @@ namespace SBRosuPP
         /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
         ///
         /// [`Beatmap`]: crate::model::beatmap::Beatmap
-        [MarshalAs(UnmanagedType.I1)]
-        public bool is_convert;
+        public Bool is_convert;
     }
 
     /// The result of a performance calculation on an osu!mania map.
@@ -1156,8 +1154,7 @@ namespace SBRosuPP
         /// Whether the [`Beatmap`] was a convert i.e. an osu!standard map.
         ///
         /// [`Beatmap`]: crate::model::beatmap::Beatmap
-        [MarshalAs(UnmanagedType.I1)]
-        public bool is_convert;
+        public Bool is_convert;
     }
 
     /// The result of a performance calculation on an osu!taiko map.
@@ -1719,6 +1716,25 @@ namespace SBRosuPP
         {
             return this.is_some == 1 ? this.t : (uint?)null;
         }
+    }
+
+
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
+    public partial struct Bool
+    {
+        byte value;
+    }
+
+    public partial struct Bool
+    {
+        public static readonly Bool True = new Bool { value =  1 };
+        public static readonly Bool False = new Bool { value =  0 };
+        public Bool(bool b)
+        {
+            value = (byte) (b ? 1 : 0);
+        }
+        public bool Is => value == 1;
     }
 
 

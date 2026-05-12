@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net480</TargetFramework>
+    <PlatformTarget>x86</PlatformTarget>
+    <RootNamespace>RosuPP.TestApp</RootNamespace>
+    <LangVersion>12.0</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <!-- 直接引用 SharpRosuPP 构建产物 -->
+  <ItemGroup>
+    <Reference Include="SBRosuPP">
+      <HintPath>..\RosuPP\bin\Debug\net480\SBRosuPP.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- 将原生 DLL 复制到输出目录 -->
+  <ItemGroup>
+    <Content Include="..\RosuPP\bin\Debug\net480\sb_pp_ffi.dll">
+      <Link>sb_pp_ffi.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

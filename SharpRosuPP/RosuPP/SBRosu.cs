@@ -114,7 +114,7 @@ public partial struct ManiaPerformanceAttributes
     public readonly double stars => difficulty.stars;
     public readonly uint max_combo => difficulty.max_combo;
     public readonly uint n_objects => difficulty.n_objects;
-    public readonly bool is_convert => difficulty.is_convert;
+    public readonly bool is_convert => difficulty.is_convert.Is;
 }
 
 public partial struct CatchDifficultyAttributes
@@ -126,14 +126,14 @@ public partial struct CatchPerformanceAttributes
 {
     public readonly double stars => difficulty.stars;
     public readonly uint max_combo => difficulty.max_combo;
-    public readonly bool is_convert => difficulty.is_convert;
+    public readonly bool is_convert => difficulty.is_convert.Is;
 }
 
 public partial struct TaikoPerformanceAttributes
 {
     public readonly double stars => difficulty.stars;
     public readonly uint max_combo => difficulty.max_combo;
-    public readonly bool is_convert => difficulty.is_convert;
+    public readonly bool is_convert => difficulty.is_convert.Is;
 }
 
 public partial struct DifficultyAttributes
