@@ -6,55 +6,38 @@
         <CargoWorkspacePath>$(MSBuildThisFileDirectory)/../../</CargoWorkspacePath>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(AotBuild)' == 'true' ">
-        <IsAotBuild>true</IsAotBuild>
-        <DefineConstants>$(DefineConstants);AOT</DefineConstants>
+    <!-- 非 Windows 直接报错 -->
+    <Target Name="CheckWindowsOnly" BeforeTargets="BeforeBuild">
+        <Error
+            Condition=" '$([MSBuild]::IsOsPlatform(`WINDOWS`))' != 'true' "
+            Text="This project only supports Windows." />
+    </Target>
+
+    <!-- 32位 / 64位 判断
+         优先读取外部传入的 NativeArch 属性（win-x86 / win-x64）；
+         若未传入则回退到 PlatformTarget / PROCESSOR_ARCHITECTURE。
+         命令行强制指定示例：/p:NativeArch=win-x86 -->
+    <PropertyGroup Condition=" '$(NativeArch)' == 'win-x64'
+                             Or ('$(NativeArch)' == ''
+                                 And ('$(PlatformTarget)' == 'x64'
+                                      Or '$(PROCESSOR_ARCHITECTURE)' == 'AMD64')) ">
+        <IsWin64>true</IsWin64>
+        <CargoTarget>x86_64-pc-windows-msvc</CargoTarget>
+        <DefineConstants>$(DefineConstants);WINDOWS;WIN64</DefineConstants>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(AotBuild)' != 'true' ">
-        <IsAotBuild>false</IsAotBuild>
+    <PropertyGroup Condition=" '$(NativeArch)' == 'win-x86'
+                             Or ('$(NativeArch)' == '' And '$(IsWin64)' != 'true') ">
+        <IsWin64>false</IsWin64>
+        <CargoTarget>i686-pc-windows-msvc</CargoTarget>
+        <DefineConstants>$(DefineConstants);WINDOWS;WIN32</DefineConstants>
     </PropertyGroup>
 
-    <!-- Compile-time RIDs -->
-    <PropertyGroup Condition=" '$(NativeRid)' == 'win-x64' Or ('$(NativeRid)' == '' And '$([MSBuild]::IsOsPlatform(`WINDOWS`))' == 'true') ">
-        <IsWindows>true</IsWindows>
-        <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(NativeRid)' == 'linux-x64' Or ('$(NativeRid)' == '' And '$([MSBuild]::IsOsPlatform(`LINUX`))' == 'true') ">
-        <IsLinux>true</IsLinux>
-        <IsUnix>true</IsUnix>
-        <DefineConstants>$(DefineConstants);LINUX;UNIX</DefineConstants>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(NativeRid)' == 'osx-x64'  Or ('$(NativeRid)' == '' And '$([MSBuild]::IsOsPlatform(`OSX`))' == 'true') ">
-        <IsMacOS>true</IsMacOS>
-        <IsUnix>true</IsUnix>
-        <DefineConstants>$(DefineConstants);MACOS;UNIX</DefineConstants>
-    </PropertyGroup>
-
-    <!-- Cargo configuration -->
+    <!-- Cargo 配置 -->
     <PropertyGroup>
         <CargoTargetPath>$(MSBuildThisFileDirectory)/../../target</CargoTargetPath>
-
         <CargoConfiguration>release</CargoConfiguration>
-
-        <CargoTarget Condition=" '$(IsWindows)' == 'true' ">x86_64-pc-windows-msvc</CargoTarget>
-        <CargoTarget Condition=" '$(IsLinux)' == 'true' ">x86_64-unknown-linux-gnu</CargoTarget>
-        <CargoTarget Condition=" '$(IsMacOS)' == 'true' ">aarch64-apple-darwin</CargoTarget>
-
-        <CargoExtension Condition=" '$(IsWindows)' == 'true' ">dll</CargoExtension>
-        <CargoExtension Condition=" '$(IsLinux)' == 'true' ">so</CargoExtension>
-        <CargoExtension Condition=" '$(IsMacOS)' == 'true' ">dylib</CargoExtension>
-
-        <CargoExtension Condition=" '$(IsWindows)' == 'true' And '$(IsAotBuild)' == 'true' ">lib</CargoExtension>
-        <CargoExtension Condition=" '$(IsLinux)' == 'true' And '$(IsAotBuild)' == 'true' ">a</CargoExtension>
-        <CargoExtension Condition=" '$(IsMacOS)' == 'true' And '$(IsAotBuild)' == 'true' ">a</CargoExtension>
-
-        <CargoArtifact Condition=" '$(IsWindows)' == 'true' ">$(CargoPackage).$(CargoExtension)</CargoArtifact>
-        <CargoArtifact Condition=" '$(IsLinux)' == 'true' ">lib$(CargoPackage).$(CargoExtension)</CargoArtifact>
-        <CargoArtifact Condition=" '$(IsMacOS)' == 'true' ">lib$(CargoPackage).$(CargoExtension)</CargoArtifact>
-
+        <CargoArtifact>$(CargoPackage).dll</CargoArtifact>
         <CargoArtifactPath>$(CargoTargetPath)/$(CargoTarget)/$(CargoConfiguration)/$(CargoArtifact)</CargoArtifactPath>
     </PropertyGroup>
 
@@ -64,36 +47,24 @@
         <CargoBuildArg Condition=" '$(CargoConfiguration)' == 'release' " Include="--release" />
     </ItemGroup>
 
-    <Target Name="Cargo" BeforeTargets="BeforeBuild">
-        <Message Text="Building libs" Importance="high" />
-        <Exec Command="cargo @(CargoChannelArg, ' ') build @(CargoBuildArg, ' ') -p $(CargoPackage)" WorkingDirectory="$(CargoWorkspacePath)" />
+    <!-- 编译 Rust 库 -->
+    <Target Name="Cargo" DependsOnTargets="CheckWindowsOnly" BeforeTargets="BeforeBuild">
+        <Message Text="Building libs ($(CargoTarget))" Importance="high" />
+        <Exec Command="cargo @(CargoChannelArg, ' ') build @(CargoBuildArg, ' ') -p $(CargoPackage)"
+              WorkingDirectory="$(CargoWorkspacePath)" />
         <Message Text="Generate Bindings" Importance="high" />
-        <Exec Command="cargo @(CargoChannelArg, ' ') build @(CargoBuildArg, ' ') -p $(CargoBindingsPackage)" WorkingDirectory="$(CargoWorkspacePath)" />
+        <Exec Command="cargo @(CargoChannelArg, ' ') build @(CargoBuildArg, ' ') -p $(CargoBindingsPackage)"
+              WorkingDirectory="$(CargoWorkspacePath)" />
     </Target>
 
-    <!-- In AOT builds, add a reference to the IL compiler and link the static native artifact -->
-    <ItemGroup Condition=" '$(IsAotBuild)' == 'true' ">
-        <!-- This version of the IL Compiler is pinned to the framework (and by extension, ASP.NET) -->
-        <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="9.0.0" />
-
-        <IlcArg Include="--completetypemetadata" />
-        <IlcArg Include="-g" />
-        <NativeLibrary Include="$(CargoArtifactPath)" />
-    </ItemGroup>
-
-    <!-- In standard builds, copy the native dynamic artifact to the output dir  -->
-    <ItemGroup Condition=" '$(IsAotBuild)' == 'false' ">
-        <CargoLibrary Include="$(CargoArtifactPath)" />
-    </ItemGroup>
-
-    <Target Name="CargoBuildCopy" DependsOnTargets="Cargo" BeforeTargets="BeforeBuild" Condition=" '$(IsAotBuild)' == 'false' ">
-        <Message Text="Copy native libs" Importance="high" />
+    <!-- 复制 DLL 到输出目录 -->
+    <Target Name="CargoBuildCopy" DependsOnTargets="Cargo" BeforeTargets="BeforeBuild">
+        <Message Text="Copy native libs ($(CargoTarget))" Importance="high" />
         <ItemGroup>
-			<Content Include="@(CargoLibrary)">
-                <Link>native/%(RecursiveDir)%(Filename)%(Extension)</Link>
+            <Content Include="$(CargoArtifactPath)">
+                <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
                 <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             </Content>
-            <!-- <EmbeddedResource Include="@(CargoLibrary)" /> -->
-		</ItemGroup>
+        </ItemGroup>
     </Target>
 </Project>
