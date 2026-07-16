@@ -1,4 +1,4 @@
-use interoptopus::ffi_type;
+use interoptopus::ffi;
 
 impl From<HitResultPriority> for rosu_pp::any::HitResultPriority {
     fn from(value: HitResultPriority) -> Self {
@@ -9,7 +9,7 @@ impl From<HitResultPriority> for rosu_pp::any::HitResultPriority {
     }
 }
 
-#[ffi_type]
+#[ffi]
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, Default)]
 pub enum HitResultPriority {

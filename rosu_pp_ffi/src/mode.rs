@@ -1,4 +1,4 @@
-use interoptopus::ffi_type;
+use interoptopus::ffi;
 use rosu_pp::model::mode::GameMode;
 
 impl From<Mode> for GameMode {
@@ -45,7 +45,7 @@ impl From<rosu_mods::GameMode> for Mode {
     }
 }
 
-#[ffi_type]
+#[ffi]
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, Default)]
 pub enum Mode {

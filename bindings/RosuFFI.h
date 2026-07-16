@@ -873,3 +873,7 @@ double calculate_accuacy(const scorestate* state, const difficultyattributes* di
 #endif
 
 #endif /* rosu_pp */
+/*
+ * LEGACY INTEROPTOPUS 0.14 BINDING.
+ * This file is not ABI-compatible with the Interoptopus 0.16 native library.
+ */

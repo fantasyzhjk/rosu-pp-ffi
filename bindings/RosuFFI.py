@@ -3098,4 +3098,6 @@ class Mods:
         return c_lib.mods_clock_rate(self._ctx, )
 
 
+# LEGACY INTEROPTOPUS 0.14 BINDING.
+# This file is not ABI-compatible with the Interoptopus 0.16 native library.
 

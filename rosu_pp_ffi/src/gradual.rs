@@ -1,46 +1,43 @@
 use crate::*;
 use beatmap::Beatmap;
 use difficulty::Difficulty;
-use interoptopus::{
-    ffi_service, ffi_service_ctor, ffi_service_method, ffi_type, patterns::option::FFIOption,
-};
+use interoptopus::{ffi, ffi::Option as FFIOption};
 use mode::Mode;
 use state::ScoreState;
 
-#[ffi_type(opaque)]
+#[ffi(service)]
 #[repr(C)]
 #[allow(non_snake_case)]
 pub struct GradualDifficulty {
     pub inner: rosu_pp::GradualDifficulty,
 }
 
-#[ffi_service(error = "FFIError", prefix = "gradual_difficulty_")]
+#[ffi(prefix = "gradual_difficulty_")]
 impl GradualDifficulty {
     /// Create a [`GradualDifficulty`] for a map of any mode.
-    #[ffi_service_ctor]
-    pub fn new(difficulty: &Difficulty, beatmap: &Beatmap) -> Result<Self, Error> {
-        Ok(Self {
+    pub fn create(difficulty: &Difficulty, beatmap: &Beatmap) -> ffi::Result<Self, FFIError> {
+        ffi_result(Ok(Self {
             inner: rosu_pp::GradualDifficulty::new(difficulty.construct(), &beatmap.inner),
-        })
+        }))
     }
 
     /// Create a [`GradualDifficulty`] for a [`Beatmap`] on a specific [`GameMode`].
-    #[ffi_service_ctor]
     pub fn new_with_mode(
         difficulty: &Difficulty,
         beatmap: &Beatmap,
         mode: Mode,
-    ) -> Result<Self, Error> {
-        Ok(Self {
-            inner: rosu_pp::GradualDifficulty::new_with_mode(
+    ) -> ffi::Result<Self, FFIError> {
+        ffi_result(
+            rosu_pp::GradualDifficulty::new_with_mode(
                 difficulty.construct(),
                 &beatmap.inner,
                 mode.into(),
-            )?,
-        })
+            )
+            .map(|inner| Self { inner })
+            .map_err(Error::from),
+        )
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn next(&mut self) -> FFIOption<attributes::DifficultyAttributes> {
         self.inner
             .next()
@@ -48,7 +45,6 @@ impl GradualDifficulty {
             .into()
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn nth(&mut self, n: u32) -> FFIOption<attributes::DifficultyAttributes> {
         self.inner
             .nth(n as usize)
@@ -56,48 +52,46 @@ impl GradualDifficulty {
             .into()
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn len(&self) -> u32 {
         self.inner.len() as u32
     }
 }
 
-#[ffi_type(opaque)]
+#[ffi(service)]
 #[repr(C)]
 #[allow(non_snake_case)]
 pub struct GradualPerformance {
     pub inner: rosu_pp::GradualPerformance,
 }
 
-#[ffi_service(error = "FFIError", prefix = "gradual_performance_")]
+#[ffi(prefix = "gradual_performance_")]
 impl GradualPerformance {
     /// Create a [`GradualPerformance`] for a map of any mode.
-    #[ffi_service_ctor]
-    pub fn new(difficulty: &Difficulty, beatmap: &Beatmap) -> Result<Self, Error> {
-        Ok(Self {
+    pub fn create(difficulty: &Difficulty, beatmap: &Beatmap) -> ffi::Result<Self, FFIError> {
+        ffi_result(Ok(Self {
             inner: rosu_pp::GradualPerformance::new(difficulty.construct(), &beatmap.inner),
-        })
+        }))
     }
 
     /// Create a [`GradualPerformance`] for a [`Beatmap`] on a specific [`GameMode`].
-    #[ffi_service_ctor]
     pub fn new_with_mode(
         difficulty: &Difficulty,
         beatmap: &Beatmap,
         mode: Mode,
-    ) -> Result<Self, Error> {
-        Ok(Self {
-            inner: rosu_pp::GradualPerformance::new_with_mode(
+    ) -> ffi::Result<Self, FFIError> {
+        ffi_result(
+            rosu_pp::GradualPerformance::new_with_mode(
                 difficulty.construct(),
                 &beatmap.inner,
                 mode.into(),
-            )?,
-        })
+            )
+            .map(|inner| Self { inner })
+            .map_err(Error::from),
+        )
     }
 
     /// Process the next hit object and calculate the performance attributes
     /// for the resulting score state.
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn next(&mut self, state: ScoreState) -> FFIOption<attributes::PerformanceAttributes> {
         self.inner
             .next(state.into())
@@ -107,7 +101,6 @@ impl GradualPerformance {
 
     /// Process all remaining hit objects and calculate the final performance
     /// attributes.
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn last(&mut self, state: ScoreState) -> FFIOption<attributes::PerformanceAttributes> {
         self.inner
             .last(state.into())
@@ -120,7 +113,6 @@ impl GradualPerformance {
     ///
     /// Note that the count is zero-indexed, so `n=0` will process 1 object,
     /// `n=1` will process 2, and so on.
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn nth(
         &mut self,
         state: ScoreState,
@@ -133,7 +125,6 @@ impl GradualPerformance {
     }
 
     /// Returns the amount of remaining objects.
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn len(&self) -> u32 {
         self.inner.len() as u32
     }

@@ -1,9 +1,9 @@
-use interoptopus::ffi_type;
+use interoptopus::ffi;
 
 /// The result of a difficulty calculation on an osu!mania map.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[repr(C)]
-#[ffi_type]
+#[ffi]
 pub struct ManiaDifficultyAttributes {
     /// The final star rating.
     pub stars: f64,
@@ -65,7 +65,7 @@ impl From<ManiaDifficultyAttributes> for rosu_pp::mania::ManiaDifficultyAttribut
 /// The result of a performance calculation on an osu!mania map.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[repr(C)]
-#[ffi_type]
+#[ffi]
 pub struct ManiaPerformanceAttributes {
     /// The difficulty attributes that were used for the performance calculation.
     pub difficulty: ManiaDifficultyAttributes,
