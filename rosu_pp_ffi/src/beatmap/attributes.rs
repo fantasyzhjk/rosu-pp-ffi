@@ -111,9 +111,7 @@ impl BeatmapAttributesBuilder {
     }
 
     pub fn s_mods(&mut self, str: AsciiPointer) -> Result<(), Error> {
-        self.mods_intermode = Some(GameModsIntermode::from_acronyms(
-            str.as_str()?,
-        ));
+        self.mods_intermode = Some(GameModsIntermode::from_acronyms(str.as_str()?));
         Ok(())
     }
 
@@ -145,11 +143,11 @@ impl BeatmapAttributesBuilder {
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn get_clock_rate(&mut self) -> f64 {
         if let Some(mods) = self.mods.as_ref() {
-            return mods.clock_rate().unwrap_or(1.0)
+            return mods.clock_rate().unwrap_or(1.0);
         }
-        
+
         if let Some(mods_intermode) = self.mods_intermode.as_ref() {
-            return mods_intermode.legacy_clock_rate()
+            return mods_intermode.legacy_clock_rate();
         }
 
         1.0

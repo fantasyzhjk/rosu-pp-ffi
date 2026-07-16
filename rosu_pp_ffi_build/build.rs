@@ -21,8 +21,8 @@ fn main() {
 }
 
 fn bindings_csharp(file_name: impl AsRef<Path>) -> Result<(), Error> {
-    use interoptopus_backend_csharp::{Config, Generator, Unsafe};
     use interoptopus_backend_csharp::overloads::DotNet;
+    use interoptopus_backend_csharp::{Config, Generator, Unsafe};
 
     Generator::new(
         Config {

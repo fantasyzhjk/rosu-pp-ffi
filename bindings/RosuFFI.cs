@@ -974,6 +974,8 @@ namespace RosuPP
         public double speed;
         /// The difficulty of the flashlight skill.
         public double flashlight;
+        /// The difficulty of the reading skill.
+        public double reading;
         /// The ratio of the aim strain with and without considering sliders
         public double slider_factor;
         /// Describes how much of aim's difficult strain count is contributed to by sliders.
@@ -986,6 +988,8 @@ namespace RosuPP
         public double aim_difficult_strain_count;
         /// Weighted sum of speed strains.
         public double speed_difficult_strain_count;
+        /// The number of reading-intensive objects weighted by difficulty.
+        public double reading_difficult_note_count;
         /// The amount of nested score per object.
         public double nested_score_per_object;
         /// The legacy score base multiplier.
@@ -1000,7 +1004,7 @@ namespace RosuPP
         public double ok_hit_window;
         /// The meh hit window.
         public double meh_hit_window;
-        /// The overall difficulty
+        /// The health drain rate.
         public double hp;
         /// The amount of circles.
         public uint n_circles;
@@ -1010,10 +1014,10 @@ namespace RosuPP
         ///
         /// The meaning depends on the kind of score:
         /// - if set on osu!stable, this value is irrelevant
-        /// - if set on osu!lazer *without* `CL`, this value is the amount of
-        ///   slider ticks and repeats
-        /// - if set on osu!lazer *with* `CL`, this value is the amount of slider
-        ///   heads, ticks, and repeats
+        /// - if set on osu!lazer *with* slider accuracy, this value is the amount
+        ///   of hit slider ticks and repeats
+        /// - if set on osu!lazer *without* slider accuracy, this value is the
+        ///   amount of hit slider heads, ticks, and repeats
         public uint n_large_ticks;
         /// The amount of spinners.
         public uint n_spinners;
@@ -1038,6 +1042,8 @@ namespace RosuPP
         public double pp_aim;
         /// The flashlight portion of the final pp.
         public double pp_flashlight;
+        /// The reading portion of the final pp.
+        public double pp_reading;
         /// The speed portion of the final pp.
         public double pp_speed;
         /// Misses including an approximated amount of slider breaks

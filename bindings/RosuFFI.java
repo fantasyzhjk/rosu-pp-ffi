@@ -571,10 +571,10 @@ public class RosuFFI {
             }
         }
 
-        @Structure.FieldOrder({ "aim", "aim_difficult_slider_count", "speed", "flashlight", "slider_factor",
+        @Structure.FieldOrder({ "aim", "aim_difficult_slider_count", "speed", "flashlight", "reading", "slider_factor",
                 "aim_top_weighted_slider_factor", "speed_top_weighted_slider_factor",
                 "speed_note_count", "aim_difficult_strain_count", "speed_difficult_strain_count",
-                "nested_score_per_object", "legacy_score_base_multiplier", "maximum_legacy_combo_score",
+                "reading_difficult_note_count", "nested_score_per_object", "legacy_score_base_multiplier", "maximum_legacy_combo_score",
                 "ar", "great_hit_window", "ok_hit_window", "meh_hit_window", "hp",
                 "n_circles", "n_sliders", "n_large_ticks", "n_spinners",
                 "stars", "max_combo" })
@@ -583,12 +583,14 @@ public class RosuFFI {
             public double aim_difficult_slider_count;    // The number of sliders weighted by difficulty.
             public double speed;                         // Difficulty of the speed skill
             public double flashlight;                   // Difficulty of the flashlight skill
+            public double reading;                      // Difficulty of the reading skill
             public double slider_factor;                // Ratio of aim strain with/without sliders
             public double aim_top_weighted_slider_factor;
             public double speed_top_weighted_slider_factor;
             public double speed_note_count;             // Number of clickable objects weighted by difficulty
             public double aim_difficult_strain_count;   // Weighted sum of aim strains
             public double speed_difficult_strain_count; // Weighted sum of speed strains
+            public double reading_difficult_note_count; // Number of reading-intensive objects weighted by difficulty
             public double nested_score_per_object;
             public double legacy_score_base_multiplier;
             public double maximum_legacy_combo_score;
@@ -609,7 +611,7 @@ public class RosuFFI {
         }
 
         @Structure.FieldOrder({ "difficulty", "pp", "pp_acc", "pp_aim",
-                "pp_flashlight", "pp_speed", "effective_miss_count", "speed_deviation",
+                "pp_flashlight", "pp_reading", "pp_speed", "effective_miss_count", "speed_deviation",
                 "combo_based_estimated_miss_count", "score_based_estimated_miss_count",
                 "aim_estimated_slider_breaks", "speed_estimated_slider_breaks" })
         public static class OsuPerformanceAttributes extends Structure {
@@ -618,6 +620,7 @@ public class RosuFFI {
             public double pp_acc;                      // Accuracy portion of the final pp
             public double pp_aim;                      // Aim portion of the final pp
             public double pp_flashlight;               // Flashlight portion of the final pp
+            public double pp_reading;                  // Reading portion of the final pp
             public double pp_speed;                    // Speed portion of the final pp
             public double effective_miss_count;        // Misses including approximated slider breaks
             public Optionf64 speed_deviation;          // Approximated unstable-rate

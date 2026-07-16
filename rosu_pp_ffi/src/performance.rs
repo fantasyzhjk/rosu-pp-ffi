@@ -3,8 +3,7 @@ use attributes::DifficultyAttributes;
 use beatmap::Beatmap;
 use hitresult_priority::HitResultPriority;
 use interoptopus::{
-    ffi_service, ffi_service_ctor, ffi_service_method, ffi_type,
-    patterns::string::AsciiPointer,
+    ffi_service, ffi_service_ctor, ffi_service_method, ffi_type, patterns::string::AsciiPointer,
 };
 use mode::Mode;
 use mods::Mods;
@@ -42,7 +41,7 @@ pub struct Performance {
     pub n50: Option<u32>,
     pub n_katu: Option<u32>,
     pub n_geki: Option<u32>,
-    pub state: Option<ScoreState>
+    pub state: Option<ScoreState>,
 }
 
 // Regular implementation of methods.
@@ -69,9 +68,7 @@ impl Performance {
     }
 
     pub fn s_mods(&mut self, str: AsciiPointer) -> Result<(), Error> {
-        self.mods_intermode = Some(GameModsIntermode::from_acronyms(
-            str.as_str()?,
-        ));
+        self.mods_intermode = Some(GameModsIntermode::from_acronyms(str.as_str()?));
         Ok(())
     }
 
@@ -260,7 +257,7 @@ impl Performance {
             n50,
             n_katu,
             n_geki,
-            state
+            state,
         } = self;
 
         if let Some(mode) = *mode {
@@ -332,7 +329,7 @@ impl Performance {
         if let Some(large_tick_hits) = *large_tick_hits {
             perf = perf.large_tick_hits(large_tick_hits);
         }
-        
+
         if let Some(small_tick_hits) = *small_tick_hits {
             perf = perf.small_tick_hits(small_tick_hits);
         }

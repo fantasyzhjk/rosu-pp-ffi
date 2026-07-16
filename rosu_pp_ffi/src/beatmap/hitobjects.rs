@@ -1,6 +1,6 @@
 use crate::*;
 use interoptopus::{
-    ffi_service, ffi_service_ctor, ffi_service_method, ffi_type, patterns::option::FFIOption
+    ffi_service, ffi_service_ctor, ffi_service_method, ffi_type, patterns::option::FFIOption,
 };
 
 use super::{pos::Pos, Beatmap};
@@ -25,55 +25,45 @@ pub struct HitObjectData {
     pub repeats: u32,
     pub expected_dist: FFIOption<f64>,
     // for spinner and hold
-    pub duration: f64
+    pub duration: f64,
 }
 
 impl From<&rosu_pp::model::hit_object::HitObjectKind> for HitObjectData {
     fn from(kind: &rosu_pp::model::hit_object::HitObjectKind) -> Self {
         match *kind {
-            rosu_pp::model::hit_object::HitObjectKind::Circle => {
-                Self {
-                    kind: HitObjectKind::Circle,
-                    ..Default::default()
-                }
+            rosu_pp::model::hit_object::HitObjectKind::Circle => Self {
+                kind: HitObjectKind::Circle,
+                ..Default::default()
             },
-            rosu_pp::model::hit_object::HitObjectKind::Slider(rosu_pp::model::hit_object::Slider {
-                repeats,
-                expected_dist,
-                ..
-            }) => {
-                Self {
-                    kind: HitObjectKind::Slider,
-                    repeats: repeats as u32,
-                    expected_dist: expected_dist.into(),
-                    ..Default::default()
-                }
+            rosu_pp::model::hit_object::HitObjectKind::Slider(
+                rosu_pp::model::hit_object::Slider {
+                    repeats,
+                    expected_dist,
+                    ..
+                },
+            ) => Self {
+                kind: HitObjectKind::Slider,
+                repeats: repeats as u32,
+                expected_dist: expected_dist.into(),
+                ..Default::default()
             },
-            rosu_pp::model::hit_object::HitObjectKind::Spinner(rosu_pp::model::hit_object::Spinner {
+            rosu_pp::model::hit_object::HitObjectKind::Spinner(
+                rosu_pp::model::hit_object::Spinner { duration, .. },
+            ) => Self {
+                kind: HitObjectKind::Spinner,
                 duration,
-                ..
-            }) => {
-                Self {
-                    kind: HitObjectKind::Spinner,
-                    duration,
-                    ..Default::default()
-                }
+                ..Default::default()
             },
-            rosu_pp::model::hit_object::HitObjectKind::Hold(rosu_pp::model::hit_object::HoldNote {
+            rosu_pp::model::hit_object::HitObjectKind::Hold(
+                rosu_pp::model::hit_object::HoldNote { duration, .. },
+            ) => Self {
+                kind: HitObjectKind::Spinner,
                 duration,
-                ..
-            }) => {
-                Self {
-                    kind: HitObjectKind::Spinner,
-                    duration,
-                    ..Default::default()
-                }
+                ..Default::default()
             },
         }
     }
 }
-
-
 
 #[ffi_type]
 #[repr(C)]
@@ -81,7 +71,7 @@ impl From<&rosu_pp::model::hit_object::HitObjectKind> for HitObjectData {
 pub struct HitObject {
     pub pos: Pos,
     pub start_time: f64,
-    pub data: HitObjectData
+    pub data: HitObjectData,
 }
 
 impl From<&rosu_pp::model::hit_object::HitObject> for HitObject {
@@ -99,7 +89,7 @@ impl From<&rosu_pp::model::hit_object::HitObject> for HitObject {
 pub struct HitObjects<'a> {
     pub inner: &'a [rosu_pp::model::hit_object::HitObject],
     pub index: u32,
-    pub len: u32
+    pub len: u32,
 }
 
 // Regular implementation of methods.
@@ -157,4 +147,3 @@ impl<'a> HitObjects<'a> {
         self.inner.get_unchecked(index as usize).into()
     }
 }
-

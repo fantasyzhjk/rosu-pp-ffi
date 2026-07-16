@@ -1,11 +1,10 @@
 use crate::beatmap::Beatmap;
 use crate::*;
 use interoptopus::{
-    ffi_service, ffi_service_ctor, ffi_service_method, ffi_type,
-    patterns::string::AsciiPointer,
+    ffi_service, ffi_service_ctor, ffi_service_method, ffi_type, patterns::string::AsciiPointer,
 };
 use mods::Mods;
-use rosu_mods::{GameModsIntermode, GameMods};
+use rosu_mods::{GameMods, GameModsIntermode};
 
 #[ffi_type(opaque)]
 #[derive(Default)]
@@ -52,9 +51,7 @@ impl Difficulty {
 
     #[ffi_service_method(on_panic = "ffi_error")]
     pub fn s_mods(&mut self, str: AsciiPointer) -> Result<(), Error> {
-        self.mods_intermode = Some(GameModsIntermode::from_acronyms(
-            str.as_str()?,
-        ));
+        self.mods_intermode = Some(GameModsIntermode::from_acronyms(str.as_str()?));
         Ok(())
     }
 
@@ -106,11 +103,11 @@ impl Difficulty {
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn get_clock_rate(&mut self) -> f64 {
         if let Some(mods) = self.mods.as_ref() {
-            return mods.clock_rate().unwrap_or(1.0)
+            return mods.clock_rate().unwrap_or(1.0);
         }
-        
+
         if let Some(mods_intermode) = self.mods_intermode.as_ref() {
-            return mods_intermode.legacy_clock_rate()
+            return mods_intermode.legacy_clock_rate();
         }
 
         1.0
@@ -131,7 +128,7 @@ impl Difficulty {
             hp,
             od,
             hardrock_offsets,
-            lazer
+            lazer,
         } = self;
 
         if let Some(mods) = mods {

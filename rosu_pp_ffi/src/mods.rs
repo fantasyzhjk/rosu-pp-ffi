@@ -5,7 +5,11 @@ use interoptopus::{
 };
 use mode::Mode;
 use owned_string::OwnedString;
-use rosu_mods::{generated_mods::UnknownMod, serde::{GameModSeed, GameModsSeed}, Acronym, GameMod};
+use rosu_mods::{
+    generated_mods::UnknownMod,
+    serde::{GameModSeed, GameModsSeed},
+    Acronym, GameMod,
+};
 use serde::de::DeserializeSeed;
 
 #[ffi_type(opaque)]
@@ -22,45 +26,60 @@ impl Mods {
     pub fn new(mode: Mode) -> Result<Self, Error> {
         Ok(Self {
             mods: rosu_mods::GameMods::new(),
-            mode: Some(mode)
+            mode: Some(mode),
         })
     }
 
     #[ffi_service_ctor]
     pub fn from_acronyms(str: AsciiPointer, mode: Mode) -> Result<Self, Error> {
         Ok(Self {
-            mods: rosu_mods::GameMods::from_intermode(&rosu_mods::GameModsIntermode::from_acronyms(
-                str.as_str()?,
-            ), mode.into()),
-            mode: Some(mode)
+            mods: rosu_mods::GameMods::from_intermode(
+                &rosu_mods::GameModsIntermode::from_acronyms(str.as_str()?),
+                mode.into(),
+            ),
+            mode: Some(mode),
         })
     }
 
     #[ffi_service_ctor]
     pub fn from_bits(bits: u32, mode: Mode) -> Result<Self, Error> {
         Ok(Self {
-            mods: rosu_mods::GameMods::from_intermode(&rosu_mods::GameModsIntermode::from_bits(bits), mode.into()),
-            mode: Some(mode)
+            mods: rosu_mods::GameMods::from_intermode(
+                &rosu_mods::GameModsIntermode::from_bits(bits),
+                mode.into(),
+            ),
+            mode: Some(mode),
         })
     }
-
 
     #[ffi_service_ctor]
-    pub fn from_json(str: AsciiPointer, mode: Mode, deny_unknown_fields: bool) -> Result<Self, Error> {
+    pub fn from_json(
+        str: AsciiPointer,
+        mode: Mode,
+        deny_unknown_fields: bool,
+    ) -> Result<Self, Error> {
         let s = str.as_str()?;
         let mut d = serde_json::Deserializer::from_str(s);
-        let mods = GameModsSeed::Mode { mode: mode.into(), deny_unknown_fields }.deserialize(&mut d)?;
+        let mods = GameModsSeed::Mode {
+            mode: mode.into(),
+            deny_unknown_fields,
+        }
+        .deserialize(&mut d)?;
         Ok(Self {
             mods,
-            mode: Some(mode)
+            mode: Some(mode),
         })
     }
-    
+
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn remove_unknown_mods(&mut self) {
-        self.mods = self.mods.clone().into_iter().filter(|m| m.kind() != UnknownMod::kind()).collect();
+        self.mods = self
+            .mods
+            .clone()
+            .into_iter()
+            .filter(|m| m.kind() != UnknownMod::kind())
+            .collect();
     }
-    
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn sanitize(&mut self) {
@@ -86,7 +105,16 @@ impl Mods {
     pub fn insert_json(&mut self, str: AsciiPointer, deny_unknown_fields: bool) -> bool {
         if let Ok(s) = str.as_str() {
             let mut d = serde_json::Deserializer::from_str(s);
-            let s = if let Some(mode) = self.mode { GameModSeed::Mode { mode: mode.into(), deny_unknown_fields } } else { GameModSeed::GuessMode { deny_unknown_fields } };
+            let s = if let Some(mode) = self.mode {
+                GameModSeed::Mode {
+                    mode: mode.into(),
+                    deny_unknown_fields,
+                }
+            } else {
+                GameModSeed::GuessMode {
+                    deny_unknown_fields,
+                }
+            };
             if let Ok(m) = s.deserialize(&mut d) {
                 self.mods.insert(m);
                 return true;
@@ -98,7 +126,8 @@ impl Mods {
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn insert(&mut self, str: AsciiPointer) -> bool {
         if let Ok(s) = str.as_str() {
-            self.mods.insert(GameMod::new(s, self.mode.unwrap_or_default().into()));
+            self.mods
+                .insert(GameMod::new(s, self.mode.unwrap_or_default().into()));
             return true;
         }
         false
@@ -107,7 +136,7 @@ impl Mods {
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn contains(&mut self, str: AsciiPointer) -> bool {
         if let Ok(s) = str.as_str() {
-            if let Ok(m) = s.parse::<Acronym>(){
+            if let Ok(m) = s.parse::<Acronym>() {
                 return self.mods.contains_acronym(m);
             }
         }

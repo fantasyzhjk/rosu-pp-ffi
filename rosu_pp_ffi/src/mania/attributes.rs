@@ -19,7 +19,6 @@ pub struct ManiaDifficultyAttributes {
     pub is_convert: bool,
 }
 
-
 impl ManiaDifficultyAttributes {
     /// Return the maximum combo.
     pub const fn max_combo(&self) -> u32 {
@@ -103,7 +102,6 @@ impl ManiaPerformanceAttributes {
     pub const fn is_convert(&self) -> bool {
         self.difficulty.is_convert
     }
-
 }
 
 impl From<rosu_pp::mania::ManiaPerformanceAttributes> for ManiaPerformanceAttributes {

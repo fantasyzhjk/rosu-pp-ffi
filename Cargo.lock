@@ -303,7 +303,7 @@ dependencies = [
 [[package]]
 name = "rosu-pp"
 version = "4.0.1"
-source = "git+https://github.com/MaxOhn/rosu-pp?rev=27a67242cad155a2767f5a25a423ca4ec3e3c274#27a67242cad155a2767f5a25a423ca4ec3e3c274"
+source = "git+https://github.com/Apeuriox/rosu-pp?rev=9a073d29611ef936b581a08d3c5b288ef5427301#9a073d29611ef936b581a08d3c5b288ef5427301"
 dependencies = [
  "divan",
  "rosu-map",

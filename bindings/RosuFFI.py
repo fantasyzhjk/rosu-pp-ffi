@@ -528,12 +528,14 @@ class OsuDifficultyAttributes(ctypes.Structure):
         ("aim_difficult_slider_count", ctypes.c_double),
         ("speed", ctypes.c_double),
         ("flashlight", ctypes.c_double),
+        ("reading", ctypes.c_double),
         ("slider_factor", ctypes.c_double),
         ("aim_top_weighted_slider_factor", ctypes.c_double),
         ("speed_top_weighted_slider_factor", ctypes.c_double),
         ("speed_note_count", ctypes.c_double),
         ("aim_difficult_strain_count", ctypes.c_double),
         ("speed_difficult_strain_count", ctypes.c_double),
+        ("reading_difficult_note_count", ctypes.c_double),
         ("nested_score_per_object", ctypes.c_double),
         ("legacy_score_base_multiplier", ctypes.c_double),
         ("maximum_legacy_combo_score", ctypes.c_double),
@@ -550,7 +552,7 @@ class OsuDifficultyAttributes(ctypes.Structure):
         ("max_combo", ctypes.c_uint32),
     ]
 
-    def __init__(self, aim: float = None, aim_difficult_slider_count: float = None, speed: float = None, flashlight: float = None, slider_factor: float = None, aim_top_weighted_slider_factor: float = None, speed_top_weighted_slider_factor: float = None, speed_note_count: float = None, aim_difficult_strain_count: float = None, speed_difficult_strain_count: float = None, nested_score_per_object: float = None, legacy_score_base_multiplier: float = None, maximum_legacy_combo_score: float = None, ar: float = None, great_hit_window: float = None, ok_hit_window: float = None, meh_hit_window: float = None, hp: float = None, n_circles: int = None, n_sliders: int = None, n_large_ticks: int = None, n_spinners: int = None, stars: float = None, max_combo: int = None):
+    def __init__(self, aim: float = None, aim_difficult_slider_count: float = None, speed: float = None, flashlight: float = None, reading: float = None, slider_factor: float = None, aim_top_weighted_slider_factor: float = None, speed_top_weighted_slider_factor: float = None, speed_note_count: float = None, aim_difficult_strain_count: float = None, speed_difficult_strain_count: float = None, reading_difficult_note_count: float = None, nested_score_per_object: float = None, legacy_score_base_multiplier: float = None, maximum_legacy_combo_score: float = None, ar: float = None, great_hit_window: float = None, ok_hit_window: float = None, meh_hit_window: float = None, hp: float = None, n_circles: int = None, n_sliders: int = None, n_large_ticks: int = None, n_spinners: int = None, stars: float = None, max_combo: int = None):
         if aim is not None:
             self.aim = aim
         if aim_difficult_slider_count is not None:
@@ -559,6 +561,8 @@ class OsuDifficultyAttributes(ctypes.Structure):
             self.speed = speed
         if flashlight is not None:
             self.flashlight = flashlight
+        if reading is not None:
+            self.reading = reading
         if slider_factor is not None:
             self.slider_factor = slider_factor
         if aim_top_weighted_slider_factor is not None:
@@ -571,6 +575,8 @@ class OsuDifficultyAttributes(ctypes.Structure):
             self.aim_difficult_strain_count = aim_difficult_strain_count
         if speed_difficult_strain_count is not None:
             self.speed_difficult_strain_count = speed_difficult_strain_count
+        if reading_difficult_note_count is not None:
+            self.reading_difficult_note_count = reading_difficult_note_count
         if nested_score_per_object is not None:
             self.nested_score_per_object = nested_score_per_object
         if legacy_score_base_multiplier is not None:
@@ -641,6 +647,16 @@ class OsuDifficultyAttributes(ctypes.Structure):
         return ctypes.Structure.__set__(self, "flashlight", value)
 
     @property
+    def reading(self) -> float:
+        """ The difficulty of the reading skill."""
+        return ctypes.Structure.__get__(self, "reading")
+
+    @reading.setter
+    def reading(self, value: float):
+        """ The difficulty of the reading skill."""
+        return ctypes.Structure.__set__(self, "reading", value)
+
+    @property
     def slider_factor(self) -> float:
         """ The ratio of the aim strain with and without considering sliders"""
         return ctypes.Structure.__get__(self, "slider_factor")
@@ -699,6 +715,16 @@ class OsuDifficultyAttributes(ctypes.Structure):
     def speed_difficult_strain_count(self, value: float):
         """ Weighted sum of speed strains."""
         return ctypes.Structure.__set__(self, "speed_difficult_strain_count", value)
+
+    @property
+    def reading_difficult_note_count(self) -> float:
+        """ The number of reading-intensive objects weighted by difficulty."""
+        return ctypes.Structure.__get__(self, "reading_difficult_note_count")
+
+    @reading_difficult_note_count.setter
+    def reading_difficult_note_count(self, value: float):
+        """ The number of reading-intensive objects weighted by difficulty."""
+        return ctypes.Structure.__set__(self, "reading_difficult_note_count", value)
 
     @property
     def nested_score_per_object(self) -> float:
@@ -772,12 +798,12 @@ class OsuDifficultyAttributes(ctypes.Structure):
 
     @property
     def hp(self) -> float:
-        """ The overall difficulty"""
+        """ The health drain rate."""
         return ctypes.Structure.__get__(self, "hp")
 
     @hp.setter
     def hp(self, value: float):
-        """ The overall difficulty"""
+        """ The health drain rate."""
         return ctypes.Structure.__set__(self, "hp", value)
 
     @property
@@ -806,10 +832,10 @@ class OsuDifficultyAttributes(ctypes.Structure):
 
  The meaning depends on the kind of score:
  - if set on osu!stable, this value is irrelevant
- - if set on osu!lazer *without* `CL`, this value is the amount of
-   slider ticks and repeats
- - if set on osu!lazer *with* `CL`, this value is the amount of slider
-   heads, ticks, and repeats"""
+ - if set on osu!lazer *with* slider accuracy, this value is the amount
+   of hit slider ticks and repeats
+ - if set on osu!lazer *without* slider accuracy, this value is the
+   amount of hit slider heads, ticks, and repeats"""
         return ctypes.Structure.__get__(self, "n_large_ticks")
 
     @n_large_ticks.setter
@@ -818,10 +844,10 @@ class OsuDifficultyAttributes(ctypes.Structure):
 
  The meaning depends on the kind of score:
  - if set on osu!stable, this value is irrelevant
- - if set on osu!lazer *without* `CL`, this value is the amount of
-   slider ticks and repeats
- - if set on osu!lazer *with* `CL`, this value is the amount of slider
-   heads, ticks, and repeats"""
+ - if set on osu!lazer *with* slider accuracy, this value is the amount
+   of hit slider ticks and repeats
+ - if set on osu!lazer *without* slider accuracy, this value is the
+   amount of hit slider heads, ticks, and repeats"""
         return ctypes.Structure.__set__(self, "n_large_ticks", value)
 
     @property
@@ -1373,6 +1399,7 @@ class OsuPerformanceAttributes(ctypes.Structure):
         ("pp_acc", ctypes.c_double),
         ("pp_aim", ctypes.c_double),
         ("pp_flashlight", ctypes.c_double),
+        ("pp_reading", ctypes.c_double),
         ("pp_speed", ctypes.c_double),
         ("effective_miss_count", ctypes.c_double),
         ("speed_deviation", Optionf64),
@@ -1382,7 +1409,7 @@ class OsuPerformanceAttributes(ctypes.Structure):
         ("speed_estimated_slider_breaks", ctypes.c_double),
     ]
 
-    def __init__(self, difficulty: OsuDifficultyAttributes = None, pp: float = None, pp_acc: float = None, pp_aim: float = None, pp_flashlight: float = None, pp_speed: float = None, effective_miss_count: float = None, speed_deviation: Optionf64 = None, combo_based_estimated_miss_count: float = None, score_based_estimated_miss_count: Optionf64 = None, aim_estimated_slider_breaks: float = None, speed_estimated_slider_breaks: float = None):
+    def __init__(self, difficulty: OsuDifficultyAttributes = None, pp: float = None, pp_acc: float = None, pp_aim: float = None, pp_flashlight: float = None, pp_reading: float = None, pp_speed: float = None, effective_miss_count: float = None, speed_deviation: Optionf64 = None, combo_based_estimated_miss_count: float = None, score_based_estimated_miss_count: Optionf64 = None, aim_estimated_slider_breaks: float = None, speed_estimated_slider_breaks: float = None):
         if difficulty is not None:
             self.difficulty = difficulty
         if pp is not None:
@@ -1393,6 +1420,8 @@ class OsuPerformanceAttributes(ctypes.Structure):
             self.pp_aim = pp_aim
         if pp_flashlight is not None:
             self.pp_flashlight = pp_flashlight
+        if pp_reading is not None:
+            self.pp_reading = pp_reading
         if pp_speed is not None:
             self.pp_speed = pp_speed
         if effective_miss_count is not None:
@@ -1457,6 +1486,16 @@ class OsuPerformanceAttributes(ctypes.Structure):
     def pp_flashlight(self, value: float):
         """ The flashlight portion of the final pp."""
         return ctypes.Structure.__set__(self, "pp_flashlight", value)
+
+    @property
+    def pp_reading(self) -> float:
+        """ The reading portion of the final pp."""
+        return ctypes.Structure.__get__(self, "pp_reading")
+
+    @pp_reading.setter
+    def pp_reading(self, value: float):
+        """ The reading portion of the final pp."""
+        return ctypes.Structure.__set__(self, "pp_reading", value)
 
     @property
     def pp_speed(self) -> float:

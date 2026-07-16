@@ -1,26 +1,25 @@
-
-use interoptopus::{extra_type, ffi_function, function, pattern, Inventory, InventoryBuilder};
 use interoptopus::patterns::api_guard::APIVersion;
+use interoptopus::{extra_type, ffi_function, function, pattern, Inventory, InventoryBuilder};
 
 mod error;
 mod mode;
 // mod calculator;
 // mod params;
 // mod result;
+mod attributes;
 mod beatmap;
 mod difficulty;
-mod osu;
-mod attributes;
-mod owned_string;
-mod mania;
 mod fruit;
-mod taiko;
+mod gradual;
+mod hitresult_priority;
+mod mania;
+mod mods;
+mod osu;
+mod owned_string;
 mod performance;
 mod state;
-mod mods;
-mod hitresult_priority;
-mod gradual;
-use error::{FFIError, Error};
+mod taiko;
+use error::{Error, FFIError};
 
 #[ffi_function]
 #[no_mangle]
@@ -60,5 +59,4 @@ pub fn ffi_inventory() -> Inventory {
         .register(function!(state::debug_score_state))
         .register(function!(state::calculate_accuacy))
         .inventory()
-
 }

@@ -12,7 +12,7 @@ public class PPUnitTest(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper output = output;
 
-    private void TestPP(string beatmapPath, string modstr, bool isLazer, Mode? mode = null, double compareRange = 0.0000001) {
+    private void TestPP(string beatmapPath, string modstr, bool isLazer, Mode? mode = null, double compareRange = 0.00001) {
         var b = File.ReadAllBytes(beatmapPath);
         using var beatmap = Beatmap.FromBytes(b);
 
@@ -47,11 +47,11 @@ public class PPUnitTest(ITestOutputHelper output)
         var acc = state.Acc(ref dattr, origin) * 100;
         output.WriteLine("{0}", attr);
         output.WriteLine("{0}", state);
-        output.WriteLine("{0}", acc);
         
         var ruleset = OsuPP.Utils.ParseRuleset((int)beatmap.Mode())!;
         var osubm = OsuPP.Calculater.New(ruleset, new OsuPP.CalculatorWorkingBeatmap(b));
-        var attr2 = osubm.Mods(mods).LoadState(state, dattr).Acc(acc).Calculate();
+        osubm.Mods(mods);
+        var attr2 = osubm.LoadState(state, dattr, mods.Contains("CL"), isLazer).Acc(acc).Calculate();
 
         var pp = mode switch {
             Mode.Osu => attr.osu.Unwrap().pp,
@@ -61,6 +61,8 @@ public class PPUnitTest(ITestOutputHelper output)
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
         };
 
+        output.WriteLine("pp: {0}", attr2.Total);
+        output.WriteLine("sr: {0}", osubm.difficultyAttributes.StarRating);
         Assert.InRange(pp, attr2.Total - compareRange, attr2.Total + compareRange);
     }
 
@@ -181,6 +183,12 @@ public class PPUnitTest(ITestOutputHelper output)
             modstr: "",
             isLazer: true
         );
+
+        TestPP(
+            beatmapPath: "../../../resources/1256809.osu",
+            modstr: "",
+            isLazer: true
+        );
     }
 
     [Fact]
@@ -256,7 +264,7 @@ public class PPUnitTest(ITestOutputHelper output)
         var ruleset = OsuPP.Utils.ParseRuleset((int)beatmap.Mode())!;
         var osubm = OsuPP.Calculater.New(ruleset, new OsuPP.CalculatorWorkingBeatmap(b));
         var attr2 = osubm.CalculateDifficulty();
-        
+
         output.WriteLine("{0}", JsonConvert.SerializeObject(attr2, Formatting.Indented));
         Assert.Equal(attr2.StarRating, attr.taiko.Unwrap().stars);
     }

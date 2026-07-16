@@ -34,7 +34,6 @@ impl From<Mode> for rosu_mods::GameMode {
     }
 }
 
-
 impl From<rosu_mods::GameMode> for Mode {
     fn from(value: rosu_mods::GameMode) -> Self {
         match value {

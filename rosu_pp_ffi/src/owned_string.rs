@@ -2,14 +2,13 @@ use std::{ffi::CString, mem::MaybeUninit};
 
 use crate::*;
 use interoptopus::{
-    ffi_service, ffi_service_ctor, ffi_service_method, ffi_type,
-    patterns::string::AsciiPointer,
+    ffi_service, ffi_service_ctor, ffi_service_method, ffi_type, patterns::string::AsciiPointer,
 };
 
 #[ffi_type(opaque)]
 pub struct OwnedString {
     pub inner: MaybeUninit<CString>,
-    pub is_init: bool
+    pub is_init: bool,
 }
 
 // Regular implementation of methods.
@@ -19,7 +18,7 @@ impl OwnedString {
     pub fn from_c_str(str: AsciiPointer) -> Result<Self, Error> {
         Ok(Self {
             inner: MaybeUninit::new(str.as_c_str().ok_or(Error::Null)?.to_owned()),
-            is_init: true
+            is_init: true,
         })
     }
 
@@ -27,13 +26,13 @@ impl OwnedString {
     pub fn empty() -> Result<Self, Error> {
         Ok(Self {
             inner: MaybeUninit::uninit(),
-            is_init: false
+            is_init: false,
         })
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn is_init(&self) -> bool {
-       self.is_init
+        self.is_init
     }
 
     #[ffi_service_method(on_panic = "undefined_behavior")]
@@ -44,7 +43,11 @@ impl OwnedString {
 
 impl OwnedString {
     pub fn replace(&mut self, str: String) {
-        if self.is_init { unsafe { self.inner.assume_init_drop(); } }
+        if self.is_init {
+            unsafe {
+                self.inner.assume_init_drop();
+            }
+        }
         self.inner.write(CString::new(str).unwrap());
         self.is_init = true;
     }
@@ -52,6 +55,10 @@ impl OwnedString {
 
 impl Drop for OwnedString {
     fn drop(&mut self) {
-        if self.is_init { unsafe { self.inner.assume_init_drop(); } }
+        if self.is_init {
+            unsafe {
+                self.inner.assume_init_drop();
+            }
+        }
     }
 }

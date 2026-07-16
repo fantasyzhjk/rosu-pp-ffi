@@ -18,7 +18,7 @@ pub enum FFIError {
     InvalidString = 500,
     SerializeError = 600,
     ConvertError = 700,
-    Unknown = 1000
+    Unknown = 1000,
 }
 
 // Implement Default so we know what the "good" case is.
@@ -31,10 +31,8 @@ impl interoptopus::patterns::result::FFIError for FFIError {
     const PANIC: Self = Self::Panic;
 }
 
-
 use thiserror::Error;
-#[derive(Error, Debug)]
-#[derive(Default)]
+#[derive(Error, Debug, Default)]
 pub enum Error {
     #[error("UnknownError")]
     #[default]
@@ -53,7 +51,6 @@ pub enum Error {
     Convert(#[from] rosu_pp::model::mode::ConvertError),
 }
 
-
 /// Provide a mapping how your Rust error enums translate
 /// to your FFI error enums.
 impl From<Error> for FFIError {
@@ -65,7 +62,7 @@ impl From<Error> for FFIError {
             Error::InvalidString => Self::InvalidString,
             Error::UTF8(_) => Self::Utf8Error,
             Error::Serialize(_) => Self::SerializeError,
-            Error::Convert(_) => Self::ConvertError
+            Error::Convert(_) => Self::ConvertError,
         }
     }
 }
@@ -79,7 +76,7 @@ impl From<interoptopus::Error> for Error {
             interoptopus::Error::IO(e) => Self::IO(e),
             interoptopus::Error::UTF8(e) => Self::UTF8(e),
             interoptopus::Error::FromUtf8(e) => Self::UTF8(e.utf8_error()),
-            _ => Self::Unknown
+            _ => Self::Unknown,
         }
     }
 }

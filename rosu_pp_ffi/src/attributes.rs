@@ -1,8 +1,5 @@
 use crate::{mode::Mode, owned_string::OwnedString};
-use interoptopus::{
-    ffi_function, ffi_type,
-    patterns::option::FFIOption,
-};
+use interoptopus::{ffi_function, ffi_type, patterns::option::FFIOption};
 
 #[ffi_type]
 #[repr(C)]
@@ -46,13 +43,18 @@ impl From<DifficultyAttributes> for rosu_pp::any::DifficultyAttributes {
     fn from(attributes: DifficultyAttributes) -> Self {
         match attributes.mode {
             Mode::Osu => rosu_pp::any::DifficultyAttributes::Osu(attributes.osu.unwrap().into()),
-            Mode::Taiko => rosu_pp::any::DifficultyAttributes::Taiko(attributes.taiko.unwrap().into()),
-            Mode::Catch => rosu_pp::any::DifficultyAttributes::Catch(attributes.fruit.unwrap().into()),
-            Mode::Mania => rosu_pp::any::DifficultyAttributes::Mania(attributes.mania.unwrap().into()),
+            Mode::Taiko => {
+                rosu_pp::any::DifficultyAttributes::Taiko(attributes.taiko.unwrap().into())
+            }
+            Mode::Catch => {
+                rosu_pp::any::DifficultyAttributes::Catch(attributes.fruit.unwrap().into())
+            }
+            Mode::Mania => {
+                rosu_pp::any::DifficultyAttributes::Mania(attributes.mania.unwrap().into())
+            }
         }
     }
 }
-
 
 #[ffi_type]
 #[repr(C)]
@@ -96,13 +98,18 @@ impl From<PerformanceAttributes> for rosu_pp::any::PerformanceAttributes {
     fn from(attributes: PerformanceAttributes) -> Self {
         match attributes.mode {
             Mode::Osu => rosu_pp::any::PerformanceAttributes::Osu(attributes.osu.unwrap().into()),
-            Mode::Taiko => rosu_pp::any::PerformanceAttributes::Taiko(attributes.taiko.unwrap().into()),
-            Mode::Catch => rosu_pp::any::PerformanceAttributes::Catch(attributes.fruit.unwrap().into()),
-            Mode::Mania => rosu_pp::any::PerformanceAttributes::Mania(attributes.mania.unwrap().into()),
+            Mode::Taiko => {
+                rosu_pp::any::PerformanceAttributes::Taiko(attributes.taiko.unwrap().into())
+            }
+            Mode::Catch => {
+                rosu_pp::any::PerformanceAttributes::Catch(attributes.fruit.unwrap().into())
+            }
+            Mode::Mania => {
+                rosu_pp::any::PerformanceAttributes::Mania(attributes.mania.unwrap().into())
+            }
         }
     }
 }
-
 
 #[ffi_function]
 #[no_mangle]
