@@ -6,7 +6,8 @@
 
 - Access to rosu-pp's performance points calculation methods via FFI.
 - First-class C# bindings generated with Interoptopus 0.16.3.
-- Java 17 JNA bindings adapted to the Interoptopus 0.16.3 ABI.
+- Java 22 bindings, with a generated FFM raw layer and the existing JNA facade
+  retained during migration.
 - Simple and lightweight design for cross-platform compatibility.
 
 ## Getting Started
@@ -57,17 +58,29 @@ Interoptopus 0.16 features used by the C# API include:
 - Services for stateful native objects such as beatmaps, calculators, mods, builders, and gradual calculation.
 
 The Java binding exposes the same payload-enum, owned UTF-8 string, wire, and
-service concepts through JNA. The canonical source is
+service concepts. The public facade is
 `JavaRosuPP/src/main/java/desu/life/RosuFFI.java`; running
 `rosu_pp_ffi_build` synchronizes it to `bindings/RosuFFI.java`. Set the
 `rosu.pp.ffi.library` system property to the current native library path, or
 make `rosu_pp_ffi` available through the platform library search path.
 
+The current C header is generated from `ffi_inventory()` by
+`rosu_pp_ffi_build`, rather than being a legacy checked-in ABI description.
+Run `JavaRosuPP/generate-ffm-bindings.sh` with `jextract` available to regenerate
+the Java 22 FFM raw layer under `desu.life.raw`. This generated layer is kept
+separate from the public facade so memory ownership and service lifetimes stay
+explicit during the JNA-to-FFM migration.
+
 ### Binding backend status
 
-Interoptopus 0.16 currently provides a functional C# generator. Its published C and CPython crates are placeholders and are marked as suspended upstream, so `rosu_pp_ffi_build` generates C# and synchronizes the maintained Java JNA binding.
+Interoptopus 0.16 currently provides a functional C# generator. Its published C
+and CPython crates are placeholders and are marked as suspended upstream, so
+this repository contains a small inventory-driven C header writer. The header
+feeds `jextract`; `rosu_pp_ffi_build` also generates C# and synchronizes the
+maintained Java facade.
 
-The checked-in C and Python files under `bindings/` are legacy Interoptopus 0.14 artifacts and are not ABI-compatible with the 0.16 native library. They remain as migration references and must not be used with current builds.
+Any legacy Python artifact from Interoptopus 0.14 is not ABI-compatible with
+the current 0.16 native library.
 
 ## Learn More
 
