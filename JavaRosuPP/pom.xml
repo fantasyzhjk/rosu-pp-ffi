@@ -14,13 +14,6 @@
     </properties>
 
     <dependencies>
-        <!-- JNA 库 -->
-        <dependency>
-            <groupId>net.java.dev.jna</groupId>
-            <artifactId>jna</artifactId>
-            <version>5.15.0</version>
-        </dependency>
-
         <!-- JUnit 5 库 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -83,6 +76,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
+                <configuration>
+                    <argLine>--enable-native-access=ALL-UNNAMED</argLine>
+                </configuration>
             </plugin>
         </plugins>
     </build>

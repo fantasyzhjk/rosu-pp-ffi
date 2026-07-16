@@ -18,3 +18,5 @@ jextract \
 # Keep the generated binding on the first stable FFM release for compatibility.
 perl -pi -e 's/SYMBOL_LOOKUP\.findOrThrow\(("[^"]+")\)/SYMBOL_LOOKUP.find($1).orElseThrow()/g' \
   "$output/RosuNative.java"
+perl -0pi -e 's/SymbolLookup\.libraryLookup\(System\.mapLibraryName\("rosu_pp_ffi"\), LIBRARY_ARENA\)\s*\.or\(SymbolLookup\.loaderLookup\(\)\)/SymbolLookup.loaderLookup()/g' \
+  "$output/RosuNative.java"

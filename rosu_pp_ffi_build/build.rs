@@ -12,21 +12,22 @@ fn main() -> Result<(), Box<dyn Error>> {
         .parent()
         .ok_or("binding crate must be located inside the workspace")?;
 
-    let java_binding = workspace.join("JavaRosuPP/src/main/java/desu/life/RosuFFI.java");
-    println!("cargo:rerun-if-changed={}", java_binding.display());
-
+    
     bindings_csharp(workspace.join("SharpRosuPP/RosuPP/RosuFFI.cs"))?;
     bindings_csharp(workspace.join("bindings/RosuFFI.cs"))?;
     c_header::write(
         &rosu_pp_ffi::ffi_inventory(),
         workspace.join("bindings/RosuFFI.h"),
     )?;
-    sync_java_binding(java_binding, workspace.join("bindings/RosuFFI.java"))?;
-
     // Interoptopus 0.16 ships a suspended, empty C backend. The local header
     // writer consumes the same inventory as the C# generator.
     println!("cargo:warning=C header generated from the Interoptopus 0.16 inventory");
-    println!("cargo:warning=Java JNA binding synchronized from JavaRosuPP");
+
+    // let java_binding = workspace.join("JavaRosuPP/src/main/java/desu/life/RosuFFI.java");
+    // println!("cargo:rerun-if-changed={}", java_binding.display());
+    // sync_java_binding(java_binding, workspace.join("bindings/RosuFFI.java"))?;
+
+    // println!("cargo:warning=Java FFM facade synchronized from JavaRosuPP");
 
     Ok(())
 }

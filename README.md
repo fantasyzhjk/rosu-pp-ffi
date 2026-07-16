@@ -6,8 +6,8 @@
 
 - Access to rosu-pp's performance points calculation methods via FFI.
 - First-class C# bindings generated with Interoptopus 0.16.3.
-- Java 22 bindings, with a generated FFM raw layer and the existing JNA facade
-  retained during migration.
+- Java 22 FFM bindings generated with jextract and exposed through a
+  lifecycle-safe Java facade.
 - Simple and lightweight design for cross-platform compatibility.
 
 ## Getting Started
@@ -63,13 +63,15 @@ service concepts. The public facade is
 `rosu_pp_ffi_build` synchronizes it to `bindings/RosuFFI.java`. Set the
 `rosu.pp.ffi.library` system property to the current native library path, or
 make `rosu_pp_ffi` available through the platform library search path.
+Applications should enable native access for the binding module, or use
+`--enable-native-access=ALL-UNNAMED` when running from the class path.
 
 The current C header is generated from `ffi_inventory()` by
 `rosu_pp_ffi_build`, rather than being a legacy checked-in ABI description.
 Run `JavaRosuPP/generate-ffm-bindings.sh` with `jextract` available to regenerate
 the Java 22 FFM raw layer under `desu.life.raw`. This generated layer is kept
 separate from the public facade so memory ownership and service lifetimes stay
-explicit during the JNA-to-FFM migration.
+explicit.
 
 ### Binding backend status
 

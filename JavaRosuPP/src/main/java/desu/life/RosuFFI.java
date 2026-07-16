@@ -1,14 +1,13 @@
 package desu.life;
 
-import com.sun.jna.Library;
-import com.sun.jna.Memory;
-import com.sun.jna.Native;
-import com.sun.jna.NativeLibrary;
-import com.sun.jna.Pointer;
-import com.sun.jna.Structure;
-import com.sun.jna.Union;
+import desu.life.raw.RosuNative;
 
-import java.io.File;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -18,16 +17,21 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
-/**
- * JNA bindings for the Interoptopus 0.16.3 ABI exposed by rosu_pp_ffi.
- *
- * <p>Interoptopus 0.16 does not publish a Java backend, so this file mirrors
- * the generated C# ABI. The API guard prevents loading an incompatible native
- * library.</p>
- */
+/** Java 22 FFM facade for the Interoptopus 0.16.3 ABI. */
 @SuppressWarnings({"unused", "SpellCheckingInspection"})
 public final class RosuFFI {
     private static final long API_GUARD = 0x697593acafdd88bbL;
+    private static final Arena RESULTS = Arena.ofAuto();
+
+    static {
+        String configured = System.getProperty("rosu.pp.ffi.library");
+        if (configured == null || configured.isBlank()) System.loadLibrary("rosu_pp_ffi");
+        else System.load(java.nio.file.Path.of(configured).toAbsolutePath().toString());
+        long actual = RosuNative.__api_guard();
+        if (actual != API_GUARD) throw new UnsatisfiedLinkError(
+            "rosu_pp_ffi ABI mismatch: native=0x" + Long.toHexString(actual)
+                + ", Java=0x" + Long.toHexString(API_GUARD));
+    }
 
     private RosuFFI() {}
 
@@ -35,396 +39,134 @@ public final class RosuFFI {
         Osu(0), Taiko(1), Catch(2), Mania(3);
         public final byte value;
         Mode(int value) { this.value = (byte) value; }
-        public static Mode fromValue(byte value) {
-            for (var mode : values()) if (mode.value == value) return mode;
-            throw new IllegalArgumentException("Unknown mode: " + Byte.toUnsignedInt(value));
+        static Mode fromValue(int value) {
+            for (var x : values()) if (Byte.toUnsignedInt(x.value) == value) return x;
+            throw new IllegalArgumentException("Unknown mode: " + value);
         }
     }
-
     public enum HitResultPriority {
         BestCase(0), WorstCase(1);
         public final byte value;
         HitResultPriority(int value) { this.value = (byte) value; }
     }
-
     public enum OsuScoreOrigin {
         Stable(0), WithSliderAcc(1), WithoutSliderAcc(2);
         public final byte value;
         OsuScoreOrigin(int value) { this.value = (byte) value; }
     }
-
     public enum TooSuspicious {
         Density(0), Length(1), ObjectCount(2), RedFlag(3), SliderPositions(4), SliderRepeats(5);
         public final byte value;
         TooSuspicious(int value) { this.value = (byte) value; }
-        public static TooSuspicious fromValue(byte value) {
-            for (var item : values()) if (item.value == value) return item;
-            throw new IllegalArgumentException("Unknown suspicion: " + Byte.toUnsignedInt(value));
+        static TooSuspicious fromValue(int value) {
+            for (var x : values()) if (Byte.toUnsignedInt(x.value) == value) return x;
+            throw new IllegalArgumentException("Unknown suspicion: " + value);
         }
     }
-
     public enum HitObjectKind { Circle, Slider, Spinner, Hold }
 
     public static final class FFIError {
-        public static final int OK = 0;
-        public static final int NULL = 100;
-        public static final int PANIC = 200;
-        public static final int IO_ERROR = 300;
-        public static final int SERIALIZE_ERROR = 600;
-        public static final int CONVERT_ERROR = 700;
-        public static final int UNKNOWN = 1000;
+        public static final int OK=0, NULL=100, PANIC=200, IO_ERROR=300;
+        public static final int SERIALIZE_ERROR=600, CONVERT_ERROR=700, UNKNOWN=1000;
         private FFIError() {}
     }
-
     public static final class FFIException extends RuntimeException {
         public final int code;
-        public FFIException(String message, int code) {
-            super(message + " (FFI error " + code + ")");
-            this.code = code;
-        }
+        FFIException(String message, int code) { super(message + " (FFI error " + code + ")"); this.code = code; }
     }
 
-    public interface NativeApi extends Library {
-        long __api_guard();
-
-        long interoptopus_string_create(Pointer utf8, long len, Utf8String out);
-        long interoptopus_string_destroy(Utf8String.ByValue value);
-        void interoptopus_wire_destroy_78044(Pointer data, int len, int capacity);
-
-        ServiceResult.ByValue beatmap_from_bytes(SliceU8.ByValue data);
-        ServiceResult.ByValue beatmap_from_path(Utf8String.ByValue path);
-        void beatmap_destroy(Pointer context);
-        byte beatmap_convert(Pointer context, byte mode, Pointer mods);
-        double beatmap_bpm(Pointer context);
-        double beatmap_total_break_time(Pointer context);
-        int beatmap_version(Pointer context);
-        byte beatmap_is_convert(Pointer context);
-        float beatmap_stack_leniency(Pointer context);
-        byte beatmap_mode(Pointer context);
-        float beatmap_ar(Pointer context);
-        float beatmap_cs(Pointer context);
-        float beatmap_hp(Pointer context);
-        float beatmap_od(Pointer context);
-        double beatmap_slider_multiplier(Pointer context);
-        double beatmap_slider_tick_rate(Pointer context);
-        OptionTooSuspicious.ByValue beatmap_check_suspicious(Pointer context);
-        WireHitObjects.ByValue beatmap_hit_objects(Pointer context);
-
-        ServiceResult.ByValue beatmap_attributes_builder_create();
-        void beatmap_attributes_builder_destroy(Pointer context);
-        void beatmap_attributes_builder_mode(Pointer context, byte mode);
-        void beatmap_attributes_builder_p_mods(Pointer context, Pointer mods);
-        void beatmap_attributes_builder_i_mods(Pointer context, int mods);
-        void beatmap_attributes_builder_s_mods(Pointer context, Utf8String.ByValue mods);
-        void beatmap_attributes_builder_clock_rate(Pointer context, double value);
-        void beatmap_attributes_builder_ar(Pointer context, float value);
-        void beatmap_attributes_builder_cs(Pointer context, float value);
-        void beatmap_attributes_builder_hp(Pointer context, float value);
-        void beatmap_attributes_builder_od(Pointer context, float value);
-        double beatmap_attributes_builder_get_clock_rate(Pointer context);
-        BeatmapAttributes.ByValue beatmap_attributes_builder_build(Pointer context, Pointer beatmap);
-
-        ServiceResult.ByValue difficulty_create();
-        void difficulty_destroy(Pointer context);
-        void difficulty_p_mods(Pointer context, Pointer mods);
-        void difficulty_i_mods(Pointer context, int mods);
-        void difficulty_s_mods(Pointer context, Utf8String.ByValue mods);
-        void difficulty_passed_objects(Pointer context, int value);
-        void difficulty_clock_rate(Pointer context, double value);
-        void difficulty_ar(Pointer context, float value);
-        void difficulty_cs(Pointer context, float value);
-        void difficulty_hp(Pointer context, float value);
-        void difficulty_od(Pointer context, float value);
-        void difficulty_hardrock_offsets(Pointer context, byte value);
-        void difficulty_lazer(Pointer context, byte value);
-        DifficultyAttributes.ByValue difficulty_calculate(Pointer context, Pointer beatmap);
-        double difficulty_get_clock_rate(Pointer context);
-
-        ServiceResult.ByValue performance_create();
-        void performance_destroy(Pointer context);
-        void performance_mode(Pointer context, byte mode);
-        void performance_p_mods(Pointer context, Pointer mods);
-        void performance_i_mods(Pointer context, int mods);
-        void performance_s_mods(Pointer context, Utf8String.ByValue mods);
-        void performance_passed_objects(Pointer context, int value);
-        void performance_legacy_total_score(Pointer context, int value);
-        void performance_clock_rate(Pointer context, double value);
-        void performance_ar(Pointer context, float value);
-        void performance_cs(Pointer context, float value);
-        void performance_hp(Pointer context, float value);
-        void performance_od(Pointer context, float value);
-        void performance_hardrock_offsets(Pointer context, byte value);
-        void performance_state(Pointer context, ScoreState.ByValue value);
-        void performance_accuracy(Pointer context, double value);
-        void performance_misses(Pointer context, int value);
-        void performance_combo(Pointer context, int value);
-        void performance_hitresult_priority(Pointer context, byte value);
-        void performance_lazer(Pointer context, byte value);
-        void performance_large_tick_hits(Pointer context, int value);
-        void performance_small_tick_hits(Pointer context, int value);
-        void performance_slider_end_hits(Pointer context, int value);
-        void performance_n300(Pointer context, int value);
-        void performance_n100(Pointer context, int value);
-        void performance_n50(Pointer context, int value);
-        void performance_n_katu(Pointer context, int value);
-        void performance_n_geki(Pointer context, int value);
-        ScoreState.ByValue performance_generate_state(Pointer context, Pointer beatmap);
-        ScoreState.ByValue performance_generate_state_from_difficulty(Pointer context, DifficultyAttributes.ByValue attrs);
-        PerformanceAttributes.ByValue performance_calculate(Pointer context, Pointer beatmap);
-        PerformanceAttributes.ByValue performance_calculate_from_difficulty(Pointer context, DifficultyAttributes.ByValue attrs);
-        double performance_get_clock_rate(Pointer context);
-
-        ServiceResult.ByValue mods_create(byte mode);
-        ServiceResult.ByValue mods_from_acronyms(Utf8String.ByValue value, byte mode);
-        ServiceResult.ByValue mods_from_bits(int value, byte mode);
-        ServiceResult.ByValue mods_from_json(Utf8String.ByValue value, byte mode, byte denyUnknown);
-        void mods_destroy(Pointer context);
-        void mods_remove_unknown_mods(Pointer context);
-        void mods_sanitize(Pointer context);
-        int mods_bits(Pointer context);
-        int mods_len(Pointer context);
-        Utf8String.ByValue mods_json(Pointer context);
-        byte mods_insert_json(Pointer context, Utf8String.ByValue value, byte denyUnknown);
-        void mods_insert(Pointer context, Utf8String.ByValue value);
-        byte mods_contains(Pointer context, Utf8String.ByValue value);
-        void mods_clear(Pointer context);
-        OptionDouble.ByValue mods_clock_rate(Pointer context);
-
-        ServiceResult.ByValue gradual_difficulty_create(Pointer difficulty, Pointer beatmap);
-        ServiceResult.ByValue gradual_difficulty_new_with_mode(Pointer difficulty, Pointer beatmap, byte mode);
-        void gradual_difficulty_destroy(Pointer context);
-        OptionDifficultyAttributes.ByValue gradual_difficulty_next(Pointer context);
-        OptionDifficultyAttributes.ByValue gradual_difficulty_nth(Pointer context, int n);
-        int gradual_difficulty_len(Pointer context);
-
-        ServiceResult.ByValue gradual_performance_create(Pointer difficulty, Pointer beatmap);
-        ServiceResult.ByValue gradual_performance_new_with_mode(Pointer difficulty, Pointer beatmap, byte mode);
-        void gradual_performance_destroy(Pointer context);
-        OptionPerformanceAttributes.ByValue gradual_performance_next(Pointer context, ScoreState.ByValue state);
-        OptionPerformanceAttributes.ByValue gradual_performance_last(Pointer context, ScoreState.ByValue state);
-        OptionPerformanceAttributes.ByValue gradual_performance_nth(Pointer context, ScoreState.ByValue state, int n);
-        int gradual_performance_len(Pointer context);
-
-        Utf8String.ByValue debug_difficulty_attributes(DifficultyAttributes attrs);
-        Utf8String.ByValue debug_performance_attributes(PerformanceAttributes attrs);
-        Utf8String.ByValue debug_score_state(ScoreState state);
-        double calculate_accuacy(ScoreState state, DifficultyAttributes attrs, byte origin);
+    private static MemorySegment unwrap(MemorySegment result, String operation) {
+        int variant = desu.life.raw.ResultPtrFFIError.variant(result);
+        MemorySegment payload = desu.life.raw.ResultPtrFFIError.payload(result);
+        if (variant == 0) {
+            MemorySegment pointer = desu.life.raw.ResultPtrFFIError.payload.ok(payload);
+            if (!pointer.equals(MemorySegment.NULL)) return pointer;
+        }
+        int code = variant == 1 ? desu.life.raw.ResultPtrFFIError.payload.err(payload)
+            : variant == 2 ? FFIError.PANIC : FFIError.NULL;
+        throw new FFIException(operation, code);
     }
 
-    private static final NativeApi NATIVE = loadNative();
-
-    private static NativeApi loadNative() {
-        String configured = System.getProperty("rosu.pp.ffi.library");
-        NativeApi api;
-
-        if (configured != null && !configured.isBlank()) {
-            api = Native.load(new File(configured).getAbsolutePath(), NativeApi.class);
-        } else {
-            String mapped = NativeLibrary.getInstance("rosu_pp_ffi").getFile().getAbsolutePath();
-            api = Native.load(mapped, NativeApi.class);
-        }
-
-        long actual = api.__api_guard();
-        if (actual != API_GUARD) {
-            throw new UnsatisfiedLinkError(
-                "rosu_pp_ffi ABI mismatch: native=0x" + Long.toHexString(actual)
-                    + ", Java=0x" + Long.toHexString(API_GUARD)
-            );
-        }
-
-        return api;
+    private static MemorySegment utf8(Arena arena, String value) {
+        byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+        MemorySegment input = bytes.length == 0 ? MemorySegment.NULL : arena.allocateFrom(ValueLayout.JAVA_BYTE, bytes);
+        MemorySegment out = desu.life.raw.String_.allocate(arena);
+        RosuNative.interoptopus_string_create(input, bytes.length, out);
+        return out;
     }
 
-    private static byte bool(boolean value) { return (byte) (value ? 1 : 0); }
-
-    @Structure.FieldOrder({"variant", "payload"})
-    public static class ServiceResult extends Structure {
-        public int variant;
-        public Payload payload;
-        public static class Payload extends Union {
-            public Pointer ok;
-            public short error;
-        }
-        public static class ByValue extends ServiceResult implements Structure.ByValue {}
-        @Override public void read() {
-            super.read();
-            payload.setType(variant == 0 ? Pointer.class : short.class);
-            payload.read();
-        }
-        Pointer unwrap(String operation) {
-            if (variant == 0 && payload.ok != null) return payload.ok;
-            int code = variant == 1 ? Short.toUnsignedInt(payload.error)
-                : variant == 2 ? FFIError.PANIC : FFIError.NULL;
-            throw new FFIException(operation, code);
-        }
+    private static String consumeString(MemorySegment value) {
+        long len = desu.life.raw.String_.len(value);
+        MemorySegment ptr = desu.life.raw.String_.ptr(value);
+        String result = len == 0 ? "" : new String(ptr.reinterpret(len).toArray(java.lang.foreign.ValueLayout.JAVA_BYTE), StandardCharsets.UTF_8);
+        RosuNative.interoptopus_string_destroy(value);
+        return result;
     }
 
-    @Structure.FieldOrder({"ptr", "len", "capacity"})
-    public static class Utf8String extends Structure {
-        public Pointer ptr;
-        public long len;
-        public long capacity;
-        public static class ByValue extends Utf8String implements Structure.ByValue {}
-
-        static ByValue fromJava(String value) {
-            byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
-            Memory memory = bytes.length == 0 ? null : new Memory(bytes.length);
-            if (memory != null) memory.write(0, bytes, 0, bytes.length);
-            Utf8String out = new Utf8String();
-            NATIVE.interoptopus_string_create(memory, bytes.length, out);
-            out.read();
-            ByValue result = new ByValue();
-            result.ptr = out.ptr;
-            result.len = out.len;
-            result.capacity = out.capacity;
-            result.write();
-            return result;
-        }
-
-        String consume() {
-            String value = len == 0 ? "" : new String(ptr.getByteArray(0, Math.toIntExact(len)), StandardCharsets.UTF_8);
-            ByValue owned = new ByValue();
-            owned.ptr = ptr;
-            owned.len = len;
-            owned.capacity = capacity;
-            owned.write();
-            NATIVE.interoptopus_string_destroy(owned);
-            ptr = null;
-            len = 0;
-            capacity = 0;
-            return value;
-        }
+    private static MemorySegment keep(MemorySegment value, long size) {
+        MemorySegment copy = RESULTS.allocate(size, 8);
+        MemorySegment.copy(value, 0, copy, 0, size);
+        return copy;
     }
 
-    @Structure.FieldOrder({"data", "len"})
-    public static class SliceU8 extends Structure {
-        public Pointer data;
-        public long len;
-        protected Memory owner;
-        public static class ByValue extends SliceU8 implements Structure.ByValue {}
-        static ByValue from(byte[] bytes) {
-            ByValue value = new ByValue();
-            value.owner = bytes.length == 0 ? null : new Memory(bytes.length);
-            if (value.owner != null) value.owner.write(0, bytes, 0, bytes.length);
-            value.data = value.owner;
-            value.len = bytes.length;
-            value.write();
-            return value;
-        }
+    public static class OptionDouble {
+        public int variant; public double some;
+        OptionalDouble toOptional() { return variant == 0 ? OptionalDouble.of(some) : OptionalDouble.empty(); }
+    }
+    public static class OptionUint {
+        public int variant; public int some;
+        public OptionalInt toOptional() { return variant == 0 ? OptionalInt.of(some) : OptionalInt.empty(); }
     }
 
-    @Structure.FieldOrder({"variant", "some"})
-    public static class OptionDouble extends Structure {
-        public int variant;
-        public double some;
-        public static class ByValue extends OptionDouble implements Structure.ByValue {}
-        public OptionalDouble toOptional() {
-            return variant == 0 ? OptionalDouble.of(some) : OptionalDouble.empty();
-        }
-    }
-
-    @Structure.FieldOrder({"variant", "some"})
-    public static class OptionUint extends Structure {
-        public int variant;
-        public int some;
-        public static class ByValue extends OptionUint implements Structure.ByValue {}
-        public OptionalInt toOptional() {
-            return variant == 0 ? OptionalInt.of(some) : OptionalInt.empty();
-        }
-    }
-
-    @Structure.FieldOrder({"variant", "some"})
-    public static class OptionTooSuspicious extends Structure {
-        public int variant;
-        public byte some;
-        public static class ByValue extends OptionTooSuspicious implements Structure.ByValue {}
-        public Optional<TooSuspicious> toOptional() {
-            return variant == 0 ? Optional.of(TooSuspicious.fromValue(some)) : Optional.empty();
-        }
-    }
-
-    @Structure.FieldOrder({"aim", "aim_difficult_slider_count", "speed", "flashlight", "reading",
-        "slider_factor", "aim_top_weighted_slider_factor", "speed_top_weighted_slider_factor",
-        "speed_note_count", "aim_difficult_strain_count", "speed_difficult_strain_count",
-        "reading_difficult_note_count", "nested_score_per_object", "legacy_score_base_multiplier",
-        "maximum_legacy_combo_score", "ar", "great_hit_window", "ok_hit_window", "meh_hit_window",
-        "hp", "n_circles", "n_sliders", "n_large_ticks", "n_spinners", "stars", "max_combo"})
-    public static class OsuDifficultyAttributes extends Structure {
+    public static class OsuDifficultyAttributes {
         public double aim, aim_difficult_slider_count, speed, flashlight, reading, slider_factor;
         public double aim_top_weighted_slider_factor, speed_top_weighted_slider_factor, speed_note_count;
         public double aim_difficult_strain_count, speed_difficult_strain_count, reading_difficult_note_count;
         public double nested_score_per_object, legacy_score_base_multiplier, maximum_legacy_combo_score;
         public double ar, great_hit_window, ok_hit_window, meh_hit_window, hp;
         public int n_circles, n_sliders, n_large_ticks, n_spinners;
-        public double stars;
-        public int max_combo;
+        public double stars; public int max_combo;
     }
-
-    @Structure.FieldOrder({"stamina", "rhythm", "color", "reading", "great_hit_window", "ok_hit_window",
-        "mono_stamina_factor", "mechanical_difficulty", "consistency_factor", "stars", "max_combo", "is_convert"})
-    public static class TaikoDifficultyAttributes extends Structure {
+    public static class TaikoDifficultyAttributes {
         public double stamina, rhythm, color, reading, great_hit_window, ok_hit_window;
         public double mono_stamina_factor, mechanical_difficulty, consistency_factor, stars;
-        public int max_combo;
-        public byte is_convert;
+        public int max_combo; public boolean is_convert;
+    }
+    public static class CatchDifficultyAttributes {
+        public double stars, preempt; public int n_fruits, n_droplets, n_tiny_droplets; public boolean is_convert;
+    }
+    public static class ManiaDifficultyAttributes {
+        public double stars; public int n_objects, n_hold_notes, max_combo; public boolean is_convert;
     }
 
-    @Structure.FieldOrder({"stars", "preempt", "n_fruits", "n_droplets", "n_tiny_droplets", "is_convert"})
-    public static class CatchDifficultyAttributes extends Structure {
-        public double stars, preempt;
-        public int n_fruits, n_droplets, n_tiny_droplets;
-        public byte is_convert;
-    }
-
-    @Structure.FieldOrder({"stars", "n_objects", "n_hold_notes", "max_combo", "is_convert"})
-    public static class ManiaDifficultyAttributes extends Structure {
-        public double stars;
-        public int n_objects, n_hold_notes, max_combo;
-        public byte is_convert;
-    }
-
-    public static class DifficultyPayload extends Union {
-        public OsuDifficultyAttributes osu;
-        public TaikoDifficultyAttributes taiko;
-        public CatchDifficultyAttributes catchValue;
-        public ManiaDifficultyAttributes mania;
-    }
-
-    @Structure.FieldOrder({"variant", "payload"})
-    public static class DifficultyAttributes extends Structure {
-        public byte variant;
-        public DifficultyPayload payload;
-        public DifficultyAttributes() {}
-        protected DifficultyAttributes(Pointer memory) { super(memory); }
-        public static class ByValue extends DifficultyAttributes implements Structure.ByValue {
-            public ByValue() {}
-            private ByValue(Pointer memory) { super(memory); }
-        }
-        @Override public void read() {
-            super.read();
-            payload.setType(switch (variant) {
-                case 0 -> OsuDifficultyAttributes.class;
-                case 1 -> TaikoDifficultyAttributes.class;
-                case 2 -> CatchDifficultyAttributes.class;
-                case 3 -> ManiaDifficultyAttributes.class;
+    public static class DifficultyAttributes {
+        final MemorySegment segment;
+        public final byte variant;
+        private final Object payload;
+        DifficultyAttributes(MemorySegment source) {
+            segment = keep(source, desu.life.raw.DifficultyAttributes.sizeof());
+            variant = (byte) desu.life.raw.DifficultyAttributes.variant(segment);
+            MemorySegment union = desu.life.raw.DifficultyAttributes.payload(segment);
+            payload = switch (variant) {
+                case 0 -> decode(desu.life.raw.DifficultyAttributes.payload.osu(union), OsuDifficultyAttributes.class, desu.life.raw.OsuDifficultyAttributes.class);
+                case 1 -> decode(desu.life.raw.DifficultyAttributes.payload.taiko(union), TaikoDifficultyAttributes.class, desu.life.raw.TaikoDifficultyAttributes.class);
+                case 2 -> decode(desu.life.raw.DifficultyAttributes.payload.catch_(union), CatchDifficultyAttributes.class, desu.life.raw.CatchDifficultyAttributes.class);
+                case 3 -> decode(desu.life.raw.DifficultyAttributes.payload.mania(union), ManiaDifficultyAttributes.class, desu.life.raw.ManiaDifficultyAttributes.class);
                 default -> throw new IllegalStateException("Invalid difficulty variant " + variant);
-            });
-            payload.read();
+            };
         }
-        public Mode mode() { return Mode.fromValue(variant); }
-        public OsuDifficultyAttributes asOsu() { require(Mode.Osu); return payload.osu; }
-        public TaikoDifficultyAttributes asTaiko() { require(Mode.Taiko); return payload.taiko; }
-        public CatchDifficultyAttributes asCatch() { require(Mode.Catch); return payload.catchValue; }
-        public ManiaDifficultyAttributes asMania() { require(Mode.Mania); return payload.mania; }
-        private void require(Mode mode) {
-            if (variant != mode.value) throw new IllegalStateException("Expected " + mode + ", got " + mode());
+        public Mode mode() { return Mode.fromValue(Byte.toUnsignedInt(variant)); }
+        public OsuDifficultyAttributes asOsu() { return require(Mode.Osu, OsuDifficultyAttributes.class); }
+        public TaikoDifficultyAttributes asTaiko() { return require(Mode.Taiko, TaikoDifficultyAttributes.class); }
+        public CatchDifficultyAttributes asCatch() { return require(Mode.Catch, CatchDifficultyAttributes.class); }
+        public ManiaDifficultyAttributes asMania() { return require(Mode.Mania, ManiaDifficultyAttributes.class); }
+        private <T> T require(Mode mode, Class<T> type) {
+            if (mode() != mode) throw new IllegalStateException("Expected " + mode + ", got " + mode());
+            return type.cast(payload);
         }
     }
 
-    @Structure.FieldOrder({"difficulty", "pp", "pp_acc", "pp_aim", "pp_flashlight", "pp_reading",
-        "pp_speed", "effective_miss_count", "speed_deviation", "combo_based_estimated_miss_count",
-        "score_based_estimated_miss_count", "aim_estimated_slider_breaks", "speed_estimated_slider_breaks"})
-    public static class OsuPerformanceAttributes extends Structure {
+    public static class OsuPerformanceAttributes {
         public OsuDifficultyAttributes difficulty;
         public double pp, pp_acc, pp_aim, pp_flashlight, pp_reading, pp_speed, effective_miss_count;
         public OptionDouble speed_deviation;
@@ -432,366 +174,251 @@ public final class RosuFFI {
         public OptionDouble score_based_estimated_miss_count;
         public double aim_estimated_slider_breaks, speed_estimated_slider_breaks;
     }
-
-    @Structure.FieldOrder({"difficulty", "pp", "pp_acc", "pp_difficulty", "estimated_unstable_rate"})
-    public static class TaikoPerformanceAttributes extends Structure {
+    public static class TaikoPerformanceAttributes {
         public TaikoDifficultyAttributes difficulty;
         public double pp, pp_acc, pp_difficulty;
         public OptionDouble estimated_unstable_rate;
     }
+    public static class CatchPerformanceAttributes { public CatchDifficultyAttributes difficulty; public double pp; }
+    public static class ManiaPerformanceAttributes { public ManiaDifficultyAttributes difficulty; public double pp, pp_difficulty; }
 
-    @Structure.FieldOrder({"difficulty", "pp"})
-    public static class CatchPerformanceAttributes extends Structure {
-        public CatchDifficultyAttributes difficulty;
-        public double pp;
-    }
-
-    @Structure.FieldOrder({"difficulty", "pp", "pp_difficulty"})
-    public static class ManiaPerformanceAttributes extends Structure {
-        public ManiaDifficultyAttributes difficulty;
-        public double pp, pp_difficulty;
-    }
-
-    public static class PerformancePayload extends Union {
-        public OsuPerformanceAttributes osu;
-        public TaikoPerformanceAttributes taiko;
-        public CatchPerformanceAttributes catchValue;
-        public ManiaPerformanceAttributes mania;
-    }
-
-    @Structure.FieldOrder({"variant", "payload"})
-    public static class PerformanceAttributes extends Structure {
-        public byte variant;
-        public PerformancePayload payload;
-        public static class ByValue extends PerformanceAttributes implements Structure.ByValue {}
-        @Override public void read() {
-            super.read();
-            payload.setType(switch (variant) {
-                case 0 -> OsuPerformanceAttributes.class;
-                case 1 -> TaikoPerformanceAttributes.class;
-                case 2 -> CatchPerformanceAttributes.class;
-                case 3 -> ManiaPerformanceAttributes.class;
+    public static class PerformanceAttributes {
+        final MemorySegment segment;
+        public final byte variant;
+        private final Object payload;
+        PerformanceAttributes(MemorySegment source) {
+            segment = keep(source, desu.life.raw.PerformanceAttributes.sizeof());
+            variant = (byte) desu.life.raw.PerformanceAttributes.variant(segment);
+            MemorySegment union = desu.life.raw.PerformanceAttributes.payload(segment);
+            payload = switch (variant) {
+                case 0 -> decode(desu.life.raw.PerformanceAttributes.payload.osu(union), OsuPerformanceAttributes.class, desu.life.raw.OsuPerformanceAttributes.class);
+                case 1 -> decode(desu.life.raw.PerformanceAttributes.payload.taiko(union), TaikoPerformanceAttributes.class, desu.life.raw.TaikoPerformanceAttributes.class);
+                case 2 -> decode(desu.life.raw.PerformanceAttributes.payload.catch_(union), CatchPerformanceAttributes.class, desu.life.raw.CatchPerformanceAttributes.class);
+                case 3 -> decode(desu.life.raw.PerformanceAttributes.payload.mania(union), ManiaPerformanceAttributes.class, desu.life.raw.ManiaPerformanceAttributes.class);
                 default -> throw new IllegalStateException("Invalid performance variant " + variant);
-            });
-            payload.read();
+            };
         }
-        public Mode mode() { return Mode.fromValue(variant); }
-        public OsuPerformanceAttributes asOsu() { require(Mode.Osu); return payload.osu; }
-        public TaikoPerformanceAttributes asTaiko() { require(Mode.Taiko); return payload.taiko; }
-        public CatchPerformanceAttributes asCatch() { require(Mode.Catch); return payload.catchValue; }
-        public ManiaPerformanceAttributes asMania() { require(Mode.Mania); return payload.mania; }
-        private void require(Mode mode) {
-            if (variant != mode.value) throw new IllegalStateException("Expected " + mode + ", got " + mode());
-        }
-    }
-
-    @Structure.FieldOrder({"variant", "some"})
-    public static class OptionDifficultyAttributes extends Structure {
-        public int variant;
-        public DifficultyAttributes some;
-        public static class ByValue extends OptionDifficultyAttributes implements Structure.ByValue {}
-        public Optional<DifficultyAttributes> toOptional() {
-            if (variant != 0) return Optional.empty();
-            some.read();
-            return Optional.of(some);
+        public Mode mode() { return Mode.fromValue(Byte.toUnsignedInt(variant)); }
+        public OsuPerformanceAttributes asOsu() { return require(Mode.Osu, OsuPerformanceAttributes.class); }
+        public TaikoPerformanceAttributes asTaiko() { return require(Mode.Taiko, TaikoPerformanceAttributes.class); }
+        public CatchPerformanceAttributes asCatch() { return require(Mode.Catch, CatchPerformanceAttributes.class); }
+        public ManiaPerformanceAttributes asMania() { return require(Mode.Mania, ManiaPerformanceAttributes.class); }
+        private <T> T require(Mode mode, Class<T> type) {
+            if (mode() != mode) throw new IllegalStateException("Expected " + mode + ", got " + mode());
+            return type.cast(payload);
         }
     }
 
-    @Structure.FieldOrder({"variant", "some"})
-    public static class OptionPerformanceAttributes extends Structure {
-        public int variant;
-        public PerformanceAttributes some;
-        public static class ByValue extends OptionPerformanceAttributes implements Structure.ByValue {}
-        public Optional<PerformanceAttributes> toOptional() {
-            if (variant != 0) return Optional.empty();
-            some.read();
-            return Optional.of(some);
-        }
-    }
-
-    @Structure.FieldOrder({"max_combo", "osu_large_tick_hits", "osu_small_tick_hits", "slider_end_hits",
-        "n_geki", "n_katu", "n300", "n100", "n50", "misses", "legacy_total_score"})
-    public static class ScoreState extends Structure {
+    public static class ScoreState {
         public int max_combo, osu_large_tick_hits, osu_small_tick_hits, slider_end_hits;
         public int n_geki, n_katu, n300, n100, n50, misses;
-        public OptionUint legacy_total_score;
-        public static class ByValue extends ScoreState implements Structure.ByValue {}
-        ByValue byValue() {
-            write();
-            ByValue value = new ByValue();
-            value.useMemory(getPointer());
-            value.read();
-            return value;
+        public OptionUint legacy_total_score = new OptionUint();
+        public ScoreState() {}
+        ScoreState(MemorySegment s) { decodeInto(s, this, desu.life.raw.ScoreState.class); }
+        MemorySegment encode(Arena arena) {
+            MemorySegment s = desu.life.raw.ScoreState.allocate(arena);
+            setRaw(s, desu.life.raw.ScoreState.class, this);
+            return s;
         }
     }
-
-    @Structure.FieldOrder({"ar", "od_perfect", "od_great", "od_good", "od_ok", "od_meh"})
-    public static class HitWindows extends Structure {
+    public static class HitWindows {
         public OptionDouble ar, od_perfect, od_great, od_good, od_ok, od_meh;
     }
-
-    @Structure.FieldOrder({"ar", "od", "cs", "hp", "clock_rate", "hit_windows"})
-    public static class BeatmapAttributes extends Structure {
-        public double ar, od;
-        public float cs, hp;
-        public double clock_rate;
-        public HitWindows hit_windows;
-        public static class ByValue extends BeatmapAttributes implements Structure.ByValue {}
+    public static class BeatmapAttributes {
+        public double ar, od; public float cs, hp; public double clock_rate; public HitWindows hit_windows;
+        BeatmapAttributes(MemorySegment s) { decodeInto(s, this, desu.life.raw.BeatmapAttributes.class); }
     }
 
     public record SliderData(long repeats, OptionalDouble expectedDistance) {}
-    public record HitObject(float x, float y, double startTime, HitObjectKind kind,
-                            SliderData slider, double duration) {}
+    public record HitObject(float x, float y, double startTime, HitObjectKind kind, SliderData slider, double duration) {}
 
-    @Structure.FieldOrder({"data", "len", "capacity"})
-    public static class WireHitObjects extends Structure implements AutoCloseable {
-        public Pointer data;
-        public int len;
-        public int capacity;
-        public static class ByValue extends WireHitObjects implements Structure.ByValue {}
-
+    public static class WireHitObjects implements AutoCloseable {
+        private MemorySegment data; private int len, capacity;
+        WireHitObjects(MemorySegment s) {
+            data=desu.life.raw.Wire_Vec_HitObject.data(s); len=desu.life.raw.Wire_Vec_HitObject.len(s);
+            capacity=desu.life.raw.Wire_Vec_HitObject.capacity(s);
+        }
         public List<HitObject> unwire() {
-            if (data == null || len == 0) return List.of();
-            ByteBuffer buffer = data.getByteBuffer(0, len).order(ByteOrder.LITTLE_ENDIAN);
-            int count = buffer.getInt();
-            List<HitObject> result = new ArrayList<>(count);
-            for (int i = 0; i < count; i++) {
-                float x = buffer.getFloat();
-                float y = buffer.getFloat();
-                double start = buffer.getDouble();
-                int tag = Byte.toUnsignedInt(buffer.get());
-                HitObjectKind kind = HitObjectKind.values()[tag];
-                SliderData slider = null;
-                double duration = 0;
-                if (kind == HitObjectKind.Slider) {
-                    long repeats = Integer.toUnsignedLong(buffer.getInt());
-                    int option = Byte.toUnsignedInt(buffer.get());
-                    OptionalDouble distance = option == 0
-                        ? OptionalDouble.of(buffer.getDouble()) : OptionalDouble.empty();
-                    slider = new SliderData(repeats, distance);
-                } else if (kind == HitObjectKind.Spinner || kind == HitObjectKind.Hold) {
-                    duration = buffer.getDouble();
-                }
-                result.add(new HitObject(x, y, start, kind, slider, duration));
+            if (data.equals(MemorySegment.NULL) || len == 0) return List.of();
+            ByteBuffer b=data.reinterpret(len).asByteBuffer().order(ByteOrder.LITTLE_ENDIAN);
+            int count=b.getInt(); List<HitObject> result=new ArrayList<>(count);
+            for(int i=0;i<count;i++) {
+                float x=b.getFloat(), y=b.getFloat(); double start=b.getDouble();
+                HitObjectKind kind=HitObjectKind.values()[Byte.toUnsignedInt(b.get())];
+                SliderData slider=null; double duration=0;
+                if(kind==HitObjectKind.Slider) {
+                    long repeats=Integer.toUnsignedLong(b.getInt()); int option=Byte.toUnsignedInt(b.get());
+                    slider=new SliderData(repeats, option==0?OptionalDouble.of(b.getDouble()):OptionalDouble.empty());
+                } else if(kind==HitObjectKind.Spinner||kind==HitObjectKind.Hold) duration=b.getDouble();
+                result.add(new HitObject(x,y,start,kind,slider,duration));
             }
             return result;
         }
-
-        @Override public void close() {
-            if (data != null) {
-                NATIVE.interoptopus_wire_destroy_78044(data, len, capacity);
-                data = null;
-                len = 0;
-                capacity = 0;
+        public void close() {
+            if(!data.equals(MemorySegment.NULL)) {
+                RosuNative.interoptopus_wire_destroy_78044(data,len,capacity);
+                data=MemorySegment.NULL; len=capacity=0;
             }
         }
     }
 
     private abstract static class Service implements AutoCloseable {
-        private Pointer context;
-        Service(Pointer context) { this.context = context; }
-        final Pointer context() {
-            if (context == null) throw new IllegalStateException("Service already closed");
+        private MemorySegment context;
+        Service(MemorySegment context) { this.context=context; }
+        final MemorySegment context() {
+            if(context.equals(MemorySegment.NULL)) throw new IllegalStateException("Service already closed");
             return context;
         }
-        abstract void destroy(Pointer context);
-        @Override public final void close() {
-            if (context != null) {
-                destroy(context);
-                context = null;
-            }
-        }
+        abstract void destroy(MemorySegment context);
+        public final void close() { if(!context.equals(MemorySegment.NULL)){ destroy(context); context=MemorySegment.NULL; } }
     }
 
     public static final class Beatmap extends Service {
-        public Beatmap(byte[] data) {
-            super(NATIVE.beatmap_from_bytes(SliceU8.from(data)).unwrap("beatmap_from_bytes"));
+        public Beatmap(byte[] data) { super(fromBytes(data)); }
+        private static MemorySegment fromBytes(byte[] data) {
+            try(Arena a=Arena.ofConfined()) {
+                MemorySegment slice=desu.life.raw.Slice_u8.allocate(a);
+                MemorySegment bytes=data.length==0?MemorySegment.NULL:a.allocateFrom(ValueLayout.JAVA_BYTE,data);
+                desu.life.raw.Slice_u8.data(slice,bytes); desu.life.raw.Slice_u8.len(slice,data.length);
+                return unwrap(RosuNative.beatmap_from_bytes(a,slice),"beatmap_from_bytes");
+            }
         }
-        public Beatmap(String path) {
-            super(NATIVE.beatmap_from_path(Utf8String.fromJava(path)).unwrap("beatmap_from_path"));
+        public Beatmap(String path) { super(fromPath(path)); }
+        private static MemorySegment fromPath(String path) {
+            try(Arena a=Arena.ofConfined()) { return unwrap(RosuNative.beatmap_from_path(a,utf8(a,path)),"beatmap_from_path"); }
         }
-        @Override void destroy(Pointer context) { NATIVE.beatmap_destroy(context); }
-        public boolean convert(Mode mode, Mods mods) { return NATIVE.beatmap_convert(context(), mode.value, mods.context()) != 0; }
-        public boolean convert(Mode mode) {
-            try (var mods = Mods.create(mode)) { return convert(mode, mods); }
-        }
-        public double bpm() { return NATIVE.beatmap_bpm(context()); }
-        public double totalBreakTime() { return NATIVE.beatmap_total_break_time(context()); }
-        public int version() { return NATIVE.beatmap_version(context()); }
-        public boolean isConvert() { return NATIVE.beatmap_is_convert(context()) != 0; }
-        public float stackLeniency() { return NATIVE.beatmap_stack_leniency(context()); }
-        public Mode mode() { return Mode.fromValue(NATIVE.beatmap_mode(context())); }
-        public float ar() { return NATIVE.beatmap_ar(context()); }
-        public float cs() { return NATIVE.beatmap_cs(context()); }
-        public float hp() { return NATIVE.beatmap_hp(context()); }
-        public float od() { return NATIVE.beatmap_od(context()); }
-        public double sliderMultiplier() { return NATIVE.beatmap_slider_multiplier(context()); }
-        public double sliderTickRate() { return NATIVE.beatmap_slider_tick_rate(context()); }
-        public Optional<TooSuspicious> checkSuspicious() { return NATIVE.beatmap_check_suspicious(context()).toOptional(); }
-        public WireHitObjects.ByValue hitObjects() { return NATIVE.beatmap_hit_objects(context()); }
+        void destroy(MemorySegment c){RosuNative.beatmap_destroy(c);}
+        public boolean convert(Mode m,Mods mods){return RosuNative.beatmap_convert(context(),m.value,mods.context());}
+        public boolean convert(Mode m){try(var mods=Mods.create(m)){return convert(m,mods);}}
+        public double bpm(){return RosuNative.beatmap_bpm(context());}
+        public double totalBreakTime(){return RosuNative.beatmap_total_break_time(context());}
+        public int version(){return RosuNative.beatmap_version(context());}
+        public boolean isConvert(){return RosuNative.beatmap_is_convert(context());}
+        public float stackLeniency(){return RosuNative.beatmap_stack_leniency(context());}
+        public Mode mode(){return Mode.fromValue(RosuNative.beatmap_mode(context()));}
+        public float ar(){return RosuNative.beatmap_ar(context());} public float cs(){return RosuNative.beatmap_cs(context());}
+        public float hp(){return RosuNative.beatmap_hp(context());} public float od(){return RosuNative.beatmap_od(context());}
+        public double sliderMultiplier(){return RosuNative.beatmap_slider_multiplier(context());}
+        public double sliderTickRate(){return RosuNative.beatmap_slider_tick_rate(context());}
+        public Optional<TooSuspicious> checkSuspicious(){try(Arena a=Arena.ofConfined()){var s=RosuNative.beatmap_check_suspicious(a,context());return desu.life.raw.Option_TooSuspicious.variant(s)==0?Optional.of(TooSuspicious.fromValue(desu.life.raw.Option_TooSuspicious.some(s))):Optional.empty();}}
+        public WireHitObjects hitObjects(){try(Arena a=Arena.ofConfined()){return new WireHitObjects(RosuNative.beatmap_hit_objects(a,context()));}}
     }
 
     public static final class Mods extends Service {
-        private Mods(Pointer context) { super(context); }
-        public static Mods create(Mode mode) { return new Mods(NATIVE.mods_create(mode.value).unwrap("mods_create")); }
-        public static Mods fromAcronyms(String value, Mode mode) {
-            return new Mods(NATIVE.mods_from_acronyms(Utf8String.fromJava(value), mode.value).unwrap("mods_from_acronyms"));
-        }
-        public static Mods fromBits(long value, Mode mode) {
-            return new Mods(NATIVE.mods_from_bits((int) value, mode.value).unwrap("mods_from_bits"));
-        }
-        public static Mods fromJson(String value, Mode mode, boolean denyUnknown) {
-            return new Mods(NATIVE.mods_from_json(Utf8String.fromJava(value), mode.value, bool(denyUnknown)).unwrap("mods_from_json"));
-        }
-        @Override void destroy(Pointer context) { NATIVE.mods_destroy(context); }
-        public void removeUnknownMods() { NATIVE.mods_remove_unknown_mods(context()); }
-        public void sanitize() { NATIVE.mods_sanitize(context()); }
-        public long bits() { return Integer.toUnsignedLong(NATIVE.mods_bits(context())); }
-        public long length() { return Integer.toUnsignedLong(NATIVE.mods_len(context())); }
-        public String json() { return NATIVE.mods_json(context()).consume(); }
-        public boolean insertJson(String value, boolean denyUnknown) {
-            return NATIVE.mods_insert_json(context(), Utf8String.fromJava(value), bool(denyUnknown)) != 0;
-        }
-        public void insert(String value) { NATIVE.mods_insert(context(), Utf8String.fromJava(value)); }
-        public boolean contains(String value) { return NATIVE.mods_contains(context(), Utf8String.fromJava(value)) != 0; }
-        public void clear() { NATIVE.mods_clear(context()); }
-        public OptionalDouble clockRate() { return NATIVE.mods_clock_rate(context()).toOptional(); }
+        private Mods(MemorySegment c){super(c);}
+        public static Mods create(Mode m){try(Arena a=Arena.ofConfined()){return new Mods(unwrap(RosuNative.mods_create(a,m.value),"mods_create"));}}
+        public static Mods fromAcronyms(String v,Mode m){try(Arena a=Arena.ofConfined()){return new Mods(unwrap(RosuNative.mods_from_acronyms(a,utf8(a,v),m.value),"mods_from_acronyms"));}}
+        public static Mods fromBits(long v,Mode m){try(Arena a=Arena.ofConfined()){return new Mods(unwrap(RosuNative.mods_from_bits(a,(int)v,m.value),"mods_from_bits"));}}
+        public static Mods fromJson(String v,Mode m,boolean deny){try(Arena a=Arena.ofConfined()){return new Mods(unwrap(RosuNative.mods_from_json(a,utf8(a,v),m.value,deny),"mods_from_json"));}}
+        void destroy(MemorySegment c){RosuNative.mods_destroy(c);}
+        public void removeUnknownMods(){RosuNative.mods_remove_unknown_mods(context());} public void sanitize(){RosuNative.mods_sanitize(context());}
+        public long bits(){return Integer.toUnsignedLong(RosuNative.mods_bits(context()));} public long length(){return Integer.toUnsignedLong(RosuNative.mods_len(context()));}
+        public String json(){try(Arena a=Arena.ofConfined()){return consumeString(RosuNative.mods_json(a,context()));}}
+        public boolean insertJson(String v,boolean deny){try(Arena a=Arena.ofConfined()){return RosuNative.mods_insert_json(context(),utf8(a,v),deny);}}
+        public void insert(String v){try(Arena a=Arena.ofConfined()){RosuNative.mods_insert(context(),utf8(a,v));}}
+        public boolean contains(String v){try(Arena a=Arena.ofConfined()){return RosuNative.mods_contains(context(),utf8(a,v));}}
+        public void clear(){RosuNative.mods_clear(context());}
+        public OptionalDouble clockRate(){try(Arena a=Arena.ofConfined()){var s=RosuNative.mods_clock_rate(a,context());return desu.life.raw.Option_f64.variant(s)==0?OptionalDouble.of(desu.life.raw.Option_f64.some(s)):OptionalDouble.empty();}}
     }
 
     public static final class Difficulty extends Service {
-        public Difficulty() { super(NATIVE.difficulty_create().unwrap("difficulty_create")); }
-        @Override void destroy(Pointer context) { NATIVE.difficulty_destroy(context); }
-        public void mods(Mods value) { NATIVE.difficulty_p_mods(context(), value.context()); }
-        public void mods(long value) { NATIVE.difficulty_i_mods(context(), (int) value); }
-        public void mods(String value) { NATIVE.difficulty_s_mods(context(), Utf8String.fromJava(value)); }
-        public void passedObjects(long value) { NATIVE.difficulty_passed_objects(context(), (int) value); }
-        public void clockRate(double value) { NATIVE.difficulty_clock_rate(context(), value); }
-        public void ar(float value) { NATIVE.difficulty_ar(context(), value); }
-        public void cs(float value) { NATIVE.difficulty_cs(context(), value); }
-        public void hp(float value) { NATIVE.difficulty_hp(context(), value); }
-        public void od(float value) { NATIVE.difficulty_od(context(), value); }
-        public void hardrockOffsets(boolean value) { NATIVE.difficulty_hardrock_offsets(context(), bool(value)); }
-        public void lazer(boolean value) { NATIVE.difficulty_lazer(context(), bool(value)); }
-        public DifficultyAttributes calculate(Beatmap beatmap) { return NATIVE.difficulty_calculate(context(), beatmap.context()); }
-        public double clockRate() { return NATIVE.difficulty_get_clock_rate(context()); }
+        public Difficulty(){super(create());} private static MemorySegment create(){try(Arena a=Arena.ofConfined()){return unwrap(RosuNative.difficulty_create(a),"difficulty_create");}}
+        void destroy(MemorySegment c){RosuNative.difficulty_destroy(c);}
+        public void mods(Mods v){RosuNative.difficulty_p_mods(context(),v.context());} public void mods(long v){RosuNative.difficulty_i_mods(context(),(int)v);}
+        public void mods(String v){try(Arena a=Arena.ofConfined()){RosuNative.difficulty_s_mods(context(),utf8(a,v));}}
+        public void passedObjects(long v){RosuNative.difficulty_passed_objects(context(),(int)v);} public void clockRate(double v){RosuNative.difficulty_clock_rate(context(),v);}
+        public void ar(float v){RosuNative.difficulty_ar(context(),v);} public void cs(float v){RosuNative.difficulty_cs(context(),v);}
+        public void hp(float v){RosuNative.difficulty_hp(context(),v);} public void od(float v){RosuNative.difficulty_od(context(),v);}
+        public void hardrockOffsets(boolean v){RosuNative.difficulty_hardrock_offsets(context(),v);} public void lazer(boolean v){RosuNative.difficulty_lazer(context(),v);}
+        public DifficultyAttributes calculate(Beatmap b){try(Arena a=Arena.ofConfined()){return new DifficultyAttributes(RosuNative.difficulty_calculate(a,context(),b.context()));}}
+        public double clockRate(){return RosuNative.difficulty_get_clock_rate(context());}
     }
 
     public static final class Performance extends Service {
-        public Performance() { super(NATIVE.performance_create().unwrap("performance_create")); }
-        @Override void destroy(Pointer context) { NATIVE.performance_destroy(context); }
-        public void mode(Mode value) { NATIVE.performance_mode(context(), value.value); }
-        public void mods(Mods value) { NATIVE.performance_p_mods(context(), value.context()); }
-        public void mods(long value) { NATIVE.performance_i_mods(context(), (int) value); }
-        public void mods(String value) { NATIVE.performance_s_mods(context(), Utf8String.fromJava(value)); }
-        public void passedObjects(long value) { NATIVE.performance_passed_objects(context(), (int) value); }
-        public void legacyTotalScore(long value) { NATIVE.performance_legacy_total_score(context(), (int) value); }
-        public void clockRate(double value) { NATIVE.performance_clock_rate(context(), value); }
-        public void ar(float value) { NATIVE.performance_ar(context(), value); }
-        public void cs(float value) { NATIVE.performance_cs(context(), value); }
-        public void hp(float value) { NATIVE.performance_hp(context(), value); }
-        public void od(float value) { NATIVE.performance_od(context(), value); }
-        public void hardrockOffsets(boolean value) { NATIVE.performance_hardrock_offsets(context(), bool(value)); }
-        public void state(ScoreState value) { NATIVE.performance_state(context(), value.byValue()); }
-        public void accuracy(double value) { NATIVE.performance_accuracy(context(), value); }
-        public void misses(long value) { NATIVE.performance_misses(context(), (int) value); }
-        public void combo(long value) { NATIVE.performance_combo(context(), (int) value); }
-        public void hitResultPriority(HitResultPriority value) { NATIVE.performance_hitresult_priority(context(), value.value); }
-        public void lazer(boolean value) { NATIVE.performance_lazer(context(), bool(value)); }
-        public void largeTickHits(long value) { NATIVE.performance_large_tick_hits(context(), (int) value); }
-        public void smallTickHits(long value) { NATIVE.performance_small_tick_hits(context(), (int) value); }
-        public void sliderEndHits(long value) { NATIVE.performance_slider_end_hits(context(), (int) value); }
-        public void n300(long value) { NATIVE.performance_n300(context(), (int) value); }
-        public void n100(long value) { NATIVE.performance_n100(context(), (int) value); }
-        public void n50(long value) { NATIVE.performance_n50(context(), (int) value); }
-        public void nKatu(long value) { NATIVE.performance_n_katu(context(), (int) value); }
-        public void nGeki(long value) { NATIVE.performance_n_geki(context(), (int) value); }
-        public ScoreState generateState(Beatmap beatmap) { return NATIVE.performance_generate_state(context(), beatmap.context()); }
-        public ScoreState generateState(DifficultyAttributes attrs) {
-            return NATIVE.performance_generate_state_from_difficulty(context(), asDifficultyValue(attrs));
-        }
-        public PerformanceAttributes calculate(Beatmap beatmap) { return NATIVE.performance_calculate(context(), beatmap.context()); }
-        public PerformanceAttributes calculate(DifficultyAttributes attrs) {
-            return NATIVE.performance_calculate_from_difficulty(context(), asDifficultyValue(attrs));
-        }
-        public double clockRate() { return NATIVE.performance_get_clock_rate(context()); }
+        public Performance(){super(create());} private static MemorySegment create(){try(Arena a=Arena.ofConfined()){return unwrap(RosuNative.performance_create(a),"performance_create");}}
+        void destroy(MemorySegment c){RosuNative.performance_destroy(c);}
+        public void mode(Mode v){RosuNative.performance_mode(context(),v.value);} public void mods(Mods v){RosuNative.performance_p_mods(context(),v.context());}
+        public void mods(long v){RosuNative.performance_i_mods(context(),(int)v);} public void mods(String v){try(Arena a=Arena.ofConfined()){RosuNative.performance_s_mods(context(),utf8(a,v));}}
+        public void passedObjects(long v){RosuNative.performance_passed_objects(context(),(int)v);} public void legacyTotalScore(long v){RosuNative.performance_legacy_total_score(context(),(int)v);}
+        public void clockRate(double v){RosuNative.performance_clock_rate(context(),v);} public void ar(float v){RosuNative.performance_ar(context(),v);}
+        public void cs(float v){RosuNative.performance_cs(context(),v);} public void hp(float v){RosuNative.performance_hp(context(),v);} public void od(float v){RosuNative.performance_od(context(),v);}
+        public void hardrockOffsets(boolean v){RosuNative.performance_hardrock_offsets(context(),v);} public void accuracy(double v){RosuNative.performance_accuracy(context(),v);}
+        public void misses(long v){RosuNative.performance_misses(context(),(int)v);} public void combo(long v){RosuNative.performance_combo(context(),(int)v);}
+        public void hitResultPriority(HitResultPriority v){RosuNative.performance_hitresult_priority(context(),v.value);} public void lazer(boolean v){RosuNative.performance_lazer(context(),v);}
+        public void largeTickHits(long v){RosuNative.performance_large_tick_hits(context(),(int)v);} public void smallTickHits(long v){RosuNative.performance_small_tick_hits(context(),(int)v);}
+        public void sliderEndHits(long v){RosuNative.performance_slider_end_hits(context(),(int)v);} public void n300(long v){RosuNative.performance_n300(context(),(int)v);}
+        public void n100(long v){RosuNative.performance_n100(context(),(int)v);} public void n50(long v){RosuNative.performance_n50(context(),(int)v);}
+        public void nKatu(long v){RosuNative.performance_n_katu(context(),(int)v);} public void nGeki(long v){RosuNative.performance_n_geki(context(),(int)v);}
+        public void state(ScoreState v){try(Arena a=Arena.ofConfined()){RosuNative.performance_state(context(),v.encode(a));}}
+        public ScoreState generateState(Beatmap b){try(Arena a=Arena.ofConfined()){return new ScoreState(RosuNative.performance_generate_state(a,context(),b.context()));}}
+        public ScoreState generateState(DifficultyAttributes v){try(Arena a=Arena.ofConfined()){return new ScoreState(RosuNative.performance_generate_state_from_difficulty(a,context(),v.segment));}}
+        public PerformanceAttributes calculate(Beatmap b){try(Arena a=Arena.ofConfined()){return new PerformanceAttributes(RosuNative.performance_calculate(a,context(),b.context()));}}
+        public PerformanceAttributes calculate(DifficultyAttributes v){try(Arena a=Arena.ofConfined()){return new PerformanceAttributes(RosuNative.performance_calculate_from_difficulty(a,context(),v.segment));}}
+        public double clockRate(){return RosuNative.performance_get_clock_rate(context());}
     }
 
     public static final class BeatmapAttributesBuilder extends Service {
-        public BeatmapAttributesBuilder() { super(NATIVE.beatmap_attributes_builder_create().unwrap("beatmap_attributes_builder_create")); }
-        @Override void destroy(Pointer context) { NATIVE.beatmap_attributes_builder_destroy(context); }
-        public void mode(Mode value) { NATIVE.beatmap_attributes_builder_mode(context(), value.value); }
-        public void mods(Mods value) { NATIVE.beatmap_attributes_builder_p_mods(context(), value.context()); }
-        public void mods(long value) { NATIVE.beatmap_attributes_builder_i_mods(context(), (int) value); }
-        public void mods(String value) { NATIVE.beatmap_attributes_builder_s_mods(context(), Utf8String.fromJava(value)); }
-        public void clockRate(double value) { NATIVE.beatmap_attributes_builder_clock_rate(context(), value); }
-        public void ar(float value) { NATIVE.beatmap_attributes_builder_ar(context(), value); }
-        public void cs(float value) { NATIVE.beatmap_attributes_builder_cs(context(), value); }
-        public void hp(float value) { NATIVE.beatmap_attributes_builder_hp(context(), value); }
-        public void od(float value) { NATIVE.beatmap_attributes_builder_od(context(), value); }
-        public double clockRate() { return NATIVE.beatmap_attributes_builder_get_clock_rate(context()); }
-        public BeatmapAttributes build(Beatmap beatmap) { return NATIVE.beatmap_attributes_builder_build(context(), beatmap.context()); }
+        public BeatmapAttributesBuilder(){super(create());} private static MemorySegment create(){try(Arena a=Arena.ofConfined()){return unwrap(RosuNative.beatmap_attributes_builder_create(a),"beatmap_attributes_builder_create");}}
+        void destroy(MemorySegment c){RosuNative.beatmap_attributes_builder_destroy(c);}
+        public void mode(Mode v){RosuNative.beatmap_attributes_builder_mode(context(),v.value);} public void mods(Mods v){RosuNative.beatmap_attributes_builder_p_mods(context(),v.context());}
+        public void mods(long v){RosuNative.beatmap_attributes_builder_i_mods(context(),(int)v);} public void mods(String v){try(Arena a=Arena.ofConfined()){RosuNative.beatmap_attributes_builder_s_mods(context(),utf8(a,v));}}
+        public void clockRate(double v){RosuNative.beatmap_attributes_builder_clock_rate(context(),v);} public void ar(float v){RosuNative.beatmap_attributes_builder_ar(context(),v);}
+        public void cs(float v){RosuNative.beatmap_attributes_builder_cs(context(),v);} public void hp(float v){RosuNative.beatmap_attributes_builder_hp(context(),v);}
+        public void od(float v){RosuNative.beatmap_attributes_builder_od(context(),v);} public double clockRate(){return RosuNative.beatmap_attributes_builder_get_clock_rate(context());}
+        public BeatmapAttributes build(Beatmap b){try(Arena a=Arena.ofConfined()){return new BeatmapAttributes(RosuNative.beatmap_attributes_builder_build(a,context(),b.context()));}}
     }
 
     public static final class GradualDifficulty extends Service {
-        private GradualDifficulty(Pointer context) { super(context); }
-        public static GradualDifficulty create(Difficulty difficulty, Beatmap beatmap) {
-            return new GradualDifficulty(NATIVE.gradual_difficulty_create(difficulty.context(), beatmap.context()).unwrap("gradual_difficulty_create"));
-        }
-        public static GradualDifficulty create(Difficulty difficulty, Beatmap beatmap, Mode mode) {
-            return new GradualDifficulty(NATIVE.gradual_difficulty_new_with_mode(difficulty.context(), beatmap.context(), mode.value).unwrap("gradual_difficulty_new_with_mode"));
-        }
-        @Override void destroy(Pointer context) { NATIVE.gradual_difficulty_destroy(context); }
-        public Optional<DifficultyAttributes> next() { return NATIVE.gradual_difficulty_next(context()).toOptional(); }
-        public Optional<DifficultyAttributes> nth(long n) { return NATIVE.gradual_difficulty_nth(context(), (int) n).toOptional(); }
-        public long length() { return Integer.toUnsignedLong(NATIVE.gradual_difficulty_len(context())); }
+        private GradualDifficulty(MemorySegment c){super(c);}
+        public static GradualDifficulty create(Difficulty d,Beatmap b){try(Arena a=Arena.ofConfined()){return new GradualDifficulty(unwrap(RosuNative.gradual_difficulty_create(a,d.context(),b.context()),"gradual_difficulty_create"));}}
+        public static GradualDifficulty create(Difficulty d,Beatmap b,Mode m){try(Arena a=Arena.ofConfined()){return new GradualDifficulty(unwrap(RosuNative.gradual_difficulty_new_with_mode(a,d.context(),b.context(),m.value),"gradual_difficulty_new_with_mode"));}}
+        void destroy(MemorySegment c){RosuNative.gradual_difficulty_destroy(c);}
+        public Optional<DifficultyAttributes> next(){try(Arena a=Arena.ofConfined()){return optionalDifficulty(RosuNative.gradual_difficulty_next(a,context()));}}
+        public Optional<DifficultyAttributes> nth(long n){try(Arena a=Arena.ofConfined()){return optionalDifficulty(RosuNative.gradual_difficulty_nth(a,context(),(int)n));}}
+        public long length(){return Integer.toUnsignedLong(RosuNative.gradual_difficulty_len(context()));}
     }
-
     public static final class GradualPerformance extends Service {
-        private GradualPerformance(Pointer context) { super(context); }
-        public static GradualPerformance create(Difficulty difficulty, Beatmap beatmap) {
-            return new GradualPerformance(NATIVE.gradual_performance_create(difficulty.context(), beatmap.context()).unwrap("gradual_performance_create"));
-        }
-        public static GradualPerformance create(Difficulty difficulty, Beatmap beatmap, Mode mode) {
-            return new GradualPerformance(NATIVE.gradual_performance_new_with_mode(difficulty.context(), beatmap.context(), mode.value).unwrap("gradual_performance_new_with_mode"));
-        }
-        @Override void destroy(Pointer context) { NATIVE.gradual_performance_destroy(context); }
-        public Optional<PerformanceAttributes> next(ScoreState state) {
-            return NATIVE.gradual_performance_next(context(), state.byValue()).toOptional();
-        }
-        public Optional<PerformanceAttributes> last(ScoreState state) {
-            return NATIVE.gradual_performance_last(context(), state.byValue()).toOptional();
-        }
-        public Optional<PerformanceAttributes> nth(ScoreState state, long n) {
-            return NATIVE.gradual_performance_nth(context(), state.byValue(), (int) n).toOptional();
-        }
-        public long length() { return Integer.toUnsignedLong(NATIVE.gradual_performance_len(context())); }
+        private GradualPerformance(MemorySegment c){super(c);}
+        public static GradualPerformance create(Difficulty d,Beatmap b){try(Arena a=Arena.ofConfined()){return new GradualPerformance(unwrap(RosuNative.gradual_performance_create(a,d.context(),b.context()),"gradual_performance_create"));}}
+        public static GradualPerformance create(Difficulty d,Beatmap b,Mode m){try(Arena a=Arena.ofConfined()){return new GradualPerformance(unwrap(RosuNative.gradual_performance_new_with_mode(a,d.context(),b.context(),m.value),"gradual_performance_new_with_mode"));}}
+        void destroy(MemorySegment c){RosuNative.gradual_performance_destroy(c);}
+        public Optional<PerformanceAttributes> next(ScoreState s){try(Arena a=Arena.ofConfined()){return optionalPerformance(RosuNative.gradual_performance_next(a,context(),s.encode(a)));}}
+        public Optional<PerformanceAttributes> last(ScoreState s){try(Arena a=Arena.ofConfined()){return optionalPerformance(RosuNative.gradual_performance_last(a,context(),s.encode(a)));}}
+        public Optional<PerformanceAttributes> nth(ScoreState s,long n){try(Arena a=Arena.ofConfined()){return optionalPerformance(RosuNative.gradual_performance_nth(a,context(),s.encode(a),(int)n));}}
+        public long length(){return Integer.toUnsignedLong(RosuNative.gradual_performance_len(context()));}
     }
 
-    private static DifficultyAttributes.ByValue asDifficultyValue(DifficultyAttributes attrs) {
-        attrs.write();
-        DifficultyAttributes.ByValue value = new DifficultyAttributes.ByValue(attrs.getPointer());
-        value.read();
-        return value;
-    }
+    private static Optional<DifficultyAttributes> optionalDifficulty(MemorySegment s){return desu.life.raw.Option_DifficultyAttributes.variant(s)==0?Optional.of(new DifficultyAttributes(desu.life.raw.Option_DifficultyAttributes.some(s))):Optional.empty();}
+    private static Optional<PerformanceAttributes> optionalPerformance(MemorySegment s){return desu.life.raw.Option_PerformanceAttributes.variant(s)==0?Optional.of(new PerformanceAttributes(desu.life.raw.Option_PerformanceAttributes.some(s))):Optional.empty();}
+    public static String debug(DifficultyAttributes v){try(Arena a=Arena.ofConfined()){return consumeString(RosuNative.debug_difficulty_attributes(a,v.segment));}}
+    public static String debug(PerformanceAttributes v){try(Arena a=Arena.ofConfined()){return consumeString(RosuNative.debug_performance_attributes(a,v.segment));}}
+    public static String debug(ScoreState v){try(Arena a=Arena.ofConfined()){return consumeString(RosuNative.debug_score_state(a,v.encode(a)));}}
+    public static double calculateAccuracy(ScoreState s,DifficultyAttributes a,OsuScoreOrigin o){try(Arena arena=Arena.ofConfined()){return RosuNative.calculate_accuacy(s.encode(arena),a.segment,o.value);}}
 
-    public static String debug(DifficultyAttributes value) {
-        value.write();
-        return NATIVE.debug_difficulty_attributes(value).consume();
+    private static <T> T decode(MemorySegment s,Class<T> facade,Class<?> raw){try{T v=facade.getDeclaredConstructor().newInstance();decodeInto(s,v,raw);return v;}catch(ReflectiveOperationException e){throw new IllegalStateException(e);}}
+    private static void decodeInto(MemorySegment s,Object target,Class<?> raw){
+        try {
+            for(Field f:target.getClass().getFields()){
+                if(Modifier.isStatic(f.getModifiers()))continue;
+                Method getter; try{getter=raw.getMethod(f.getName(),MemorySegment.class);}catch(NoSuchMethodException ignored){continue;}
+                Object value=getter.invoke(null,s);
+                if(f.getType()==boolean.class && value instanceof Boolean b) f.setBoolean(target,b);
+                else if(f.getType()==OptionDouble.class){MemorySegment x=(MemorySegment)value;OptionDouble o=new OptionDouble();o.variant=desu.life.raw.Option_f64.variant(x);o.some=desu.life.raw.Option_f64.some(x);f.set(target,o);}
+                else if(f.getType()==OptionUint.class){MemorySegment x=(MemorySegment)value;OptionUint o=new OptionUint();o.variant=desu.life.raw.Option_u32.variant(x);o.some=desu.life.raw.Option_u32.some(x);f.set(target,o);}
+                else if(value instanceof MemorySegment x){String n=f.getType().getSimpleName();Class<?> rr=Class.forName("desu.life.raw."+n);f.set(target,decode(x,f.getType(),rr));}
+                else f.set(target,value);
+            }
+        } catch(ReflectiveOperationException e){throw new IllegalStateException(e);}
     }
-
-    public static String debug(PerformanceAttributes value) {
-        value.write();
-        return NATIVE.debug_performance_attributes(value).consume();
-    }
-
-    public static String debug(ScoreState value) {
-        value.write();
-        return NATIVE.debug_score_state(value).consume();
-    }
-
-    public static double calculateAccuracy(ScoreState state, DifficultyAttributes attrs, OsuScoreOrigin origin) {
-        state.write();
-        attrs.write();
-        return NATIVE.calculate_accuacy(state, attrs, origin.value);
+    private static void setRaw(MemorySegment s,Class<?> raw,Object source){
+        try {
+            for(Field f:source.getClass().getFields()){
+                if(Modifier.isStatic(f.getModifiers()))continue; Object value=f.get(source);
+                if(f.getType()==OptionUint.class) continue;
+                try{raw.getMethod(f.getName(),MemorySegment.class,f.getType()).invoke(null,s,value);}catch(NoSuchMethodException ignored){}
+            }
+            OptionUint o=((ScoreState)source).legacy_total_score; MemorySegment x=desu.life.raw.ScoreState.legacy_total_score(s);
+            desu.life.raw.Option_u32.variant(x,o.variant);desu.life.raw.Option_u32.some(x,o.some);
+        }catch(ReflectiveOperationException e){throw new IllegalStateException(e);}
     }
 }
