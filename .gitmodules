@@ -1,0 +1,3 @@
+[submodule "SharpRosuPP/osu"]
+	path = SharpRosuPP/osu
+	url = https://github.com/ppy/osu.git
