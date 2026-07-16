@@ -16,6 +16,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - name: Rust setup
       uses: dtolnay/rust-toolchain@nightly
@@ -49,6 +51,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - name: Rust setup
       uses: dtolnay/rust-toolchain@nightly
@@ -61,7 +65,7 @@ jobs:
       run: cargo build --release -p rosu_pp_ffi
 
     - uses: actions/upload-artifact@v4
-      if: matrix.platform == 'ubuntu-20.04'
+      if: matrix.platform == 'ubuntu-22.04'
       with:
         name: linux
         path: ./target/release/librosu_pp_ffi.so
@@ -77,4 +81,3 @@ jobs:
       with:
         name: macos-arm
         path: ./target/release/librosu_pp_ffi.dylib
-
