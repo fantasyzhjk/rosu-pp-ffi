@@ -19,7 +19,7 @@ import static java.lang.foreign.MemoryLayout.PathElement.*;
  *     union {
  *         OsuDifficultyAttributes osu;
  *         TaikoDifficultyAttributes taiko;
- *         CatchDifficultyAttributes catch;
+ *         CatchDifficultyAttributes catch_;
  *         ManiaDifficultyAttributes mania;
  *     } payload;
  * }
@@ -93,7 +93,7 @@ public class DifficultyAttributes {
      * union {
      *     OsuDifficultyAttributes osu;
      *     TaikoDifficultyAttributes taiko;
-     *     CatchDifficultyAttributes catch;
+     *     CatchDifficultyAttributes catch_;
      *     ManiaDifficultyAttributes mania;
      * }
      * }
@@ -107,7 +107,7 @@ public class DifficultyAttributes {
         private static final GroupLayout $LAYOUT = MemoryLayout.unionLayout(
             OsuDifficultyAttributes.layout().withName("osu"),
             TaikoDifficultyAttributes.layout().withName("taiko"),
-            CatchDifficultyAttributes.layout().withName("catch"),
+            CatchDifficultyAttributes.layout().withName("catch_"),
             ManiaDifficultyAttributes.layout().withName("mania")
         ).withName("$anon$278:5");
 
@@ -206,24 +206,24 @@ public class DifficultyAttributes {
             MemorySegment.copy(fieldValue, 0L, union, taiko$OFFSET, taiko$LAYOUT.byteSize());
         }
 
-        private static final GroupLayout catch_$LAYOUT = (GroupLayout)$LAYOUT.select(groupElement("catch"));
+        private static final GroupLayout catch_$LAYOUT = (GroupLayout)$LAYOUT.select(groupElement("catch_"));
 
         /**
          * Layout for field:
          * {@snippet lang=c :
-         * CatchDifficultyAttributes catch
+         * CatchDifficultyAttributes catch_
          * }
          */
         public static final GroupLayout catch_$layout() {
             return catch_$LAYOUT;
         }
 
-        private static final long catch_$OFFSET = $LAYOUT.byteOffset(groupElement("catch"));
+        private static final long catch_$OFFSET = $LAYOUT.byteOffset(groupElement("catch_"));
 
         /**
          * Offset for field:
          * {@snippet lang=c :
-         * CatchDifficultyAttributes catch
+         * CatchDifficultyAttributes catch_
          * }
          */
         public static final long catch_$offset() {
@@ -233,7 +233,7 @@ public class DifficultyAttributes {
         /**
          * Getter for field:
          * {@snippet lang=c :
-         * CatchDifficultyAttributes catch
+         * CatchDifficultyAttributes catch_
          * }
          */
         public static MemorySegment catch_(MemorySegment union) {
@@ -243,7 +243,7 @@ public class DifficultyAttributes {
         /**
          * Setter for field:
          * {@snippet lang=c :
-         * CatchDifficultyAttributes catch
+         * CatchDifficultyAttributes catch_
          * }
          */
         public static void catch_(MemorySegment union, MemorySegment fieldValue) {
@@ -347,7 +347,7 @@ public class DifficultyAttributes {
      * union {
      *     OsuDifficultyAttributes osu;
      *     TaikoDifficultyAttributes taiko;
-     *     CatchDifficultyAttributes catch;
+     *     CatchDifficultyAttributes catch_;
      *     ManiaDifficultyAttributes mania;
      * } payload
      * }
@@ -364,7 +364,7 @@ public class DifficultyAttributes {
      * union {
      *     OsuDifficultyAttributes osu;
      *     TaikoDifficultyAttributes taiko;
-     *     CatchDifficultyAttributes catch;
+     *     CatchDifficultyAttributes catch_;
      *     ManiaDifficultyAttributes mania;
      * } payload
      * }
@@ -379,7 +379,7 @@ public class DifficultyAttributes {
      * union {
      *     OsuDifficultyAttributes osu;
      *     TaikoDifficultyAttributes taiko;
-     *     CatchDifficultyAttributes catch;
+     *     CatchDifficultyAttributes catch_;
      *     ManiaDifficultyAttributes mania;
      * } payload
      * }
@@ -394,7 +394,7 @@ public class DifficultyAttributes {
      * union {
      *     OsuDifficultyAttributes osu;
      *     TaikoDifficultyAttributes taiko;
-     *     CatchDifficultyAttributes catch;
+     *     CatchDifficultyAttributes catch_;
      *     ManiaDifficultyAttributes mania;
      * } payload
      * }

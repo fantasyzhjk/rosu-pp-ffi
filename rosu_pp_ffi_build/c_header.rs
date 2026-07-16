@@ -242,6 +242,7 @@ fn emit_pattern(
 
 fn declaration(inv: &RustInventory, id: TypeId, name: &str) -> Result<String, Box<dyn Error>> {
     let ty = inv.types.get(&id).ok_or("missing inventory type")?;
+    let name = identifier(name);
     if let TypeKind::Array(a) = &ty.kind {
         return Ok(format!("{} {}[{}]", type_name(inv, a.ty)?, name, a.len));
     }
@@ -297,6 +298,130 @@ fn upper(value: &str) -> String {
 }
 fn lower(value: &str) -> String {
     value.chars().flat_map(char::to_lowercase).collect()
+}
+
+fn identifier(value: &str) -> String {
+    // The header is C but supports C++ inclusion through `extern "C"`, so use
+    // the union of C and C++ keywords.
+    const KEYWORDS: &[&str] = &[
+        "_Alignas",
+        "_Alignof",
+        "_Atomic",
+        "_BitInt",
+        "_Bool",
+        "_Complex",
+        "_Decimal128",
+        "_Decimal32",
+        "_Decimal64",
+        "_Generic",
+        "_Imaginary",
+        "_Noreturn",
+        "_Static_assert",
+        "_Thread_local",
+        "alignas",
+        "alignof",
+        "and",
+        "and_eq",
+        "asm",
+        "atomic_cancel",
+        "atomic_commit",
+        "atomic_noexcept",
+        "auto",
+        "bitand",
+        "bitor",
+        "bool",
+        "break",
+        "case",
+        "catch",
+        "char",
+        "char8_t",
+        "char16_t",
+        "char32_t",
+        "class",
+        "compl",
+        "concept",
+        "const",
+        "consteval",
+        "constexpr",
+        "constinit",
+        "const_cast",
+        "continue",
+        "co_await",
+        "co_return",
+        "co_yield",
+        "decltype",
+        "default",
+        "delete",
+        "do",
+        "double",
+        "dynamic_cast",
+        "else",
+        "enum",
+        "explicit",
+        "export",
+        "extern",
+        "false",
+        "float",
+        "for",
+        "friend",
+        "goto",
+        "if",
+        "inline",
+        "int",
+        "long",
+        "mutable",
+        "namespace",
+        "new",
+        "noexcept",
+        "not",
+        "not_eq",
+        "nullptr",
+        "operator",
+        "or",
+        "or_eq",
+        "private",
+        "protected",
+        "public",
+        "reflexpr",
+        "register",
+        "reinterpret_cast",
+        "requires",
+        "return",
+        "short",
+        "signed",
+        "sizeof",
+        "static",
+        "static_assert",
+        "static_cast",
+        "struct",
+        "switch",
+        "synchronized",
+        "template",
+        "this",
+        "thread_local",
+        "throw",
+        "true",
+        "try",
+        "typedef",
+        "typeid",
+        "typename",
+        "union",
+        "unsigned",
+        "using",
+        "virtual",
+        "void",
+        "volatile",
+        "wchar_t",
+        "while",
+        "xor",
+        "xor_eq",
+    ];
+
+    if KEYWORDS.contains(&value) {
+        format!("{value}_")
+    } else {
+        value.to_string()
+    }
 }
 
 fn c_name(ty: &Type) -> String {

@@ -266,7 +266,7 @@ struct PerformanceAttributes {
     union {
         OsuPerformanceAttributes osu;
         TaikoPerformanceAttributes taiko;
-        CatchPerformanceAttributes catch;
+        CatchPerformanceAttributes catch_;
         ManiaPerformanceAttributes mania;
     } payload;
 };
@@ -278,7 +278,7 @@ struct DifficultyAttributes {
     union {
         OsuDifficultyAttributes osu;
         TaikoDifficultyAttributes taiko;
-        CatchDifficultyAttributes catch;
+        CatchDifficultyAttributes catch_;
         ManiaDifficultyAttributes mania;
     } payload;
 };
