@@ -3,12 +3,18 @@ package desu.life;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.lang.foreign.MemorySegment;
+import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RosuFFITest {
@@ -122,6 +128,97 @@ class RosuFFITest {
             assertFalse(RosuFFI.debug(performanceAttributes).isBlank());
             assertFalse(RosuFFI.debug(state).isBlank());
         }
+    }
+
+    @Test
+    void synchronizesMutableFacadePayloadsBackToNative() {
+        try (
+            var beatmap = new RosuFFI.Beatmap(RESOURCES.resolve("657916.osu").toString());
+            var difficulty = new RosuFFI.Difficulty();
+            var performance = new RosuFFI.Performance()
+        ) {
+            var difficultyAttributes = difficulty.calculate(beatmap);
+            difficultyAttributes.asOsu().stars = 12345.678;
+            assertTrue(RosuFFI.debug(difficultyAttributes).contains("12345.678"));
+
+            var performanceAttributes = performance.calculate(beatmap);
+            performanceAttributes.asOsu().pp = 87654.321;
+            performanceAttributes.asOsu().difficulty.stars = 23456.789;
+            String debug = RosuFFI.debug(performanceAttributes);
+            assertTrue(debug.contains("87654.321"));
+            assertTrue(debug.contains("23456.789"));
+        }
+    }
+
+    @Test
+    void rejectsOutOfRangeUnsignedArguments() {
+        try (var difficulty = new RosuFFI.Difficulty()) {
+            assertThrows(IllegalArgumentException.class, () -> difficulty.passedObjects(-1));
+            assertThrows(IllegalArgumentException.class, () -> difficulty.passedObjects(0x1_0000_0000L));
+        }
+    }
+
+    @Test
+    void rejectsReadingAClosedWire() {
+        try (var beatmap = new RosuFFI.Beatmap(RESOURCES.resolve("657916.osu").toString())) {
+            var wire = beatmap.hitObjects();
+            wire.close();
+            assertThrows(IllegalStateException.class, wire::unwire);
+        }
+    }
+
+    @Test
+    void representsOptionalUintWithoutLosingUnsignedValues() {
+        var value = new RosuFFI.OptionUint();
+        value.set(4_000_000_000L);
+        assertEquals(4_000_000_000L, value.toOptional().orElseThrow());
+
+        value.clear();
+        assertTrue(value.toOptional().isEmpty());
+        assertThrows(IllegalArgumentException.class, () -> value.set(0x1_0000_0000L));
+    }
+
+    @Test
+    void exposesEveryModsInputForm() throws NoSuchMethodException {
+        for (Class<?> service : List.of(
+            RosuFFI.Difficulty.class,
+            RosuFFI.Performance.class,
+            RosuFFI.BeatmapAttributesBuilder.class
+        )) {
+            service.getMethod("mods", RosuFFI.Mods.class);
+            service.getMethod("mods", long.class);
+            service.getMethod("mods", String.class);
+        }
+    }
+
+    @Test
+    void facadeAttributeSchemasMatchGeneratedRawSchemasBothWays() {
+        assertSchema(RosuFFI.OsuDifficultyAttributes.class, desu.life.raw.OsuDifficultyAttributes.class);
+        assertSchema(RosuFFI.TaikoDifficultyAttributes.class, desu.life.raw.TaikoDifficultyAttributes.class);
+        assertSchema(RosuFFI.CatchDifficultyAttributes.class, desu.life.raw.CatchDifficultyAttributes.class);
+        assertSchema(RosuFFI.ManiaDifficultyAttributes.class, desu.life.raw.ManiaDifficultyAttributes.class);
+        assertSchema(RosuFFI.OsuPerformanceAttributes.class, desu.life.raw.OsuPerformanceAttributes.class);
+        assertSchema(RosuFFI.TaikoPerformanceAttributes.class, desu.life.raw.TaikoPerformanceAttributes.class);
+        assertSchema(RosuFFI.CatchPerformanceAttributes.class, desu.life.raw.CatchPerformanceAttributes.class);
+        assertSchema(RosuFFI.ManiaPerformanceAttributes.class, desu.life.raw.ManiaPerformanceAttributes.class);
+        assertSchema(RosuFFI.ScoreState.class, desu.life.raw.ScoreState.class);
+        assertSchema(RosuFFI.HitWindows.class, desu.life.raw.HitWindows.class);
+        assertSchema(RosuFFI.BeatmapAttributes.class, desu.life.raw.BeatmapAttributes.class);
+    }
+
+    private static void assertSchema(Class<?> facade, Class<?> raw) {
+        Set<String> facadeFields = Arrays.stream(facade.getFields())
+            .filter(field -> !Modifier.isStatic(field.getModifiers()))
+            .map(field -> field.getName())
+            .collect(Collectors.toSet());
+        Set<String> rawFields = Arrays.stream(raw.getMethods())
+            .filter(method -> Modifier.isStatic(method.getModifiers()))
+            .filter(method -> method.getParameterCount() == 1)
+            .filter(method -> method.getParameterTypes()[0] == MemorySegment.class)
+            .filter(method -> method.getReturnType() != void.class)
+            .map(method -> method.getName())
+            .collect(Collectors.toSet());
+        assertEquals(rawFields, facadeFields, facade.getSimpleName());
     }
 
     private record ModeMap(String file, RosuFFI.Mode mode) {}

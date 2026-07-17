@@ -65,6 +65,9 @@ service concepts. The public facade is
 make `rosu_pp_ffi` available through the platform library search path.
 Applications should enable native access for the binding module, or use
 `--enable-native-access=ALL-UNNAMED` when running from the class path.
+Native service and wire instances implement `AutoCloseable` and should be used
+with try-with-resources. Individual service and wire instances are not safe for
+concurrent use.
 
 The current C header is generated from `ffi_inventory()` by
 `rosu_pp_ffi_build`, rather than being a legacy checked-in ABI description.
