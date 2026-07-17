@@ -76,15 +76,15 @@ impl Beatmap {
     }
 
     pub fn cs(&mut self) -> f32 {
-        self.inner.ar
+        self.inner.cs
     }
 
     pub fn hp(&mut self) -> f32 {
-        self.inner.ar
+        self.inner.hp
     }
 
     pub fn od(&mut self) -> f32 {
-        self.inner.ar
+        self.inner.od
     }
 
     pub fn slider_multiplier(&mut self) -> f64 {
@@ -100,6 +100,22 @@ impl Beatmap {
             .check_suspicion()
             .err()
             .map(TooSuspicious::from)
+            .into()
+    }
+
+    pub fn hit_object_end_time(&self, index: u32) -> FFIOption<f64> {
+        self.inner
+            .hit_objects
+            .get(index as usize)
+            .map(|hit_object| {
+                let duration = match &hit_object.kind {
+                    rosu_pp::model::hit_object::HitObjectKind::Spinner(spinner) => spinner.duration,
+                    rosu_pp::model::hit_object::HitObjectKind::Hold(hold) => hold.duration,
+                    _ => 0.0,
+                };
+
+                hit_object.start_time + duration
+            })
             .into()
     }
 

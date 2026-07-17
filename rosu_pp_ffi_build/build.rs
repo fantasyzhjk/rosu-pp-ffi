@@ -12,7 +12,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         .parent()
         .ok_or("binding crate must be located inside the workspace")?;
 
-    
     bindings_csharp(workspace.join("SharpRosuPP/RosuPP/RosuFFI.cs"))?;
     bindings_csharp(workspace.join("bindings/RosuFFI.cs"))?;
     c_header::write(

@@ -225,11 +225,31 @@ dependencies = [
 [[package]]
 name = "rosu-pp"
 version = "4.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "697808a7bff3a12f18f519c7111de1df1846ae5b937561d56117658626cab978"
+dependencies = [
+ "divan",
+ "rosu-map",
+ "rosu-mods",
+]
+
+[[package]]
+name = "rosu-pp"
+version = "4.0.1"
 source = "git+https://github.com/Apeuriox/rosu-pp?rev=9a073d29611ef936b581a08d3c5b288ef5427301#9a073d29611ef936b581a08d3c5b288ef5427301"
 dependencies = [
  "divan",
  "rosu-map",
  "rosu-mods",
+]
+
+[[package]]
+name = "rosu-pp-older"
+version = "0.2.0"
+source = "git+https://github.com/MaxOhn/rosu-pp-older?rev=2b3b735ac29caa8cb892b23b1c958baf6657a7ac#2b3b735ac29caa8cb892b23b1c958baf6657a7ac"
+dependencies = [
+ "rosu-map",
+ "rosu-pp 4.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -239,7 +259,9 @@ dependencies = [
  "interoptopus",
  "rosu-map",
  "rosu-mods",
- "rosu-pp",
+ "rosu-pp 4.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rosu-pp 4.0.1 (git+https://github.com/Apeuriox/rosu-pp?rev=9a073d29611ef936b581a08d3c5b288ef5427301)",
+ "rosu-pp-older",
  "serde",
  "serde_json",
  "thiserror",

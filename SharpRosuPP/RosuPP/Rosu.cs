@@ -295,6 +295,15 @@ public partial class Beatmap
     }
 }
 
+public partial class LegacyBeatmap
+{
+    public static LegacyBeatmap FromBytes(byte[] data)
+    {
+        using var slice = SliceByte.From(data);
+        return FromBytes(slice);
+    }
+}
+
 public partial class Mods
 {
     public static Mods FromAcronyms(string str, Mode mode)

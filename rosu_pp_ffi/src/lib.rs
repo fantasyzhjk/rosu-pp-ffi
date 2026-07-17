@@ -13,6 +13,7 @@ mod difficulty;
 mod fruit;
 mod gradual;
 mod hitresult_priority;
+mod legacy;
 mod mania;
 mod mods;
 mod osu;
@@ -55,5 +56,12 @@ pub fn ffi_inventory() -> RustInventory {
         .register(function!(attributes::debug_performance_attributes))
         .register(function!(state::debug_score_state))
         .register(function!(state::calculate_accuacy))
+        // Keep extension types at the end to minimize churn in generated bindings.
+        .register(extra_type!(legacy::LegacyVersion))
+        .register(extra_type!(legacy::LegacyDifficultyAttributes))
+        .register(extra_type!(legacy::LegacyPerformanceAttributes))
+        .register(service!(legacy::LegacyBeatmap))
+        .register(service!(legacy::LegacyDifficulty))
+        .register(service!(legacy::LegacyPerformance))
         .validate()
 }
