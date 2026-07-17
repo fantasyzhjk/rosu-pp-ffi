@@ -1,1705 +1,797 @@
 package desu.life;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.ref.Cleaner;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.util.Optional;
-
+import com.sun.jna.Library;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
+import com.sun.jna.NativeLibrary;
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
-import com.sun.jna.ptr.PointerByReference;
+import com.sun.jna.Union;
 
-@SuppressWarnings("unused")
-public class RosuFFI {
-    private static final Cleaner cleaner = Cleaner.create();
+import java.io.File;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+
+/**
+ * JNA bindings for the Interoptopus 0.16.3 ABI exposed by rosu_pp_ffi.
+ *
+ * <p>Interoptopus 0.16 does not publish a Java backend, so this file mirrors
+ * the generated C# ABI. The API guard prevents loading an incompatible native
+ * library.</p>
+ */
+@SuppressWarnings({"unused", "SpellCheckingInspection"})
+public final class RosuFFI {
+    private static final long API_GUARD = 0x697593acafdd88bbL;
+
+    private RosuFFI() {}
 
     public enum Mode {
-        /// osu!standard
-        Osu(0),
-        /// osu!taiko
-        Taiko(1),
-        /// osu!catch
-        Catch(2),
-        /// osu!mania
-        Mania(3);
-
-        private final int value;
-
-        Mode(int value) {
-            this.value = value;
-        }
-
-        public int getValue() {
-            return value;
-        }
-
-        public static Mode fromValue(int value) {
-            for (Mode v : values()) {
-                if (v.value == value) {
-                    return v;
-                }
-            }
-            throw new IllegalArgumentException("Unknown mode value: " + value);
+        Osu(0), Taiko(1), Catch(2), Mania(3);
+        public final byte value;
+        Mode(int value) { this.value = (byte) value; }
+        public static Mode fromValue(byte value) {
+            for (var mode : values()) if (mode.value == value) return mode;
+            throw new IllegalArgumentException("Unknown mode: " + Byte.toUnsignedInt(value));
         }
     }
 
     public enum HitResultPriority {
-        BestCase(0),
-        WorstCase(1);
-
-        private final int value;
-
-        HitResultPriority(int value) {
-            this.value = value;
-        }
-
-        public int getValue() {
-            return value;
-        }
-
-        public static HitResultPriority fromValue(int value) {
-            for (HitResultPriority v : values()) {
-                if (v.value == value) {
-                    return v;
-                }
-            }
-            throw new IllegalArgumentException("Unknown mode value: " + value);
-        }
+        BestCase(0), WorstCase(1);
+        public final byte value;
+        HitResultPriority(int value) { this.value = (byte) value; }
     }
 
     public enum OsuScoreOrigin {
-        /// For scores set on osu!stable
-        Stable(0),
-        /// For scores set on osu!lazer with slider accuracy
-        WithSliderAcc(1),
-        /// For scores set on osu!lazer without slider accuracy
-        WithoutSliderAcc(2);
-
-        private final int value;
-
-        OsuScoreOrigin(int value) {
-            this.value = value;
-        }
-
-        public int getValue() {
-            return value;
-        }
-
-        public static OsuScoreOrigin fromValue(int value) {
-            for (OsuScoreOrigin v : values()) {
-                if (v.value == value) {
-                    return v;
-                }
-            }
-            throw new IllegalArgumentException("Unknown mode value: " + value);
-        }
+        Stable(0), WithSliderAcc(1), WithoutSliderAcc(2);
+        public final byte value;
+        OsuScoreOrigin(int value) { this.value = (byte) value; }
     }
 
     public enum TooSuspicious {
-        /// Notes are too dense time-wise.
-        Density(0),
-        /// The map seems too long.
-        Length(1),
-        /// Too many objects.
-        ObjectCount(2),
-        /// General red flag.
-        RedFlag(3),
-        /// Too many sliders' positions were suspicious.
-        SliderPositions(4),
-        /// Too many sliders had a very high amount of repeats.
-        SliderRepeats(5);
-
-        private final int value;
-
-        TooSuspicious(int value) {
-            this.value = value;
-        }
-
-        public int getValue() {
-            return value;
-        }
-
-        public static TooSuspicious fromValue(int value) {
-            for (TooSuspicious v : values()) {
-                if (v.value == value) {
-                    return v;
-                }
-            }
-            throw new IllegalArgumentException("Unknown TooSuspicious value: " + value);
+        Density(0), Length(1), ObjectCount(2), RedFlag(3), SliderPositions(4), SliderRepeats(5);
+        public final byte value;
+        TooSuspicious(int value) { this.value = (byte) value; }
+        public static TooSuspicious fromValue(byte value) {
+            for (var item : values()) if (item.value == value) return item;
+            throw new IllegalArgumentException("Unknown suspicion: " + Byte.toUnsignedInt(value));
         }
     }
 
-    public interface FFIError {
-        int Ok = 0;
-        int Null = 100;
-        int Panic = 200;
-        int IoError = 300;
-        int Utf8Error = 400;
-        int InvalidString = 500;
-        int SerializeError = 600;
-        int ConvertError = 700;
-        int Unknown = 1000;
+    public enum HitObjectKind { Circle, Slider, Spinner, Hold }
+
+    public static final class FFIError {
+        public static final int OK = 0;
+        public static final int NULL = 100;
+        public static final int PANIC = 200;
+        public static final int IO_ERROR = 300;
+        public static final int SERIALIZE_ERROR = 600;
+        public static final int CONVERT_ERROR = 700;
+        public static final int UNKNOWN = 1000;
+        private FFIError() {}
     }
 
-    public static class RosuPPLib {
-
-        // JNA 为 dll 名称
-        // RosuPPLib INSTANCE = Native.load("rosu_pp_ffi", RosuPPLib.class);
-
-        private static File extractLibrary(String libName) throws IOException {
-            // 从 classpath 中读取库文件
-            InputStream input = RosuFFI.class.getClassLoader().getResourceAsStream(libName);
-            if (input == null) {
-                throw new IllegalArgumentException("Library not found: " + libName);
-            }
-
-            // 创建临时文件
-            File tempFile = File.createTempFile("native", libName.substring(libName.lastIndexOf('.')));
-            tempFile.deleteOnExit();
-
-            // 将资源写入临时文件
-            Files.copy(input, tempFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            input.close();
-            return tempFile;
-        }
-
-        static {
-
-            // 根据系统选择库文件
-            String libName = System.getProperty("os.name").toLowerCase().contains("win") ? "native/rosu_pp_ffi.dll" : "native/librosu_pp_ffi.so";
-
-            // 从 resources 提取库到临时文件
-            try {
-                File tempFile = extractLibrary(libName);
-                // 加载本地库
-                Native.register(tempFile.getAbsolutePath());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        /// Destroys the given instance.
-        ///
-        /// # Safety
-        ///
-        /// The passed parameter MUST have been created with the corresponding init function;
-        /// passing any other value results in undefined behavior.
-        public static native int beatmap_attributes_destroy(PointerByReference context);
-
-        public static native int beatmap_attributes_new(PointerByReference context);
-
-        public static native void beatmap_attributes_mode(Pointer context, int mode);
-
-        public static native void beatmap_attributes_p_mods(Pointer context, Pointer mods);
-
-        public static native void beatmap_attributes_i_mods(Pointer context, long mods);
-
-        public static native int beatmap_attributes_s_mods(Pointer context, String str);
-
-        public static native void beatmap_attributes_clock_rate(Pointer context, double clock_rate);
-
-        public static native void beatmap_attributes_ar(Pointer context, float ar);
-
-        public static native void beatmap_attributes_cs(Pointer context, float cs);
-
-        public static native void beatmap_attributes_hp(Pointer context, float hp);
-
-        public static native void beatmap_attributes_od(Pointer context, float od);
-
-        public static native double beatmap_attributes_get_clock_rate(Pointer context);
-
-        public static native BeatmapAttributes.ByValue beatmap_attributes_build(Pointer context, Pointer beatmap);
-
-        /// Destroys the given instance.
-        ///
-        /// # Safety
-        ///
-        /// The passed parameter MUST have been created with the corresponding init function;
-        /// passing any other value results in undefined behavior.
-        public static native int beatmap_destroy(PointerByReference context);
-
-        public static native int beatmap_from_bytes(PointerByReference context, Sliceu8 data);
-
-        public static native int beatmap_from_path(PointerByReference context, String path);
-
-        /// Convert a Beatmap to the specified mode
-        public static native boolean beatmap_convert(Pointer context, int mode, Pointer mods);
-
-        public static native double beatmap_bpm(Pointer context);
-
-        public static native double beatmap_total_break_time(Pointer context);
-
-        public static native int beatmap_mode(Pointer context);
-
-        public static native int beatmap_version(Pointer context);
-
-        public static native boolean beatmap_is_convert(Pointer context);
-
-        public static native float beatmap_stack_leniency(Pointer context);
-
-        public static native float beatmap_ar(Pointer context);
-
-        public static native float beatmap_cs(Pointer context);
-
-        public static native float beatmap_hp(Pointer context);
-
-        public static native float beatmap_od(Pointer context);
-
-        public static native double beatmap_slider_multiplier(Pointer context);
-
-        public static native double beatmap_slider_tick_rate(Pointer context);
-
-        public static native OptionTooSuspicious.ByValue beatmap_check_suspicious(Pointer context);
-
-        /// Destroys the given instance.
-        ///
-        /// # Safety
-        ///
-        /// The passed parameter MUST have been created with the corresponding init function;
-        /// passing any other value results in undefined behavior.
-        public static native int difficulty_destroy(PointerByReference context);
-
-        public static native int difficulty_new(PointerByReference context);
-
-        public static native void difficulty_p_mods(Pointer context, Pointer mods);
-
-        public static native void difficulty_i_mods(Pointer context, long mods);
-
-        public static native int difficulty_s_mods(Pointer context, String str);
-
-        public static native void difficulty_passed_objects(Pointer context, long passed_objects);
-
-        public static native void difficulty_clock_rate(Pointer context, double clock_rate);
-
-        public static native void difficulty_ar(Pointer context, float ar);
-
-        public static native void difficulty_cs(Pointer context, float cs);
-
-        public static native void difficulty_hp(Pointer context, float hp);
-
-        public static native void difficulty_od(Pointer context, float od);
-
-        public static native void difficulty_hardrock_offsets(Pointer context, boolean hardrock_offsets);
-
-        public static native void difficulty_lazer(Pointer context, boolean lazer);
-
-        public static native DifficultyAttributes.ByValue difficulty_calculate(Pointer context, Pointer beatmap);
-
-        public static native double difficulty_get_clock_rate(Pointer context);
-
-        /// Destroys the given instance.
-        ///
-        /// # Safety
-        ///
-        /// The passed parameter MUST have been created with the corresponding init function;
-        /// passing any other value results in undefined behavior.
-        public static native int performance_destroy(PointerByReference context);
-
-        public static native int performance_new(PointerByReference context);
-
-        public static native void performance_mode(Pointer context, int mode);
-
-        public static native void performance_p_mods(Pointer context, Pointer mods);
-
-        public static native void performance_i_mods(Pointer context, long mods);
-
-        public static native int performance_s_mods(Pointer context, String str);
-
-        public static native void performance_passed_objects(Pointer context, long passed_objects);
-
-        public static native void performance_legacy_total_score(Pointer context, long legacy_total_score);
-
-        public static native void performance_clock_rate(Pointer context, double clock_rate);
-
-        public static native void performance_ar(Pointer context, float ar);
-
-        public static native void performance_cs(Pointer context, float cs);
-
-        public static native void performance_hp(Pointer context, float hp);
-
-        public static native void performance_od(Pointer context, float od);
-
-        public static native void performance_hardrock_offsets(Pointer context, boolean hardrock_offsets);
-
-        public static native void performance_state(Pointer context, ScoreState.ByValue accuracy);
-
-        public static native void performance_accuracy(Pointer context, double accuracy);
-
-        public static native void performance_misses(Pointer context, long misses);
-
-        public static native void performance_combo(Pointer context, long combo);
-
-        public static native void performance_hitresult_priority(Pointer context, int hitresult_priority);
-
-        public static native void performance_lazer(Pointer context, boolean lazer);
-
-        public static native void performance_large_tick_hits(Pointer context, long large_tick_hits);
-
-        public static native void performance_small_tick_hits(Pointer context, long small_tick_hits);
-
-        public static native void performance_slider_end_hits(Pointer context, long slider_end_hits);
-
-        public static native void performance_n300(Pointer context, long n300);
-
-        public static native void performance_n100(Pointer context, long n100);
-
-        public static native void performance_n50(Pointer context, long n50);
-
-        public static native void performance_n_katu(Pointer context, long n_katu);
-
-        public static native void performance_n_geki(Pointer context, long n_geki);
-
-        public static native ScoreState.ByValue performance_generate_state(Pointer context, Pointer beatmap);
-
-        public static native ScoreState.ByValue performance_generate_state_from_difficulty(Pointer context, DifficultyAttributes.ByValue difficulty_attr);
-
-        public static native PerformanceAttributes.ByValue performance_calculate(Pointer context, Pointer beatmap);
-
-        public static native PerformanceAttributes.ByValue performance_calculate_from_difficulty(Pointer context, DifficultyAttributes.ByValue difficulty_attr);
-
-        public static native double performance_get_clock_rate(Pointer context);
-
-
-        /// Destroys the given instance.
-        ///
-        /// # Safety
-        ///
-        /// The passed parameter MUST have been created with the corresponding init function;
-        /// passing any other value results in undefined behavior.
-        public static native int gradual_difficulty_destroy(PointerByReference context);
-
-        /// Create a [GradualDifficulty] for a map of any mode.
-        public static native int gradual_difficulty_new(PointerByReference context, Pointer difficulty, Pointer beatmap);
-
-        /// Create a [GradualDifficulty] for a [Beatmap] on a specific [GameMode].
-        public static native int gradual_difficulty_new_with_mode(PointerByReference context, Pointer difficulty, Pointer beatmap, int mode);
-
-        public static native OptionDifficultyAttributes gradual_difficulty_next(Pointer context);
-
-        public static native OptionDifficultyAttributes gradual_difficulty_nth(Pointer context, long n);
-
-        public static native long gradual_difficulty_len(Pointer context);
-
-        /// Destroys the given instance.
-        ///
-        /// # Safety
-        ///
-        /// The passed parameter MUST have been created with the corresponding init function;
-        /// passing any other value results in undefined behavior.
-        public static native int gradual_performance_destroy(PointerByReference context);
-
-        /// Create a [GradualPerformance] for a map of any mode.
-        public static native int gradual_performance_new(PointerByReference context, Pointer difficulty, Pointer beatmap);
-
-        /// Create a [GradualPerformance] for a [Beatmap] on a specific [GameMode].
-        public static native int gradual_performance_new_with_mode(PointerByReference context, Pointer difficulty, Pointer beatmap, int mode);
-
-        /// Process the next hit object and calculate the performance attributes
-        /// for the resulting score state.
-        public static native OptionPerformanceAttributes gradual_performance_next(Pointer context, ScoreState.ByValue state);
-
-        /// Process all remaining hit objects and calculate the final performance
-        /// attributes.
-        public static native OptionPerformanceAttributes gradual_performance_last(Pointer context, ScoreState.ByValue state);
-
-        /// Process everything up to the next `n`th hitobject and calculate the
-        /// performance attributes for the resulting score state.
-        ///
-        /// Note that the count is zero-indexed, so `n=0` will process 1 object,
-        /// `n=1` will process 2, and so on.
-        public static native OptionPerformanceAttributes gradual_performance_nth(Pointer context, ScoreState.ByValue state, long n);
-
-        /// Returns the amount of remaining objects.
-        public static native long gradual_performance_len(Pointer context);
-
-
-        /// Destroys the given instance.
-        ///
-        /// # Safety
-        ///
-        /// The passed parameter MUST have been created with the corresponding init function;
-        /// passing any other value results in undefined behavior.
-        public static native int string_destroy(PointerByReference context);
-
-        public static native int string_from_c_str(PointerByReference context, String str);
-
-        public static native int string_empty(PointerByReference context);
-
-        public static native boolean string_is_init(Pointer context);
-
-        public static native String string_to_cstr(Pointer context);
-
-        /// Destroys the given instance.
-        ///
-        /// # Safety
-        ///
-        /// The passed parameter MUST have been created with the corresponding init function;
-        /// passing any other value results in undefined behavior.
-        public static native int mods_destroy(PointerByReference context);
-
-        public static native int mods_new(PointerByReference context, int mode);
-
-        public static native int mods_from_acronyms(PointerByReference context, String str, int mode);
-
-        public static native int mods_from_bits(PointerByReference context, long bits, int mode);
-
-        public static native int mods_from_json(PointerByReference context, String str, int mode, boolean deny_unknown_fields);
-
-        public static native void mods_remove_unknown_mods(Pointer context);
-
-        public static native void mods_sanitize(Pointer context);
-
-        public static native long mods_bits(Pointer context);
-
-        public static native long mods_len(Pointer context);
-
-        public static native void mods_json(Pointer context, Pointer str);
-
-        public static native boolean mods_insert_json(Pointer context, String str, boolean deny_unknown_fields);
-
-        public static native boolean mods_insert(Pointer context, String str);
-
-        public static native boolean mods_contains(Pointer context, String str);
-
-        public static native void mods_clear(Pointer context);
-
-        public static native Optionf64 mods_clock_rate(Pointer context);
-
-        public static native void debug_difficylty_attributes(DifficultyAttributes res, Pointer str);
-
-        public static native void debug_performance_attributes(PerformanceAttributes res, Pointer str);
-
-        public static native void debug_score_state(ScoreState res, Pointer str);
-
-        public static native double calculate_accuacy(ScoreState state, DifficultyAttributes difficulty, int origin);
-
-
-        @Structure.FieldOrder({"data", "len"})
-        public static class Sliceu8 extends Structure implements Structure.ByValue {
-            public Pointer data;
-            public long len;
-
-            public Sliceu8(ByteBuffer data) {
-                this.data = Native.getDirectBufferPointer(data);
-                this.len = data.capacity();
-
-                this.write();
-            }
-
-            public Sliceu8(byte[] data) {
-                var mem = new Memory(data.length);
-                mem.write(0, data, 0, data.length);
-                this.data = mem;
-                this.len = data.length;
-
-                this.write();
-            }
-
-            public Sliceu8() {}
-
-            public static class ByReference extends Sliceu8 implements Structure.ByReference {}
-            public static class ByValue extends Sliceu8 implements Structure.ByValue {}
-        }
-
-        @Structure.FieldOrder({"t", "is_some"})
-        public static class OptionTooSuspicious extends Structure {
-            public int t;
-            public byte is_some;
-
-            public static class ByReference extends OptionTooSuspicious implements Structure.ByReference {}
-            public static class ByValue extends OptionTooSuspicious implements Structure.ByValue {}
-
-            public Optional<TooSuspicious> toOptional() {
-                return is_some == 1 ? Optional.of(TooSuspicious.fromValue(t)) : Optional.empty();
-            }
-        }
-
-        @Structure.FieldOrder({"t", "is_some"})
-        public static class Optionf64 extends Structure {
-            public double t;
-            public byte is_some;
-
-            public static class ByReference extends Optionf64 implements Structure.ByReference {}
-            public static class ByValue extends Optionf64 implements Structure.ByValue {}
-
-            public Optional<Double> toOptional() {
-                return is_some == 1 ? Optional.of(t) : Optional.empty();
-            }
-        }
-
-        @Structure.FieldOrder({"t", "is_some"})
-        public static class Optionu32 extends Structure {
-            public int t;
-            public byte is_some;
-
-            public static class ByReference extends Optionu32 implements Structure.ByReference {}
-            public static class ByValue extends Optionu32 implements Structure.ByValue {}
-
-            public Optional<Integer> toOptional() {
-                return is_some == 1 ? Optional.of(t) : Optional.empty();
-            }
-        }
-
-        @Structure.FieldOrder({"t", "is_some"})
-        public static class OptionDifficultyAttributes extends Structure {
-            public DifficultyAttributes t;
-            public byte is_some;
-
-            public static class ByReference extends OptionDifficultyAttributes implements Structure.ByReference {}
-            public static class ByValue extends OptionDifficultyAttributes implements Structure.ByValue {}
-
-            public Optional<DifficultyAttributes> toOptional() {
-                return is_some == 1 ? Optional.of(t) : Optional.empty();
-            }
-        }
-
-        @Structure.FieldOrder({"t", "is_some"})
-        public static class OptionPerformanceAttributes extends Structure {
-            public PerformanceAttributes t;
-            public byte is_some;
-
-            public static class ByReference extends OptionPerformanceAttributes implements Structure.ByReference {}
-            public static class ByValue extends OptionPerformanceAttributes implements Structure.ByValue {}
-
-            public Optional<PerformanceAttributes> toOptional() {
-                return is_some == 1 ? Optional.of(t) : Optional.empty();
-            }
-        }
-
-        @Structure.FieldOrder({ "aim", "aim_difficult_slider_count", "speed", "flashlight", "slider_factor",
-                "aim_top_weighted_slider_factor", "speed_top_weighted_slider_factor",
-                "speed_note_count", "aim_difficult_strain_count", "speed_difficult_strain_count",
-                "nested_score_per_object", "legacy_score_base_multiplier", "maximum_legacy_combo_score",
-                "ar", "great_hit_window", "ok_hit_window", "meh_hit_window", "hp",
-                "n_circles", "n_sliders", "n_large_ticks", "n_spinners",
-                "stars", "max_combo" })
-        public static class OsuDifficultyAttributes extends Structure {
-            public double aim;                           // Difficulty of the aim skill
-            public double aim_difficult_slider_count;    // The number of sliders weighted by difficulty.
-            public double speed;                         // Difficulty of the speed skill
-            public double flashlight;                   // Difficulty of the flashlight skill
-            public double slider_factor;                // Ratio of aim strain with/without sliders
-            public double aim_top_weighted_slider_factor;
-            public double speed_top_weighted_slider_factor;
-            public double speed_note_count;             // Number of clickable objects weighted by difficulty
-            public double aim_difficult_strain_count;   // Weighted sum of aim strains
-            public double speed_difficult_strain_count; // Weighted sum of speed strains
-            public double nested_score_per_object;
-            public double legacy_score_base_multiplier;
-            public double maximum_legacy_combo_score;
-            public double ar;                           // Approach rate
-            public double great_hit_window;             // great hit window.
-            public double ok_hit_window;                // ok hit window.
-            public double meh_hit_window;               // meh hit window.
-            public double hp;                           // Health drain rate
-            public int n_circles;                       // Number of circles (unsigned int -> int)
-            public int n_sliders;                       // Number of sliders (unsigned int -> int)
-            public int n_large_ticks;                  // Number of slider ticks and repeat points (unsigned int -> int)
-            public int n_spinners;                      // Number of spinners (unsigned int -> int)
-            public double stars;                        // Final star rating
-            public int max_combo;                       // Maximum combo (unsigned int -> int)
-
-            public static class ByReference extends OsuDifficultyAttributes implements Structure.ByReference {}
-            public static class ByValue extends OsuDifficultyAttributes implements Structure.ByValue {}
-        }
-
-        @Structure.FieldOrder({ "difficulty", "pp", "pp_acc", "pp_aim",
-                "pp_flashlight", "pp_speed", "effective_miss_count", "speed_deviation",
-                "combo_based_estimated_miss_count", "score_based_estimated_miss_count",
-                "aim_estimated_slider_breaks", "speed_estimated_slider_breaks" })
-        public static class OsuPerformanceAttributes extends Structure {
-            public OsuDifficultyAttributes difficulty; // Nested structure for difficulty attributes
-            public double pp;                          // Final performance points
-            public double pp_acc;                      // Accuracy portion of the final pp
-            public double pp_aim;                      // Aim portion of the final pp
-            public double pp_flashlight;               // Flashlight portion of the final pp
-            public double pp_speed;                    // Speed portion of the final pp
-            public double effective_miss_count;        // Misses including approximated slider breaks
-            public Optionf64 speed_deviation;          // Approximated unstable-rate
-            public double combo_based_estimated_miss_count;
-            public Optionf64 score_based_estimated_miss_count;
-            public double aim_estimated_slider_breaks;
-            public double speed_estimated_slider_breaks;
-
-            public static class ByReference extends OsuPerformanceAttributes implements Structure.ByReference {}
-            public static class ByValue extends OsuPerformanceAttributes implements Structure.ByValue {}
-        }
-
-        @Structure.FieldOrder({ "stamina", "rhythm", "color", "reading",
-                "great_hit_window", "ok_hit_window", "mono_stamina_factor",
-                "mechanical_difficulty", "consistency_factor",
-                "stars", "max_combo", "is_convert" })
-        public static class TaikoDifficultyAttributes extends Structure {
-            public double stamina;               // Difficulty of the stamina skill
-            public double rhythm;                // Difficulty of the rhythm skill
-            public double color;                 // Difficulty of the color skill
-            public double reading;               // The difficulty of the reading skill.
-            public double great_hit_window;      // Hit window for an n300 inclusive of mods
-            public double ok_hit_window;         // Hit window for an n100 inclusive of mods
-            public double mono_stamina_factor;   // Stamina difficulty ratio for mono-color streams
-            public double mechanical_difficulty;
-            public double consistency_factor;
-            public double stars;                 // Final star rating
-            public int max_combo;                // Maximum combo (unsigned int -> int)
-            public boolean is_convert;           // Whether the beatmap is a convert (osu!standard)
-
-            public static class ByReference extends TaikoDifficultyAttributes implements Structure.ByReference {}
-            public static class ByValue extends TaikoDifficultyAttributes implements Structure.ByValue {}
-        }
-
-        @Structure.FieldOrder({ "difficulty", "pp", "pp_acc", "pp_difficulty",
-                "estimated_unstable_rate" })
-        public static class TaikoPerformanceAttributes extends Structure {
-            public TaikoDifficultyAttributes difficulty;   // Difficulty attributes used for performance calculation
-            public double pp;                              // Final performance points
-            public double pp_acc;                          // Accuracy portion of the final pp
-            public double pp_difficulty;                   // Strain portion of the final pp
-            public Optionf64 estimated_unstable_rate;      // Estimated unstable rate (optional value)
-
-            public static class ByReference extends TaikoPerformanceAttributes implements Structure.ByReference {}
-            public static class ByValue extends TaikoPerformanceAttributes implements Structure.ByValue {}
-        }
-
-        @Structure.FieldOrder({ "stars", "preempt", "n_fruits", "n_droplets", "n_tiny_droplets", "is_convert" })
-        public static class CatchDifficultyAttributes extends Structure {
-            public double stars;        // Final star rating
-            public double preempt;      // Time preempt (AR time window)
-            public int n_fruits;        // Number of fruits (unsigned int -> use int in Java)
-            public int n_droplets;      // Number of droplets (unsigned int -> use int in Java)
-            public int n_tiny_droplets; // Number of tiny droplets (unsigned int -> use int in Java)
-            public boolean is_convert;  // Whether the beatmap is a convert (bool)
-
-            public static class ByReference extends CatchDifficultyAttributes implements Structure.ByReference {}
-            public static class ByValue extends CatchDifficultyAttributes implements Structure.ByValue {}
-        }
-
-        @Structure.FieldOrder({ "difficulty", "pp" })
-        public static class CatchPerformanceAttributes extends Structure {
-            public CatchDifficultyAttributes difficulty; // Nested CatchDifficultyAttributes structure
-            public double pp;                            // Final performance points
-
-            public static class ByReference extends CatchPerformanceAttributes implements Structure.ByReference {}
-            public static class ByValue extends CatchPerformanceAttributes implements Structure.ByValue {}
-        }
-
-        @Structure.FieldOrder({ "stars", "n_objects", "n_hold_notes", "max_combo", "is_convert" })
-        public static class ManiaDifficultyAttributes extends Structure {
-            public double stars;        // Final star rating
-            public int n_objects;       // Number of hit objects (unsigned int -> int in Java)
-            public int n_hold_notes;    // Number of hold notes (unsigned int -> int in Java)
-            public int max_combo;       // Maximum achievable combo (unsigned int -> int in Java)
-            public boolean is_convert;  // Whether the beatmap is a convert
-
-            public static class ByReference extends ManiaDifficultyAttributes implements Structure.ByReference {}
-            public static class ByValue extends ManiaDifficultyAttributes implements Structure.ByValue {}
-        }
-
-        @Structure.FieldOrder({ "difficulty", "pp", "pp_difficulty" })
-        public static class ManiaPerformanceAttributes extends Structure {
-            public ManiaDifficultyAttributes difficulty; // Nested ManiaDifficultyAttributes structure
-            public double pp;                            // Final performance points
-            public double pp_difficulty;                 // Difficulty portion of the final pp
-
-            public static class ByReference extends ManiaPerformanceAttributes implements Structure.ByReference {}
-            public static class ByValue extends ManiaPerformanceAttributes implements Structure.ByValue {}
-        }
-
-        @Structure.FieldOrder({ "t", "is_some" })
-        public static class OptionOsuDifficultyAttributes extends Structure {
-            public OsuDifficultyAttributes t;     // Element that is maybe valid
-            public byte is_some;                  // 1 means element t is valid
-
-            public static class ByReference extends OptionOsuDifficultyAttributes implements Structure.ByReference {}
-            public static class ByValue extends OptionOsuDifficultyAttributes implements Structure.ByValue {}
-
-            public Optional<OsuDifficultyAttributes> toOptional() {
-                return is_some == 1 ? Optional.of(t) : Optional.empty();
-            }
-        }
-
-        @Structure.FieldOrder({ "t", "is_some" })
-        public static class OptionTaikoDifficultyAttributes extends Structure {
-            public TaikoDifficultyAttributes t;     // Element that is maybe valid
-            public byte is_some;                  // 1 means element t is valid
-
-            public static class ByReference extends OptionTaikoDifficultyAttributes implements Structure.ByReference {}
-            public static class ByValue extends OptionTaikoDifficultyAttributes implements Structure.ByValue {}
-
-            public Optional<TaikoDifficultyAttributes> toOptional() {
-                return is_some == 1 ? Optional.of(t) : Optional.empty();
-            }
-        }
-
-        @Structure.FieldOrder({ "t", "is_some" })
-        public static class OptionCatchDifficultyAttributes extends Structure {
-            public CatchDifficultyAttributes t;     // Element that is maybe valid
-            public byte is_some;                  // 1 means element t is valid
-
-            public static class ByReference extends OptionCatchDifficultyAttributes implements Structure.ByReference {}
-            public static class ByValue extends OptionCatchDifficultyAttributes implements Structure.ByValue {}
-
-            public Optional<CatchDifficultyAttributes> toOptional() {
-                return is_some == 1 ? Optional.of(t) : Optional.empty();
-            }
-        }
-
-        @Structure.FieldOrder({ "t", "is_some" })
-        public static class OptionManiaDifficultyAttributes extends Structure {
-            public ManiaDifficultyAttributes t;     // Element that is maybe valid
-            public byte is_some;                  // 1 means element t is valid
-
-            public static class ByReference extends OptionManiaDifficultyAttributes implements Structure.ByReference {}
-            public static class ByValue extends OptionManiaDifficultyAttributes implements Structure.ByValue {}
-
-            public Optional<ManiaDifficultyAttributes> toOptional() {
-                return is_some == 1 ? Optional.of(t) : Optional.empty();
-            }
-        }
-
-        @Structure.FieldOrder({ "osu", "taiko", "fruit", "mania", "mode" })
-        public static class DifficultyAttributes extends Structure {
-            public OptionOsuDifficultyAttributes osu;   // Option for osu!difficulty attributes
-            public OptionTaikoDifficultyAttributes taiko; // Option for taiko difficulty attributes
-            public OptionCatchDifficultyAttributes fruit; // Option for catch difficulty attributes
-            public OptionManiaDifficultyAttributes mania; // Option for mania difficulty attributes
-            public int mode;                            // Mode enum (osu!, taiko, catch, mania)
-
-            public static class ByReference extends DifficultyAttributes implements Structure.ByReference {}
-            public static class ByValue extends DifficultyAttributes implements Structure.ByValue {}
-        }
-
-        @Structure.FieldOrder({ "t", "is_some" })
-        public static class OptionOsuPerformanceAttributes extends Structure {
-            public OsuPerformanceAttributes t;     // Element that is maybe valid
-            public byte is_some;                  // 1 means element t is valid
-
-            public static class ByReference extends OptionOsuPerformanceAttributes implements Structure.ByReference {}
-            public static class ByValue extends OptionOsuPerformanceAttributes implements Structure.ByValue {}
-
-            public Optional<OsuPerformanceAttributes> toOptional() {
-                return is_some == 1 ? Optional.of(t) : Optional.empty();
-            }
-        }
-
-        @Structure.FieldOrder({ "t", "is_some" })
-        public static class OptionTaikoPerformanceAttributes extends Structure {
-            public TaikoPerformanceAttributes t;     // Element that is maybe valid
-            public byte is_some;                  // 1 means element t is valid
-
-            public static class ByReference extends OptionTaikoPerformanceAttributes implements Structure.ByReference {}
-            public static class ByValue extends OptionTaikoPerformanceAttributes implements Structure.ByValue {}
-
-            public Optional<TaikoPerformanceAttributes> toOptional() {
-                return is_some == 1 ? Optional.of(t) : Optional.empty();
-            }
-        }
-
-        @Structure.FieldOrder({ "t", "is_some" })
-        public static class OptionCatchPerformanceAttributes extends Structure {
-            public CatchPerformanceAttributes t;     // Element that is maybe valid
-            public byte is_some;                  // 1 means element t is valid
-
-            public static class ByReference extends OptionCatchPerformanceAttributes implements Structure.ByReference {}
-            public static class ByValue extends OptionCatchPerformanceAttributes implements Structure.ByValue {}
-
-            public Optional<CatchPerformanceAttributes> toOptional() {
-                return is_some == 1 ? Optional.of(t) : Optional.empty();
-            }
-        }
-
-        @Structure.FieldOrder({ "t", "is_some" })
-        public static class OptionManiaPerformanceAttributes extends Structure {
-            public ManiaPerformanceAttributes t;     // Element that is maybe valid
-            public byte is_some;                  // 1 means element t is valid
-
-            public static class ByReference extends OptionManiaPerformanceAttributes implements Structure.ByReference {}
-            public static class ByValue extends OptionManiaPerformanceAttributes implements Structure.ByValue {}
-
-            public Optional<ManiaPerformanceAttributes> toOptional() {
-                return is_some == 1 ? Optional.of(t) : Optional.empty();
-            }
-        }
-
-        @Structure.FieldOrder({ "osu", "taiko", "fruit", "mania", "mode" })
-        public static class PerformanceAttributes extends Structure {
-            public OptionOsuPerformanceAttributes osu;   // Option for osu!difficulty attributes
-            public OptionTaikoPerformanceAttributes taiko; // Option for taiko difficulty attributes
-            public OptionCatchPerformanceAttributes fruit; // Option for catch difficulty attributes
-            public OptionManiaPerformanceAttributes mania; // Option for mania difficulty attributes
-            public int mode;                            // Mode enum (osu!, taiko, catch, mania)
-
-            public static class ByReference extends PerformanceAttributes implements Structure.ByReference {}
-            public static class ByValue extends PerformanceAttributes implements Structure.ByValue {}
-        }
-
-        @Structure.FieldOrder({ "ar", "od_perfect", "od_great", "od_good", "od_ok", "od_meh" })
-        public static class HitWindows extends Structure {
-            /// Hit window for approach rate i.e. `TimePreempt` in milliseconds.
-            public Optionf64 ar;
-            /// Hit window for overall difficulty i.e. time to hit a "Perfect" in milliseconds.
-            public Optionf64 od_perfect;
-            /// Hit window for overall difficulty i.e. time to hit a 300 ("Great") in milliseconds.
-            public Optionf64 od_great;
-            /// Hit window for overall difficulty i.e. time to hit a "Good" in milliseconds.
-            public Optionf64 od_good;
-            /// Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in milliseconds.
-            public Optionf64 od_ok;
-            /// Hit window for overall difficulty i.e. time to hit a 50 ("Meh") in milliseconds.
-            public Optionf64 od_meh;
-
-            public static class ByReference extends HitWindows implements Structure.ByReference {}
-            public static class ByValue extends HitWindows implements Structure.ByValue {}
-        }
-
-        @Structure.FieldOrder({ "ar", "od", "cs", "hp", "clock_rate", "hit_windows" })
-        public static class BeatmapAttributes extends Structure {
-            public double ar;         // Approach rate
-            public double od;         // Overall difficulty
-            public float cs;          // Circle size
-            public float hp;          // Health drain rate
-            public double clock_rate; // Clock rate with respect to mods
-            public HitWindows hit_windows; // Nested hit windows structure
-
-            public static class ByReference extends BeatmapAttributes implements Structure.ByReference {}
-            public static class ByValue extends BeatmapAttributes implements Structure.ByValue {}
-        }
-
-        @Structure.FieldOrder({ "max_combo", "osu_large_tick_hits", "osu_small_tick_hits", "slider_end_hits",
-                "n_geki", "n_katu", "n300", "n100", "n50", "misses", "legacy_total_score" })
-        public static class ScoreState extends Structure {
-            public int max_combo;            // Maximum combo (unsigned int -> int)
-            /// "Large tick" hits for osu!standard.
-            ///
-            /// The meaning depends on the kind of score:
-            /// - if set on osu!stable, this field is irrelevant and can be `0`
-            /// - if set on osu!lazer *without* `CL`, this field is the amount of hit
-            ///   slider ticks and repeats
-            /// - if set on osu!lazer *with* `CL`, this field is the amount of hit
-            ///   slider heads, ticks, and repeats
-            ///
-            /// Only relevant for osu!lazer.
-            public int osu_large_tick_hits;
-            /// "Small ticks" hits for osu!standard.
-            ///
-            /// These are essentially the slider end hits for lazer scores without
-            /// slider accuracy.
-            ///
-            /// Only relevant for osu!lazer.
-            public int osu_small_tick_hits;
-            /// Amount of successfully hit slider ends.
-            ///
-            /// Only relevant for osu!standard in lazer.
-            public int slider_end_hits;
-            public int n_geki;               // Current gekis (unsigned int -> int)
-            public int n_katu;               // Current katus (unsigned int -> int)
-            public int n300;                 // Current 300s (unsigned int -> int)
-            public int n100;                 // Current 100s (unsigned int -> int)
-            public int n50;                  // Current 50s (unsigned int -> int)
-            public int misses;               // Current misses (unsigned int -> int)
-            public Optionu32 legacy_total_score;
-
-            public static class ByReference extends ScoreState implements Structure.ByReference {}
-            public static class ByValue extends ScoreState implements Structure.ByValue {}
-        }
-    }
-
-    public static class Beatmap implements AutoCloseable {
-        private final PointerByReference _context;  // The context of the Beatmap
-
-        // Load the Beatmap from bytes
-        public Beatmap(byte[] data) throws FFIException {
-            _context = new PointerByReference();  // Initialize _context to a valid Pointer
-            var sliceu8 = new RosuPPLib.Sliceu8(data);
-            int rval = RosuPPLib.beatmap_from_bytes(_context, sliceu8);
-            java.lang.ref.Reference.reachabilityFence(sliceu8);
-            if (rval != FFIError.Ok) {
-                throw new FFIException("Error loading beatmap from bytes", rval);
-            }
-        }
-
-        public Beatmap(RosuPPLib.Sliceu8 data) throws FFIException {
-            _context = new PointerByReference();  // Initialize _context to a valid Pointer
-            int rval = RosuPPLib.beatmap_from_bytes(_context, data);
-            if (rval != FFIError.Ok) {
-                throw new FFIException("Error loading beatmap from bytes", rval);
-            }
-        }
-
-
-        // Load the Beatmap from a file path
-        public Beatmap(String path) throws FFIException {
-            _context = new PointerByReference();  // Initialize _context to a valid Pointer
-            int rval = RosuPPLib.beatmap_from_path(_context, path);
-            if (rval != FFIError.Ok) {
-                throw new FFIException("Error loading beatmap from path", rval);
-            }
-        }
-
-        // Convert the Beatmap to the specified mode
-        public boolean convert(Mode mode, Mods mods) {
-            return RosuPPLib.beatmap_convert(getContext(), mode.getValue(), mods.getContext());
-        }
-
-        // Convert the Beatmap to the specified mode
-        public boolean convert(Mode mode) throws FFIException {
-            var mods = Mods.New(mode);
-            return RosuPPLib.beatmap_convert(getContext(), mode.getValue(), mods.getContext());
-        }
-
-        // Get the BPM of the Beatmap
-        public double bpm() {
-            return RosuPPLib.beatmap_bpm(getContext());
-        }
-
-        // Get the total break time of the Beatmap
-        public double totalBreakTime() {
-            return RosuPPLib.beatmap_total_break_time(getContext());
-        }
-
-        // Get the mode of the Beatmap
-        public Mode mode() {
-            return Mode.fromValue(RosuPPLib.beatmap_mode(getContext()));
-        }
-
-        // Get the version of the Beatmap
-        public int version() {
-            return RosuPPLib.beatmap_version(getContext());
-        }
-
-        // Check if the Beatmap is a converted map
-        public boolean isConvert() {
-            return RosuPPLib.beatmap_is_convert(getContext());
-        }
-
-        // Get the stack leniency of the Beatmap
-        public float stackLeniency() {
-            return RosuPPLib.beatmap_stack_leniency(getContext());
-        }
-
-        // Get the AR of the Beatmap
-        public float ar() {
-            return RosuPPLib.beatmap_ar(getContext());
-        }
-
-        // Get the CS of the Beatmap
-        public float cs() {
-            return RosuPPLib.beatmap_cs(getContext());
-        }
-
-        // Get the HP of the Beatmap
-        public float hp() {
-            return RosuPPLib.beatmap_hp(getContext());
-        }
-
-        // Get the OD of the Beatmap
-        public float od() {
-            return RosuPPLib.beatmap_od(getContext());
-        }
-
-        // Get the slider multiplier of the Beatmap
-        public double sliderMultiplier() {
-            return RosuPPLib.beatmap_slider_multiplier(getContext());
-        }
-
-        // Get the slider tick rate of the Beatmap
-        public double sliderTickRate() {
-            return RosuPPLib.beatmap_slider_tick_rate(getContext());
-        }
-
-        // Check if the Beatmap is suspicious
-        public RosuPPLib.OptionTooSuspicious checkSuspicious() {
-            return RosuPPLib.beatmap_check_suspicious(getContext());
-        }
-
-        // Getter for the context
-        public Pointer getContext() {
-            return _context.getValue();
-        }
-
-        // Dispose method (releases the resources)
-        @Override
-        public void close() throws FFIException {
-            int rval = RosuPPLib.beatmap_destroy(_context);
-            if (rval != 0) {
-                throw new FFIException("Error destroying beatmap", rval);
-            }
-        }
-    }
-
-    public static class BeatmapAttributesBuilder implements AutoCloseable {
-        private final PointerByReference _context; // Context for BeatmapAttributesBuilder
-
-        public BeatmapAttributesBuilder() throws FFIException {
-            _context = new PointerByReference();
-            int rval = RosuPPLib.beatmap_attributes_new(_context);
-            if (rval != FFIError.Ok) {
-                throw new FFIException("Error creating BeatmapAttributesBuilder", rval);
-            }
-        }
-
-        // Method to dispose of the builder
-        @Override
-        public void close() throws FFIException {
-            int rval = RosuPPLib.beatmap_attributes_destroy(_context);
-            if (rval != FFIError.Ok) {
-                throw new FFIException("Error destroying BeatmapAttributesBuilder", rval);
-            }
-        }
-
-        // Method to set the mode
-        public void setMode(Mode mode) {
-            RosuPPLib.beatmap_attributes_mode(getContext(), mode.getValue());
-        }
-
-        // Method to set mods (using IntPtr)
-        public void setMods(Mods mods) {
-            RosuPPLib.beatmap_attributes_p_mods(getContext(), mods.getContext());
-        }
-
-        // Method to set mods (using uint)
-        public void setMods(int mods) {
-            RosuPPLib.beatmap_attributes_i_mods(getContext(), mods);
-        }
-
-        // Method to set mods (using string)
-        public void setMods(String str) throws FFIException {
-            int rval = RosuPPLib.beatmap_attributes_s_mods(getContext(), str);
-            if (rval != FFIError.Ok) {
-                throw new FFIException("Error setting string mods", rval);
-            }
-        }
-
-        // Method to set clock rate
-        public void setClockRate(double clockRate) {
-            RosuPPLib.beatmap_attributes_clock_rate(getContext(), clockRate);
-        }
-
-        // Method to set AR (approach rate)
-        public void setAr(float ar) {
-            RosuPPLib.beatmap_attributes_ar(getContext(), ar);
-        }
-
-        // Method to set CS (circle size)
-        public void setCs(float cs) {
-            RosuPPLib.beatmap_attributes_cs(getContext(), cs);
-        }
-
-        // Method to set HP (health drain rate)
-        public void setHp(float hp) {
-            RosuPPLib.beatmap_attributes_hp(getContext(), hp);
-        }
-
-        // Method to set OD (overall difficulty)
-        public void setOd(float od) {
-            RosuPPLib.beatmap_attributes_od(getContext(), od);
-        }
-
-        // Method to get the clock rate
-        public double getClockRate() {
-            return RosuPPLib.beatmap_attributes_get_clock_rate(getContext());
-        }
-
-        // Method to build BeatmapAttributes
-        public RosuPPLib.BeatmapAttributes build(Beatmap beatmap) {
-            return RosuPPLib.beatmap_attributes_build(getContext(), beatmap.getContext());
-        }
-
-        // Getter for the context
-        public Pointer getContext() {
-            return _context.getValue();
-        }
-    }
-
-    public static class Difficulty implements AutoCloseable {
-        private final PointerByReference _context;
-
-        public Difficulty() throws FFIException {
-            _context = new PointerByReference();
-            int rval = RosuPPLib.difficulty_new(_context);
-            if (rval != 0) {
-                throw new FFIException("Error creating Difficulty", rval);
-            }
-        }
-
-        // Method to dispose of the Difficulty
-        @Override
-        public void close() throws FFIException {
-            int rval = RosuPPLib.difficulty_destroy(_context);
-            if (rval != 0) {
-                throw new FFIException("Error destroying Difficulty", rval);
-            }
-        }
-
-        // Method to set p_mods (using Pointer)
-        public void setMods(Mods mods) {
-            RosuPPLib.difficulty_p_mods(getContext(), mods.getContext());
-        }
-
-        // Method to set i_mods (using uint)
-        public void setMods(int mods) {
-            RosuPPLib.difficulty_i_mods(getContext(), mods);
-        }
-
-        // Method to set s_mods (using string)
-        public void setMods(String str) throws FFIException {
-            int rval = RosuPPLib.difficulty_s_mods(getContext(), str);
-            if (rval != 0) {
-                throw new FFIException("Error setting string mods", rval);
-            }
-        }
-
-        // Method to set passed objects (using uint)
-        public void setPassedObjects(long passedObjects) {
-            RosuPPLib.difficulty_passed_objects(getContext(), passedObjects);
-        }
-
-        // Method to set clock rate
-        public void setClockRate(double clockRate) {
-            RosuPPLib.difficulty_clock_rate(getContext(), clockRate);
-        }
-
-        // Method to set AR (approach rate)
-        public void setAr(float ar) {
-            RosuPPLib.difficulty_ar(getContext(), ar);
-        }
-
-        // Method to set CS (circle size)
-        public void setCs(float cs) {
-            RosuPPLib.difficulty_cs(getContext(), cs);
-        }
-
-        // Method to set HP (health drain)
-        public void setHp(float hp) {
-            RosuPPLib.difficulty_hp(getContext(), hp);
-        }
-
-        // Method to set OD (overall difficulty)
-        public void setOd(float od) {
-            RosuPPLib.difficulty_od(getContext(), od);
-        }
-
-        // Method to set hardrock offsets
-        public void setHardrockOffsets(boolean hardrockOffsets) {
-            RosuPPLib.difficulty_hardrock_offsets(getContext(), hardrockOffsets);
-        }
-
-        // Method to set lazer
-        public void setLazer(boolean lazer) {
-            RosuPPLib.difficulty_lazer(getContext(), lazer);
-        }
-
-        // Method to calculate DifficultyAttributes from beatmap
-        public RosuPPLib.DifficultyAttributes calculate(Beatmap beatmap) {
-            return RosuPPLib.difficulty_calculate(getContext(), beatmap.getContext());
-        }
-
-        // Method to get clock rate
-        public double getClockRate() {
-            return RosuPPLib.difficulty_get_clock_rate(getContext());
-        }
-
-        // Getter for context
-        public Pointer getContext() {
-            return _context.getValue();
-        }
-    }
-
-    public static class Performance implements AutoCloseable {
-        private final PointerByReference _context;
-
-        public Performance() throws FFIException {
-            _context = new PointerByReference();
-            int rval = RosuPPLib.performance_new(_context);
-            if (rval != 0) {
-                throw new FFIException("Error creating Performance", rval);
-            }
-        }
-
-        // Method to dispose of the Performance
-        @Override
-        public void close() throws FFIException {
-            int rval = RosuPPLib.performance_destroy(_context);
-            if (rval != 0) {
-                throw new FFIException("Error destroying Performance", rval);
-            }
-        }
-
-        // Method to set mode
-        public void setMode(Mode mode) {
-            RosuPPLib.performance_mode(getContext(), mode.getValue());
-        }
-
-        // Method to set p_mods (using Pointer)
-        public void setMods(Mods mods) {
-            RosuPPLib.performance_p_mods(getContext(), mods.getContext());
-        }
-
-        // Method to set i_mods (using uint)
-        public void setMods(int mods) {
-            RosuPPLib.performance_i_mods(getContext(), mods);
-        }
-
-        // Method to set s_mods (using string)
-        public void setMods(String str) throws FFIException {
-            int rval = RosuPPLib.performance_s_mods(getContext(), str);
-            if (rval != 0) {
-                throw new FFIException("Error setting string mods", rval);
-            }
-        }
-
-        // Method to set legacy total score (using uint)
-        public void setLegacyTotalScore(long legacyTotalScore) {
-            RosuPPLib.performance_legacy_total_score(getContext(), legacyTotalScore);
-        }
-
-        // Method to set passed objects (using uint)
-        public void setPassedObjects(long passedObjects) {
-            RosuPPLib.performance_passed_objects(getContext(), passedObjects);
-        }
-
-        // Method to set clock rate
-        public void setClockRate(double clockRate) {
-            RosuPPLib.performance_clock_rate(getContext(), clockRate);
-        }
-
-        // Method to set AR (approach rate)
-        public void setAr(float ar) {
-            RosuPPLib.performance_ar(getContext(), ar);
-        }
-
-        // Method to set CS (circle size)
-        public void setCs(float cs) {
-            RosuPPLib.performance_cs(getContext(), cs);
-        }
-
-        // Method to set HP (health drain)
-        public void setHp(float hp) {
-            RosuPPLib.performance_hp(getContext(), hp);
-        }
-
-        // Method to set OD (overall difficulty)
-        public void setOd(float od) {
-            RosuPPLib.performance_od(getContext(), od);
-        }
-
-        // Method to set hardrock offsets
-        public void setHardrockOffsets(boolean hardrockOffsets) {
-            RosuPPLib.performance_hardrock_offsets(getContext(), hardrockOffsets);
-        }
-
-        // Method to set hardrock offsets
-        public void setHitResultPriority(HitResultPriority hitresult_priority) {
-            RosuPPLib.performance_hitresult_priority(getContext(), hitresult_priority.value);
-        }
-
-        public void setCombo(long combo) {
-            RosuPPLib.performance_combo(getContext(), combo);
-        }
-
-        public void setState(RosuPPLib.ScoreState state) {
-            RosuPPLib.performance_state(getContext(), (RosuPPLib.ScoreState.ByValue)state);
-        }
-
-        public void setAccuracy(double accuracy) {
-            RosuPPLib.performance_accuracy(getContext(), accuracy);
-        }
-
-        public void setMisses(long misses) {
-            RosuPPLib.performance_misses(getContext(), misses);
-        }
-
-        public void setLargeTickHits(long largeTickHits) {
-            RosuPPLib.performance_large_tick_hits(getContext(), largeTickHits);
-        }
-
-        public void setSmallTickHits(long smallTickHits) {
-            RosuPPLib.performance_small_tick_hits(getContext(), smallTickHits);
-        }
-
-
-        public void setSliderEndHits(long sliderEndHits) {
-            RosuPPLib.performance_slider_end_hits(getContext(), sliderEndHits);
-        }
-
-        public void setN300(long n300) {
-            RosuPPLib.performance_n300(getContext(), n300);
-        }
-
-        public void setN100(long n100) {
-            RosuPPLib.performance_n100(getContext(), n100);
-        }
-
-        public void setN50(long n50) {
-            RosuPPLib.performance_n50(getContext(), n50);
-        }
-
-        public void setNKatu(long nKatu) {
-            RosuPPLib.performance_n_katu(getContext(), nKatu);
-        }
-
-        public void setNGeki(long nGeki) {
-            RosuPPLib.performance_n_geki(getContext(), nGeki);
-        }
-
-        // Method to set lazer
-        public void setLazer(boolean lazer) {
-            RosuPPLib.performance_lazer(getContext(), lazer);
-        }
-
-        public RosuPPLib.ScoreState generateState(Beatmap beatmap) {
-            return RosuPPLib.performance_generate_state(getContext(), beatmap.getContext());
-        }
-
-        public RosuPPLib.ScoreState generateStateFromDifficulty(RosuPPLib.DifficultyAttributes difficultyAttributes) {
-            return RosuPPLib.performance_generate_state_from_difficulty(getContext(), (RosuPPLib.DifficultyAttributes.ByValue)difficultyAttributes);
-        }
-
-        // Method to calculate PerformanceAttributes from beatmap
-        public RosuPPLib.PerformanceAttributes calculate(Beatmap beatmap) {
-            return RosuPPLib.performance_calculate(getContext(), beatmap.getContext());
-        }
-
-        // Method to calculate PerformanceAttributes from DifficultyAttributes
-        public RosuPPLib.PerformanceAttributes calculateFromDifficulty(RosuPPLib.DifficultyAttributes difficultyAttributes) {
-            return RosuPPLib.performance_calculate_from_difficulty(getContext(), (RosuPPLib.DifficultyAttributes.ByValue)difficultyAttributes);
-        }
-
-        // Method to get clock rate
-        public double getClockRate() {
-            return RosuPPLib.performance_get_clock_rate(getContext());
-        }
-
-        // Getter for context
-        public Pointer getContext() {
-            return _context.getValue();
-        }
-    }
-
-    public static class GradualDifficulty {
-        @SuppressWarnings("unused")
-        protected final Cleaner.Cleanable cleanable;
-        private final PointerByReference _context; // Context for BeatmapAttributesBuilder
-
-        private GradualDifficulty() {
-            _context = new PointerByReference();
-            this.cleanable = cleaner.register(this, cleanAction(_context));
-        }
-
-        private static Runnable cleanAction(final PointerByReference context) {
-            return () -> {
-                int rval = RosuPPLib.gradual_difficulty_destroy(context);
-                if (rval != FFIError.Ok) {
-                    try {
-                        throw new FFIException("Error destroying GradualDifficulty", rval);
-                    } catch (FFIException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            };
-        }
-
-        /// Create a [GradualDifficulty] for a map of any mode.
-        public static GradualDifficulty New(Difficulty difficulty, Beatmap beatmap) throws FFIException {
-            var m = new GradualDifficulty();
-            int rval = RosuPPLib.gradual_difficulty_new(m._context, difficulty.getContext(), beatmap.getContext());
-            if (rval != FFIError.Ok) {
-                throw new FFIException("Error creating GradualDifficulty", rval);
-            }
-            return m;
-        }
-
-        /// Create a [GradualDifficulty] for a [Beatmap] on a specific [GameMode].
-        public static GradualDifficulty NewWithMode(Difficulty difficulty, Beatmap beatmap, Mode mode) throws FFIException {
-            var m = new GradualDifficulty();
-            int rval = RosuPPLib.gradual_difficulty_new_with_mode(m._context, difficulty.getContext(), beatmap.getContext(), mode.getValue());
-            if (rval != FFIError.Ok) {
-                throw new FFIException("Error creating GradualDifficulty", rval);
-            }
-            return m;
-        }
-
-        public RosuPPLib.OptionDifficultyAttributes Next() {
-            return RosuPPLib.gradual_difficulty_next(getContext());
-        }
-
-        public RosuPPLib.OptionDifficultyAttributes Nth(long n) {
-            return RosuPPLib.gradual_difficulty_nth(getContext(), n);
-        }
-
-        public long Len() {
-            return RosuPPLib.gradual_difficulty_len(getContext());
-        }
-
-        // Getter for the context
-        public Pointer getContext() {
-            return _context.getValue();
-        }
-    }
-
-    public static class GradualPerformance {
-        @SuppressWarnings("unused")
-        protected final Cleaner.Cleanable cleanable;
-        private final PointerByReference _context; // Context for BeatmapAttributesBuilder
-
-        private GradualPerformance() {
-            _context = new PointerByReference();
-            this.cleanable = cleaner.register(this, cleanAction(_context));
-        }
-
-        private static Runnable cleanAction(final PointerByReference context) {
-            return () -> {
-                int rval = RosuPPLib.gradual_performance_destroy(context);
-                if (rval != FFIError.Ok) {
-                    try {
-                        throw new FFIException("Error destroying GradualPerformance", rval);
-                    } catch (FFIException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            };
-        }
-
-        /// Create a [GradualDifficulty] for a map of any mode.
-        public static GradualPerformance New(Difficulty difficulty, Beatmap beatmap) throws FFIException {
-            var m = new GradualPerformance();
-            int rval = RosuPPLib.gradual_performance_new(m._context, difficulty.getContext(), beatmap.getContext());
-            if (rval != FFIError.Ok) {
-                throw new FFIException("Error creating GradualPerformance", rval);
-            }
-            return m;
-        }
-
-        /// Create a [GradualDifficulty] for a [Beatmap] on a specific [GameMode].
-        public static GradualPerformance NewWithMode(Difficulty difficulty, Beatmap beatmap, Mode mode) throws FFIException {
-            var m = new GradualPerformance();
-            int rval = RosuPPLib.gradual_performance_new_with_mode(m._context, difficulty.getContext(), beatmap.getContext(), mode.getValue());
-            if (rval != FFIError.Ok) {
-                throw new FFIException("Error creating GradualPerformance", rval);
-            }
-            return m;
-        }
-
-        public RosuPPLib.OptionPerformanceAttributes Next(RosuPPLib.ScoreState state) {
-            return RosuPPLib.gradual_performance_next(getContext(), (RosuPPLib.ScoreState.ByValue)state);
-        }
-
-        public RosuPPLib.OptionPerformanceAttributes Last(RosuPPLib.ScoreState state) {
-            return RosuPPLib.gradual_performance_last(getContext(), (RosuPPLib.ScoreState.ByValue)state);
-        }
-
-        public RosuPPLib.OptionPerformanceAttributes Nth(long n, RosuPPLib.ScoreState state) {
-            return RosuPPLib.gradual_performance_nth(getContext(), (RosuPPLib.ScoreState.ByValue)state, n);
-        }
-
-        public long Len() {
-            return RosuPPLib.gradual_performance_len(getContext());
-        }
-
-        // Getter for the context
-        public Pointer getContext() {
-            return _context.getValue();
-        }
-    }
-
-    public static class Mods {
-        @SuppressWarnings("unused")
-        protected final Cleaner.Cleanable cleanable;
-        private final PointerByReference _context; // Context for BeatmapAttributesBuilder
-
-        private Mods() {
-            _context = new PointerByReference();
-            this.cleanable = cleaner.register(this, cleanAction(_context));
-        }
-
-        private static Runnable cleanAction(final PointerByReference context) {
-            return () -> {
-                int rval = RosuPPLib.mods_destroy(context);
-                if (rval != FFIError.Ok) {
-                    try {
-                        throw new FFIException("Error destroying Mods", rval);
-                    } catch (FFIException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            };
-        }
-
-        /// new
-        public static Mods New(Mode mode) throws FFIException {
-            var m = new Mods();
-            int rval = RosuPPLib.mods_new(m._context, mode.getValue());
-            if (rval != FFIError.Ok) {
-                throw new FFIException("Error creating Mods", rval);
-            }
-            return m;
-        }
-
-        /// from acronyms
-        public static Mods fromAcronyms(String mods, Mode mode) throws FFIException {
-            var m = new Mods();
-            int rval = RosuPPLib.mods_from_acronyms(m._context, mods, mode.getValue());
-            if (rval != FFIError.Ok) {
-                throw new FFIException("Error creating Mods", rval);
-            }
-            return m;
-        }
-
-        /// from bits
-        public static Mods fromBits(long mods, Mode mode) throws FFIException {
-            var m = new Mods();
-            int rval = RosuPPLib.mods_from_bits(m._context, mods, mode.getValue());
-            if (rval != FFIError.Ok) {
-                throw new FFIException("Error creating Mods", rval);
-            }
-            return m;
-        }
-
-        /// from json
-        public static Mods fromJson(String mods, Mode mode, boolean deny_unknown_fields) throws FFIException {
-            var m = new Mods();
-            int rval = RosuPPLib.mods_from_json(m._context, mods, mode.getValue(), deny_unknown_fields);
-            if (rval != FFIError.Ok) {
-                throw new FFIException("Error creating Mods", rval);
-            }
-            return m;
-        }
-
-        public void removeUnknownMods() {
-            RosuPPLib.mods_remove_unknown_mods(getContext());
-        }
-
-        public void sanitize() {
-            RosuPPLib.mods_sanitize(getContext());
-        }
-
-        public long getBits() {
-            return RosuPPLib.mods_bits(getContext());
-        }
-
-        public long getLength() {
-            return RosuPPLib.mods_len(getContext());
-        }
-
-        public OwnedString toJson() throws FFIException {
-            var s = new OwnedString();
-            RosuPPLib.mods_json(getContext(), s.getContext());
-            return s;
-        }
-
-        public boolean insertJson(String mod, boolean deny_unknown_fields) {
-            return RosuPPLib.mods_insert_json(getContext(), mod, deny_unknown_fields);
-        }
-
-        public boolean insert(String mod) {
-            return RosuPPLib.mods_insert(getContext(), mod);
-        }
-
-        public boolean contains(String mod) {
-            return RosuPPLib.mods_contains(getContext(), mod);
-        }
-
-        public void clear() {
-            RosuPPLib.mods_clear(getContext());
-        }
-
-        public RosuPPLib.Optionf64 getClockRate() {
-            return RosuPPLib.mods_clock_rate(getContext());
-        }
-
-        // Getter for the context
-        public Pointer getContext() {
-            return _context.getValue();
-        }
-    }
-
-
-    public static class OwnedString {
-
-        @SuppressWarnings("unused")
-        private final Cleaner.Cleanable cleanable;
-        private final PointerByReference _context; // Context for BeatmapAttributesBuilder
-
-        public OwnedString() throws FFIException {
-            _context = new PointerByReference();
-            int rval = RosuPPLib.string_empty(_context);
-            if (rval != FFIError.Ok) {
-                throw new FFIException("Error creating OwnedString", rval);
-            }
-            this.cleanable = cleaner.register(this, cleanAction(_context));
-        }
-
-        public OwnedString(String str) throws FFIException {
-            _context = new PointerByReference();
-            int rval = RosuPPLib.string_from_c_str(_context, str);
-            if (rval != FFIError.Ok) {
-                throw new FFIException("Error creating OwnedString", rval);
-            }
-            this.cleanable = cleaner.register(this, cleanAction(_context));
-        }
-
-        private static Runnable cleanAction(final PointerByReference context) {
-            return () -> {
-                int rval = RosuPPLib.string_destroy(context);
-                if (rval != FFIError.Ok) {
-                    try {
-                        throw new FFIException("Error destroying Mods", rval);
-                    } catch (FFIException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            };
-        }
-
-        public String toCstr() {
-            return RosuPPLib.string_to_cstr(getContext());
-        }
-
-        public boolean isInit() {
-            return RosuPPLib.string_is_init(getContext());
-        }
-
-        public String toString() {
-            return isInit() ? toCstr() : null;
-        }
-
-        // Getter for the context
-        public Pointer getContext() {
-            return _context.getValue();
-        }
-    }
-
-    public static OwnedString debugDifficyltyAttributes(RosuPPLib.DifficultyAttributes attr) throws FFIException {
-        var s = new OwnedString();
-        RosuPPLib.debug_difficylty_attributes(attr, s.getContext());
-        return s;
-    }
-
-    public static OwnedString debugPerformanceAttributes(RosuPPLib.PerformanceAttributes attr) throws FFIException {
-        var s = new OwnedString();
-        RosuPPLib.debug_performance_attributes(attr, s.getContext());
-        return s;
-    }
-
-    public static OwnedString debugScoreState(RosuPPLib.ScoreState attr) throws FFIException {
-        var s = new OwnedString();
-        RosuPPLib.debug_score_state(attr, s.getContext());
-        return s;
-    }
-
-    public static double calculateAccuacy(RosuPPLib.ScoreState state, RosuPPLib.DifficultyAttributes attr, OsuScoreOrigin origin) {
-        return RosuPPLib.calculate_accuacy(state, attr, origin.value);
-    }
-
-    public static class FFIException extends Exception {
-        public int code;
+    public static final class FFIException extends RuntimeException {
+        public final int code;
         public FFIException(String message, int code) {
-            super(message + ", code: " + code);
+            super(message + " (FFI error " + code + ")");
             this.code = code;
         }
+    }
+
+    public interface NativeApi extends Library {
+        long __api_guard();
+
+        long interoptopus_string_create(Pointer utf8, long len, Utf8String out);
+        long interoptopus_string_destroy(Utf8String.ByValue value);
+        void interoptopus_wire_destroy_78044(Pointer data, int len, int capacity);
+
+        ServiceResult.ByValue beatmap_from_bytes(SliceU8.ByValue data);
+        ServiceResult.ByValue beatmap_from_path(Utf8String.ByValue path);
+        void beatmap_destroy(Pointer context);
+        byte beatmap_convert(Pointer context, byte mode, Pointer mods);
+        double beatmap_bpm(Pointer context);
+        double beatmap_total_break_time(Pointer context);
+        int beatmap_version(Pointer context);
+        byte beatmap_is_convert(Pointer context);
+        float beatmap_stack_leniency(Pointer context);
+        byte beatmap_mode(Pointer context);
+        float beatmap_ar(Pointer context);
+        float beatmap_cs(Pointer context);
+        float beatmap_hp(Pointer context);
+        float beatmap_od(Pointer context);
+        double beatmap_slider_multiplier(Pointer context);
+        double beatmap_slider_tick_rate(Pointer context);
+        OptionTooSuspicious.ByValue beatmap_check_suspicious(Pointer context);
+        WireHitObjects.ByValue beatmap_hit_objects(Pointer context);
+
+        ServiceResult.ByValue beatmap_attributes_builder_create();
+        void beatmap_attributes_builder_destroy(Pointer context);
+        void beatmap_attributes_builder_mode(Pointer context, byte mode);
+        void beatmap_attributes_builder_p_mods(Pointer context, Pointer mods);
+        void beatmap_attributes_builder_i_mods(Pointer context, int mods);
+        void beatmap_attributes_builder_s_mods(Pointer context, Utf8String.ByValue mods);
+        void beatmap_attributes_builder_clock_rate(Pointer context, double value);
+        void beatmap_attributes_builder_ar(Pointer context, float value);
+        void beatmap_attributes_builder_cs(Pointer context, float value);
+        void beatmap_attributes_builder_hp(Pointer context, float value);
+        void beatmap_attributes_builder_od(Pointer context, float value);
+        double beatmap_attributes_builder_get_clock_rate(Pointer context);
+        BeatmapAttributes.ByValue beatmap_attributes_builder_build(Pointer context, Pointer beatmap);
+
+        ServiceResult.ByValue difficulty_create();
+        void difficulty_destroy(Pointer context);
+        void difficulty_p_mods(Pointer context, Pointer mods);
+        void difficulty_i_mods(Pointer context, int mods);
+        void difficulty_s_mods(Pointer context, Utf8String.ByValue mods);
+        void difficulty_passed_objects(Pointer context, int value);
+        void difficulty_clock_rate(Pointer context, double value);
+        void difficulty_ar(Pointer context, float value);
+        void difficulty_cs(Pointer context, float value);
+        void difficulty_hp(Pointer context, float value);
+        void difficulty_od(Pointer context, float value);
+        void difficulty_hardrock_offsets(Pointer context, byte value);
+        void difficulty_lazer(Pointer context, byte value);
+        DifficultyAttributes.ByValue difficulty_calculate(Pointer context, Pointer beatmap);
+        double difficulty_get_clock_rate(Pointer context);
+
+        ServiceResult.ByValue performance_create();
+        void performance_destroy(Pointer context);
+        void performance_mode(Pointer context, byte mode);
+        void performance_p_mods(Pointer context, Pointer mods);
+        void performance_i_mods(Pointer context, int mods);
+        void performance_s_mods(Pointer context, Utf8String.ByValue mods);
+        void performance_passed_objects(Pointer context, int value);
+        void performance_legacy_total_score(Pointer context, int value);
+        void performance_clock_rate(Pointer context, double value);
+        void performance_ar(Pointer context, float value);
+        void performance_cs(Pointer context, float value);
+        void performance_hp(Pointer context, float value);
+        void performance_od(Pointer context, float value);
+        void performance_hardrock_offsets(Pointer context, byte value);
+        void performance_state(Pointer context, ScoreState.ByValue value);
+        void performance_accuracy(Pointer context, double value);
+        void performance_misses(Pointer context, int value);
+        void performance_combo(Pointer context, int value);
+        void performance_hitresult_priority(Pointer context, byte value);
+        void performance_lazer(Pointer context, byte value);
+        void performance_large_tick_hits(Pointer context, int value);
+        void performance_small_tick_hits(Pointer context, int value);
+        void performance_slider_end_hits(Pointer context, int value);
+        void performance_n300(Pointer context, int value);
+        void performance_n100(Pointer context, int value);
+        void performance_n50(Pointer context, int value);
+        void performance_n_katu(Pointer context, int value);
+        void performance_n_geki(Pointer context, int value);
+        ScoreState.ByValue performance_generate_state(Pointer context, Pointer beatmap);
+        ScoreState.ByValue performance_generate_state_from_difficulty(Pointer context, DifficultyAttributes.ByValue attrs);
+        PerformanceAttributes.ByValue performance_calculate(Pointer context, Pointer beatmap);
+        PerformanceAttributes.ByValue performance_calculate_from_difficulty(Pointer context, DifficultyAttributes.ByValue attrs);
+        double performance_get_clock_rate(Pointer context);
+
+        ServiceResult.ByValue mods_create(byte mode);
+        ServiceResult.ByValue mods_from_acronyms(Utf8String.ByValue value, byte mode);
+        ServiceResult.ByValue mods_from_bits(int value, byte mode);
+        ServiceResult.ByValue mods_from_json(Utf8String.ByValue value, byte mode, byte denyUnknown);
+        void mods_destroy(Pointer context);
+        void mods_remove_unknown_mods(Pointer context);
+        void mods_sanitize(Pointer context);
+        int mods_bits(Pointer context);
+        int mods_len(Pointer context);
+        Utf8String.ByValue mods_json(Pointer context);
+        byte mods_insert_json(Pointer context, Utf8String.ByValue value, byte denyUnknown);
+        void mods_insert(Pointer context, Utf8String.ByValue value);
+        byte mods_contains(Pointer context, Utf8String.ByValue value);
+        void mods_clear(Pointer context);
+        OptionDouble.ByValue mods_clock_rate(Pointer context);
+
+        ServiceResult.ByValue gradual_difficulty_create(Pointer difficulty, Pointer beatmap);
+        ServiceResult.ByValue gradual_difficulty_new_with_mode(Pointer difficulty, Pointer beatmap, byte mode);
+        void gradual_difficulty_destroy(Pointer context);
+        OptionDifficultyAttributes.ByValue gradual_difficulty_next(Pointer context);
+        OptionDifficultyAttributes.ByValue gradual_difficulty_nth(Pointer context, int n);
+        int gradual_difficulty_len(Pointer context);
+
+        ServiceResult.ByValue gradual_performance_create(Pointer difficulty, Pointer beatmap);
+        ServiceResult.ByValue gradual_performance_new_with_mode(Pointer difficulty, Pointer beatmap, byte mode);
+        void gradual_performance_destroy(Pointer context);
+        OptionPerformanceAttributes.ByValue gradual_performance_next(Pointer context, ScoreState.ByValue state);
+        OptionPerformanceAttributes.ByValue gradual_performance_last(Pointer context, ScoreState.ByValue state);
+        OptionPerformanceAttributes.ByValue gradual_performance_nth(Pointer context, ScoreState.ByValue state, int n);
+        int gradual_performance_len(Pointer context);
+
+        Utf8String.ByValue debug_difficulty_attributes(DifficultyAttributes attrs);
+        Utf8String.ByValue debug_performance_attributes(PerformanceAttributes attrs);
+        Utf8String.ByValue debug_score_state(ScoreState state);
+        double calculate_accuacy(ScoreState state, DifficultyAttributes attrs, byte origin);
+    }
+
+    private static final NativeApi NATIVE = loadNative();
+
+    private static NativeApi loadNative() {
+        String configured = System.getProperty("rosu.pp.ffi.library");
+        NativeApi api;
+
+        if (configured != null && !configured.isBlank()) {
+            api = Native.load(new File(configured).getAbsolutePath(), NativeApi.class);
+        } else {
+            String mapped = NativeLibrary.getInstance("rosu_pp_ffi").getFile().getAbsolutePath();
+            api = Native.load(mapped, NativeApi.class);
+        }
+
+        long actual = api.__api_guard();
+        if (actual != API_GUARD) {
+            throw new UnsatisfiedLinkError(
+                "rosu_pp_ffi ABI mismatch: native=0x" + Long.toHexString(actual)
+                    + ", Java=0x" + Long.toHexString(API_GUARD)
+            );
+        }
+
+        return api;
+    }
+
+    private static byte bool(boolean value) { return (byte) (value ? 1 : 0); }
+
+    @Structure.FieldOrder({"variant", "payload"})
+    public static class ServiceResult extends Structure {
+        public int variant;
+        public Payload payload;
+        public static class Payload extends Union {
+            public Pointer ok;
+            public short error;
+        }
+        public static class ByValue extends ServiceResult implements Structure.ByValue {}
+        @Override public void read() {
+            super.read();
+            payload.setType(variant == 0 ? Pointer.class : short.class);
+            payload.read();
+        }
+        Pointer unwrap(String operation) {
+            if (variant == 0 && payload.ok != null) return payload.ok;
+            int code = variant == 1 ? Short.toUnsignedInt(payload.error)
+                : variant == 2 ? FFIError.PANIC : FFIError.NULL;
+            throw new FFIException(operation, code);
+        }
+    }
+
+    @Structure.FieldOrder({"ptr", "len", "capacity"})
+    public static class Utf8String extends Structure {
+        public Pointer ptr;
+        public long len;
+        public long capacity;
+        public static class ByValue extends Utf8String implements Structure.ByValue {}
+
+        static ByValue fromJava(String value) {
+            byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+            Memory memory = bytes.length == 0 ? null : new Memory(bytes.length);
+            if (memory != null) memory.write(0, bytes, 0, bytes.length);
+            Utf8String out = new Utf8String();
+            NATIVE.interoptopus_string_create(memory, bytes.length, out);
+            out.read();
+            ByValue result = new ByValue();
+            result.ptr = out.ptr;
+            result.len = out.len;
+            result.capacity = out.capacity;
+            result.write();
+            return result;
+        }
+
+        String consume() {
+            String value = len == 0 ? "" : new String(ptr.getByteArray(0, Math.toIntExact(len)), StandardCharsets.UTF_8);
+            ByValue owned = new ByValue();
+            owned.ptr = ptr;
+            owned.len = len;
+            owned.capacity = capacity;
+            owned.write();
+            NATIVE.interoptopus_string_destroy(owned);
+            ptr = null;
+            len = 0;
+            capacity = 0;
+            return value;
+        }
+    }
+
+    @Structure.FieldOrder({"data", "len"})
+    public static class SliceU8 extends Structure {
+        public Pointer data;
+        public long len;
+        protected Memory owner;
+        public static class ByValue extends SliceU8 implements Structure.ByValue {}
+        static ByValue from(byte[] bytes) {
+            ByValue value = new ByValue();
+            value.owner = bytes.length == 0 ? null : new Memory(bytes.length);
+            if (value.owner != null) value.owner.write(0, bytes, 0, bytes.length);
+            value.data = value.owner;
+            value.len = bytes.length;
+            value.write();
+            return value;
+        }
+    }
+
+    @Structure.FieldOrder({"variant", "some"})
+    public static class OptionDouble extends Structure {
+        public int variant;
+        public double some;
+        public static class ByValue extends OptionDouble implements Structure.ByValue {}
+        public OptionalDouble toOptional() {
+            return variant == 0 ? OptionalDouble.of(some) : OptionalDouble.empty();
+        }
+    }
+
+    @Structure.FieldOrder({"variant", "some"})
+    public static class OptionUint extends Structure {
+        public int variant;
+        public int some;
+        public static class ByValue extends OptionUint implements Structure.ByValue {}
+        public OptionalInt toOptional() {
+            return variant == 0 ? OptionalInt.of(some) : OptionalInt.empty();
+        }
+    }
+
+    @Structure.FieldOrder({"variant", "some"})
+    public static class OptionTooSuspicious extends Structure {
+        public int variant;
+        public byte some;
+        public static class ByValue extends OptionTooSuspicious implements Structure.ByValue {}
+        public Optional<TooSuspicious> toOptional() {
+            return variant == 0 ? Optional.of(TooSuspicious.fromValue(some)) : Optional.empty();
+        }
+    }
+
+    @Structure.FieldOrder({"aim", "aim_difficult_slider_count", "speed", "flashlight", "reading",
+        "slider_factor", "aim_top_weighted_slider_factor", "speed_top_weighted_slider_factor",
+        "speed_note_count", "aim_difficult_strain_count", "speed_difficult_strain_count",
+        "reading_difficult_note_count", "nested_score_per_object", "legacy_score_base_multiplier",
+        "maximum_legacy_combo_score", "ar", "great_hit_window", "ok_hit_window", "meh_hit_window",
+        "hp", "n_circles", "n_sliders", "n_large_ticks", "n_spinners", "stars", "max_combo"})
+    public static class OsuDifficultyAttributes extends Structure {
+        public double aim, aim_difficult_slider_count, speed, flashlight, reading, slider_factor;
+        public double aim_top_weighted_slider_factor, speed_top_weighted_slider_factor, speed_note_count;
+        public double aim_difficult_strain_count, speed_difficult_strain_count, reading_difficult_note_count;
+        public double nested_score_per_object, legacy_score_base_multiplier, maximum_legacy_combo_score;
+        public double ar, great_hit_window, ok_hit_window, meh_hit_window, hp;
+        public int n_circles, n_sliders, n_large_ticks, n_spinners;
+        public double stars;
+        public int max_combo;
+    }
+
+    @Structure.FieldOrder({"stamina", "rhythm", "color", "reading", "great_hit_window", "ok_hit_window",
+        "mono_stamina_factor", "mechanical_difficulty", "consistency_factor", "stars", "max_combo", "is_convert"})
+    public static class TaikoDifficultyAttributes extends Structure {
+        public double stamina, rhythm, color, reading, great_hit_window, ok_hit_window;
+        public double mono_stamina_factor, mechanical_difficulty, consistency_factor, stars;
+        public int max_combo;
+        public byte is_convert;
+    }
+
+    @Structure.FieldOrder({"stars", "preempt", "n_fruits", "n_droplets", "n_tiny_droplets", "is_convert"})
+    public static class CatchDifficultyAttributes extends Structure {
+        public double stars, preempt;
+        public int n_fruits, n_droplets, n_tiny_droplets;
+        public byte is_convert;
+    }
+
+    @Structure.FieldOrder({"stars", "n_objects", "n_hold_notes", "max_combo", "is_convert"})
+    public static class ManiaDifficultyAttributes extends Structure {
+        public double stars;
+        public int n_objects, n_hold_notes, max_combo;
+        public byte is_convert;
+    }
+
+    public static class DifficultyPayload extends Union {
+        public OsuDifficultyAttributes osu;
+        public TaikoDifficultyAttributes taiko;
+        public CatchDifficultyAttributes catchValue;
+        public ManiaDifficultyAttributes mania;
+    }
+
+    @Structure.FieldOrder({"variant", "payload"})
+    public static class DifficultyAttributes extends Structure {
+        public byte variant;
+        public DifficultyPayload payload;
+        public DifficultyAttributes() {}
+        protected DifficultyAttributes(Pointer memory) { super(memory); }
+        public static class ByValue extends DifficultyAttributes implements Structure.ByValue {
+            public ByValue() {}
+            private ByValue(Pointer memory) { super(memory); }
+        }
+        @Override public void read() {
+            super.read();
+            payload.setType(switch (variant) {
+                case 0 -> OsuDifficultyAttributes.class;
+                case 1 -> TaikoDifficultyAttributes.class;
+                case 2 -> CatchDifficultyAttributes.class;
+                case 3 -> ManiaDifficultyAttributes.class;
+                default -> throw new IllegalStateException("Invalid difficulty variant " + variant);
+            });
+            payload.read();
+        }
+        public Mode mode() { return Mode.fromValue(variant); }
+        public OsuDifficultyAttributes asOsu() { require(Mode.Osu); return payload.osu; }
+        public TaikoDifficultyAttributes asTaiko() { require(Mode.Taiko); return payload.taiko; }
+        public CatchDifficultyAttributes asCatch() { require(Mode.Catch); return payload.catchValue; }
+        public ManiaDifficultyAttributes asMania() { require(Mode.Mania); return payload.mania; }
+        private void require(Mode mode) {
+            if (variant != mode.value) throw new IllegalStateException("Expected " + mode + ", got " + mode());
+        }
+    }
+
+    @Structure.FieldOrder({"difficulty", "pp", "pp_acc", "pp_aim", "pp_flashlight", "pp_reading",
+        "pp_speed", "effective_miss_count", "speed_deviation", "combo_based_estimated_miss_count",
+        "score_based_estimated_miss_count", "aim_estimated_slider_breaks", "speed_estimated_slider_breaks"})
+    public static class OsuPerformanceAttributes extends Structure {
+        public OsuDifficultyAttributes difficulty;
+        public double pp, pp_acc, pp_aim, pp_flashlight, pp_reading, pp_speed, effective_miss_count;
+        public OptionDouble speed_deviation;
+        public double combo_based_estimated_miss_count;
+        public OptionDouble score_based_estimated_miss_count;
+        public double aim_estimated_slider_breaks, speed_estimated_slider_breaks;
+    }
+
+    @Structure.FieldOrder({"difficulty", "pp", "pp_acc", "pp_difficulty", "estimated_unstable_rate"})
+    public static class TaikoPerformanceAttributes extends Structure {
+        public TaikoDifficultyAttributes difficulty;
+        public double pp, pp_acc, pp_difficulty;
+        public OptionDouble estimated_unstable_rate;
+    }
+
+    @Structure.FieldOrder({"difficulty", "pp"})
+    public static class CatchPerformanceAttributes extends Structure {
+        public CatchDifficultyAttributes difficulty;
+        public double pp;
+    }
+
+    @Structure.FieldOrder({"difficulty", "pp", "pp_difficulty"})
+    public static class ManiaPerformanceAttributes extends Structure {
+        public ManiaDifficultyAttributes difficulty;
+        public double pp, pp_difficulty;
+    }
+
+    public static class PerformancePayload extends Union {
+        public OsuPerformanceAttributes osu;
+        public TaikoPerformanceAttributes taiko;
+        public CatchPerformanceAttributes catchValue;
+        public ManiaPerformanceAttributes mania;
+    }
+
+    @Structure.FieldOrder({"variant", "payload"})
+    public static class PerformanceAttributes extends Structure {
+        public byte variant;
+        public PerformancePayload payload;
+        public static class ByValue extends PerformanceAttributes implements Structure.ByValue {}
+        @Override public void read() {
+            super.read();
+            payload.setType(switch (variant) {
+                case 0 -> OsuPerformanceAttributes.class;
+                case 1 -> TaikoPerformanceAttributes.class;
+                case 2 -> CatchPerformanceAttributes.class;
+                case 3 -> ManiaPerformanceAttributes.class;
+                default -> throw new IllegalStateException("Invalid performance variant " + variant);
+            });
+            payload.read();
+        }
+        public Mode mode() { return Mode.fromValue(variant); }
+        public OsuPerformanceAttributes asOsu() { require(Mode.Osu); return payload.osu; }
+        public TaikoPerformanceAttributes asTaiko() { require(Mode.Taiko); return payload.taiko; }
+        public CatchPerformanceAttributes asCatch() { require(Mode.Catch); return payload.catchValue; }
+        public ManiaPerformanceAttributes asMania() { require(Mode.Mania); return payload.mania; }
+        private void require(Mode mode) {
+            if (variant != mode.value) throw new IllegalStateException("Expected " + mode + ", got " + mode());
+        }
+    }
+
+    @Structure.FieldOrder({"variant", "some"})
+    public static class OptionDifficultyAttributes extends Structure {
+        public int variant;
+        public DifficultyAttributes some;
+        public static class ByValue extends OptionDifficultyAttributes implements Structure.ByValue {}
+        public Optional<DifficultyAttributes> toOptional() {
+            if (variant != 0) return Optional.empty();
+            some.read();
+            return Optional.of(some);
+        }
+    }
+
+    @Structure.FieldOrder({"variant", "some"})
+    public static class OptionPerformanceAttributes extends Structure {
+        public int variant;
+        public PerformanceAttributes some;
+        public static class ByValue extends OptionPerformanceAttributes implements Structure.ByValue {}
+        public Optional<PerformanceAttributes> toOptional() {
+            if (variant != 0) return Optional.empty();
+            some.read();
+            return Optional.of(some);
+        }
+    }
+
+    @Structure.FieldOrder({"max_combo", "osu_large_tick_hits", "osu_small_tick_hits", "slider_end_hits",
+        "n_geki", "n_katu", "n300", "n100", "n50", "misses", "legacy_total_score"})
+    public static class ScoreState extends Structure {
+        public int max_combo, osu_large_tick_hits, osu_small_tick_hits, slider_end_hits;
+        public int n_geki, n_katu, n300, n100, n50, misses;
+        public OptionUint legacy_total_score;
+        public static class ByValue extends ScoreState implements Structure.ByValue {}
+        ByValue byValue() {
+            write();
+            ByValue value = new ByValue();
+            value.useMemory(getPointer());
+            value.read();
+            return value;
+        }
+    }
+
+    @Structure.FieldOrder({"ar", "od_perfect", "od_great", "od_good", "od_ok", "od_meh"})
+    public static class HitWindows extends Structure {
+        public OptionDouble ar, od_perfect, od_great, od_good, od_ok, od_meh;
+    }
+
+    @Structure.FieldOrder({"ar", "od", "cs", "hp", "clock_rate", "hit_windows"})
+    public static class BeatmapAttributes extends Structure {
+        public double ar, od;
+        public float cs, hp;
+        public double clock_rate;
+        public HitWindows hit_windows;
+        public static class ByValue extends BeatmapAttributes implements Structure.ByValue {}
+    }
+
+    public record SliderData(long repeats, OptionalDouble expectedDistance) {}
+    public record HitObject(float x, float y, double startTime, HitObjectKind kind,
+                            SliderData slider, double duration) {}
+
+    @Structure.FieldOrder({"data", "len", "capacity"})
+    public static class WireHitObjects extends Structure implements AutoCloseable {
+        public Pointer data;
+        public int len;
+        public int capacity;
+        public static class ByValue extends WireHitObjects implements Structure.ByValue {}
+
+        public List<HitObject> unwire() {
+            if (data == null || len == 0) return List.of();
+            ByteBuffer buffer = data.getByteBuffer(0, len).order(ByteOrder.LITTLE_ENDIAN);
+            int count = buffer.getInt();
+            List<HitObject> result = new ArrayList<>(count);
+            for (int i = 0; i < count; i++) {
+                float x = buffer.getFloat();
+                float y = buffer.getFloat();
+                double start = buffer.getDouble();
+                int tag = Byte.toUnsignedInt(buffer.get());
+                HitObjectKind kind = HitObjectKind.values()[tag];
+                SliderData slider = null;
+                double duration = 0;
+                if (kind == HitObjectKind.Slider) {
+                    long repeats = Integer.toUnsignedLong(buffer.getInt());
+                    int option = Byte.toUnsignedInt(buffer.get());
+                    OptionalDouble distance = option == 0
+                        ? OptionalDouble.of(buffer.getDouble()) : OptionalDouble.empty();
+                    slider = new SliderData(repeats, distance);
+                } else if (kind == HitObjectKind.Spinner || kind == HitObjectKind.Hold) {
+                    duration = buffer.getDouble();
+                }
+                result.add(new HitObject(x, y, start, kind, slider, duration));
+            }
+            return result;
+        }
+
+        @Override public void close() {
+            if (data != null) {
+                NATIVE.interoptopus_wire_destroy_78044(data, len, capacity);
+                data = null;
+                len = 0;
+                capacity = 0;
+            }
+        }
+    }
+
+    private abstract static class Service implements AutoCloseable {
+        private Pointer context;
+        Service(Pointer context) { this.context = context; }
+        final Pointer context() {
+            if (context == null) throw new IllegalStateException("Service already closed");
+            return context;
+        }
+        abstract void destroy(Pointer context);
+        @Override public final void close() {
+            if (context != null) {
+                destroy(context);
+                context = null;
+            }
+        }
+    }
+
+    public static final class Beatmap extends Service {
+        public Beatmap(byte[] data) {
+            super(NATIVE.beatmap_from_bytes(SliceU8.from(data)).unwrap("beatmap_from_bytes"));
+        }
+        public Beatmap(String path) {
+            super(NATIVE.beatmap_from_path(Utf8String.fromJava(path)).unwrap("beatmap_from_path"));
+        }
+        @Override void destroy(Pointer context) { NATIVE.beatmap_destroy(context); }
+        public boolean convert(Mode mode, Mods mods) { return NATIVE.beatmap_convert(context(), mode.value, mods.context()) != 0; }
+        public boolean convert(Mode mode) {
+            try (var mods = Mods.create(mode)) { return convert(mode, mods); }
+        }
+        public double bpm() { return NATIVE.beatmap_bpm(context()); }
+        public double totalBreakTime() { return NATIVE.beatmap_total_break_time(context()); }
+        public int version() { return NATIVE.beatmap_version(context()); }
+        public boolean isConvert() { return NATIVE.beatmap_is_convert(context()) != 0; }
+        public float stackLeniency() { return NATIVE.beatmap_stack_leniency(context()); }
+        public Mode mode() { return Mode.fromValue(NATIVE.beatmap_mode(context())); }
+        public float ar() { return NATIVE.beatmap_ar(context()); }
+        public float cs() { return NATIVE.beatmap_cs(context()); }
+        public float hp() { return NATIVE.beatmap_hp(context()); }
+        public float od() { return NATIVE.beatmap_od(context()); }
+        public double sliderMultiplier() { return NATIVE.beatmap_slider_multiplier(context()); }
+        public double sliderTickRate() { return NATIVE.beatmap_slider_tick_rate(context()); }
+        public Optional<TooSuspicious> checkSuspicious() { return NATIVE.beatmap_check_suspicious(context()).toOptional(); }
+        public WireHitObjects.ByValue hitObjects() { return NATIVE.beatmap_hit_objects(context()); }
+    }
+
+    public static final class Mods extends Service {
+        private Mods(Pointer context) { super(context); }
+        public static Mods create(Mode mode) { return new Mods(NATIVE.mods_create(mode.value).unwrap("mods_create")); }
+        public static Mods fromAcronyms(String value, Mode mode) {
+            return new Mods(NATIVE.mods_from_acronyms(Utf8String.fromJava(value), mode.value).unwrap("mods_from_acronyms"));
+        }
+        public static Mods fromBits(long value, Mode mode) {
+            return new Mods(NATIVE.mods_from_bits((int) value, mode.value).unwrap("mods_from_bits"));
+        }
+        public static Mods fromJson(String value, Mode mode, boolean denyUnknown) {
+            return new Mods(NATIVE.mods_from_json(Utf8String.fromJava(value), mode.value, bool(denyUnknown)).unwrap("mods_from_json"));
+        }
+        @Override void destroy(Pointer context) { NATIVE.mods_destroy(context); }
+        public void removeUnknownMods() { NATIVE.mods_remove_unknown_mods(context()); }
+        public void sanitize() { NATIVE.mods_sanitize(context()); }
+        public long bits() { return Integer.toUnsignedLong(NATIVE.mods_bits(context())); }
+        public long length() { return Integer.toUnsignedLong(NATIVE.mods_len(context())); }
+        public String json() { return NATIVE.mods_json(context()).consume(); }
+        public boolean insertJson(String value, boolean denyUnknown) {
+            return NATIVE.mods_insert_json(context(), Utf8String.fromJava(value), bool(denyUnknown)) != 0;
+        }
+        public void insert(String value) { NATIVE.mods_insert(context(), Utf8String.fromJava(value)); }
+        public boolean contains(String value) { return NATIVE.mods_contains(context(), Utf8String.fromJava(value)) != 0; }
+        public void clear() { NATIVE.mods_clear(context()); }
+        public OptionalDouble clockRate() { return NATIVE.mods_clock_rate(context()).toOptional(); }
+    }
+
+    public static final class Difficulty extends Service {
+        public Difficulty() { super(NATIVE.difficulty_create().unwrap("difficulty_create")); }
+        @Override void destroy(Pointer context) { NATIVE.difficulty_destroy(context); }
+        public void mods(Mods value) { NATIVE.difficulty_p_mods(context(), value.context()); }
+        public void mods(long value) { NATIVE.difficulty_i_mods(context(), (int) value); }
+        public void mods(String value) { NATIVE.difficulty_s_mods(context(), Utf8String.fromJava(value)); }
+        public void passedObjects(long value) { NATIVE.difficulty_passed_objects(context(), (int) value); }
+        public void clockRate(double value) { NATIVE.difficulty_clock_rate(context(), value); }
+        public void ar(float value) { NATIVE.difficulty_ar(context(), value); }
+        public void cs(float value) { NATIVE.difficulty_cs(context(), value); }
+        public void hp(float value) { NATIVE.difficulty_hp(context(), value); }
+        public void od(float value) { NATIVE.difficulty_od(context(), value); }
+        public void hardrockOffsets(boolean value) { NATIVE.difficulty_hardrock_offsets(context(), bool(value)); }
+        public void lazer(boolean value) { NATIVE.difficulty_lazer(context(), bool(value)); }
+        public DifficultyAttributes calculate(Beatmap beatmap) { return NATIVE.difficulty_calculate(context(), beatmap.context()); }
+        public double clockRate() { return NATIVE.difficulty_get_clock_rate(context()); }
+    }
+
+    public static final class Performance extends Service {
+        public Performance() { super(NATIVE.performance_create().unwrap("performance_create")); }
+        @Override void destroy(Pointer context) { NATIVE.performance_destroy(context); }
+        public void mode(Mode value) { NATIVE.performance_mode(context(), value.value); }
+        public void mods(Mods value) { NATIVE.performance_p_mods(context(), value.context()); }
+        public void mods(long value) { NATIVE.performance_i_mods(context(), (int) value); }
+        public void mods(String value) { NATIVE.performance_s_mods(context(), Utf8String.fromJava(value)); }
+        public void passedObjects(long value) { NATIVE.performance_passed_objects(context(), (int) value); }
+        public void legacyTotalScore(long value) { NATIVE.performance_legacy_total_score(context(), (int) value); }
+        public void clockRate(double value) { NATIVE.performance_clock_rate(context(), value); }
+        public void ar(float value) { NATIVE.performance_ar(context(), value); }
+        public void cs(float value) { NATIVE.performance_cs(context(), value); }
+        public void hp(float value) { NATIVE.performance_hp(context(), value); }
+        public void od(float value) { NATIVE.performance_od(context(), value); }
+        public void hardrockOffsets(boolean value) { NATIVE.performance_hardrock_offsets(context(), bool(value)); }
+        public void state(ScoreState value) { NATIVE.performance_state(context(), value.byValue()); }
+        public void accuracy(double value) { NATIVE.performance_accuracy(context(), value); }
+        public void misses(long value) { NATIVE.performance_misses(context(), (int) value); }
+        public void combo(long value) { NATIVE.performance_combo(context(), (int) value); }
+        public void hitResultPriority(HitResultPriority value) { NATIVE.performance_hitresult_priority(context(), value.value); }
+        public void lazer(boolean value) { NATIVE.performance_lazer(context(), bool(value)); }
+        public void largeTickHits(long value) { NATIVE.performance_large_tick_hits(context(), (int) value); }
+        public void smallTickHits(long value) { NATIVE.performance_small_tick_hits(context(), (int) value); }
+        public void sliderEndHits(long value) { NATIVE.performance_slider_end_hits(context(), (int) value); }
+        public void n300(long value) { NATIVE.performance_n300(context(), (int) value); }
+        public void n100(long value) { NATIVE.performance_n100(context(), (int) value); }
+        public void n50(long value) { NATIVE.performance_n50(context(), (int) value); }
+        public void nKatu(long value) { NATIVE.performance_n_katu(context(), (int) value); }
+        public void nGeki(long value) { NATIVE.performance_n_geki(context(), (int) value); }
+        public ScoreState generateState(Beatmap beatmap) { return NATIVE.performance_generate_state(context(), beatmap.context()); }
+        public ScoreState generateState(DifficultyAttributes attrs) {
+            return NATIVE.performance_generate_state_from_difficulty(context(), asDifficultyValue(attrs));
+        }
+        public PerformanceAttributes calculate(Beatmap beatmap) { return NATIVE.performance_calculate(context(), beatmap.context()); }
+        public PerformanceAttributes calculate(DifficultyAttributes attrs) {
+            return NATIVE.performance_calculate_from_difficulty(context(), asDifficultyValue(attrs));
+        }
+        public double clockRate() { return NATIVE.performance_get_clock_rate(context()); }
+    }
+
+    public static final class BeatmapAttributesBuilder extends Service {
+        public BeatmapAttributesBuilder() { super(NATIVE.beatmap_attributes_builder_create().unwrap("beatmap_attributes_builder_create")); }
+        @Override void destroy(Pointer context) { NATIVE.beatmap_attributes_builder_destroy(context); }
+        public void mode(Mode value) { NATIVE.beatmap_attributes_builder_mode(context(), value.value); }
+        public void mods(Mods value) { NATIVE.beatmap_attributes_builder_p_mods(context(), value.context()); }
+        public void mods(long value) { NATIVE.beatmap_attributes_builder_i_mods(context(), (int) value); }
+        public void mods(String value) { NATIVE.beatmap_attributes_builder_s_mods(context(), Utf8String.fromJava(value)); }
+        public void clockRate(double value) { NATIVE.beatmap_attributes_builder_clock_rate(context(), value); }
+        public void ar(float value) { NATIVE.beatmap_attributes_builder_ar(context(), value); }
+        public void cs(float value) { NATIVE.beatmap_attributes_builder_cs(context(), value); }
+        public void hp(float value) { NATIVE.beatmap_attributes_builder_hp(context(), value); }
+        public void od(float value) { NATIVE.beatmap_attributes_builder_od(context(), value); }
+        public double clockRate() { return NATIVE.beatmap_attributes_builder_get_clock_rate(context()); }
+        public BeatmapAttributes build(Beatmap beatmap) { return NATIVE.beatmap_attributes_builder_build(context(), beatmap.context()); }
+    }
+
+    public static final class GradualDifficulty extends Service {
+        private GradualDifficulty(Pointer context) { super(context); }
+        public static GradualDifficulty create(Difficulty difficulty, Beatmap beatmap) {
+            return new GradualDifficulty(NATIVE.gradual_difficulty_create(difficulty.context(), beatmap.context()).unwrap("gradual_difficulty_create"));
+        }
+        public static GradualDifficulty create(Difficulty difficulty, Beatmap beatmap, Mode mode) {
+            return new GradualDifficulty(NATIVE.gradual_difficulty_new_with_mode(difficulty.context(), beatmap.context(), mode.value).unwrap("gradual_difficulty_new_with_mode"));
+        }
+        @Override void destroy(Pointer context) { NATIVE.gradual_difficulty_destroy(context); }
+        public Optional<DifficultyAttributes> next() { return NATIVE.gradual_difficulty_next(context()).toOptional(); }
+        public Optional<DifficultyAttributes> nth(long n) { return NATIVE.gradual_difficulty_nth(context(), (int) n).toOptional(); }
+        public long length() { return Integer.toUnsignedLong(NATIVE.gradual_difficulty_len(context())); }
+    }
+
+    public static final class GradualPerformance extends Service {
+        private GradualPerformance(Pointer context) { super(context); }
+        public static GradualPerformance create(Difficulty difficulty, Beatmap beatmap) {
+            return new GradualPerformance(NATIVE.gradual_performance_create(difficulty.context(), beatmap.context()).unwrap("gradual_performance_create"));
+        }
+        public static GradualPerformance create(Difficulty difficulty, Beatmap beatmap, Mode mode) {
+            return new GradualPerformance(NATIVE.gradual_performance_new_with_mode(difficulty.context(), beatmap.context(), mode.value).unwrap("gradual_performance_new_with_mode"));
+        }
+        @Override void destroy(Pointer context) { NATIVE.gradual_performance_destroy(context); }
+        public Optional<PerformanceAttributes> next(ScoreState state) {
+            return NATIVE.gradual_performance_next(context(), state.byValue()).toOptional();
+        }
+        public Optional<PerformanceAttributes> last(ScoreState state) {
+            return NATIVE.gradual_performance_last(context(), state.byValue()).toOptional();
+        }
+        public Optional<PerformanceAttributes> nth(ScoreState state, long n) {
+            return NATIVE.gradual_performance_nth(context(), state.byValue(), (int) n).toOptional();
+        }
+        public long length() { return Integer.toUnsignedLong(NATIVE.gradual_performance_len(context())); }
+    }
+
+    private static DifficultyAttributes.ByValue asDifficultyValue(DifficultyAttributes attrs) {
+        attrs.write();
+        DifficultyAttributes.ByValue value = new DifficultyAttributes.ByValue(attrs.getPointer());
+        value.read();
+        return value;
+    }
+
+    public static String debug(DifficultyAttributes value) {
+        value.write();
+        return NATIVE.debug_difficulty_attributes(value).consume();
+    }
+
+    public static String debug(PerformanceAttributes value) {
+        value.write();
+        return NATIVE.debug_performance_attributes(value).consume();
+    }
+
+    public static String debug(ScoreState value) {
+        value.write();
+        return NATIVE.debug_score_state(value).consume();
+    }
+
+    public static double calculateAccuracy(ScoreState state, DifficultyAttributes attrs, OsuScoreOrigin origin) {
+        state.write();
+        attrs.write();
+        return NATIVE.calculate_accuacy(state, attrs, origin.value);
     }
 }

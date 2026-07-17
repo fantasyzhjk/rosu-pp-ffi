@@ -4,14 +4,12 @@ public static class Extensions
 {
     public static OsuPP.Calculater LoadState(this OsuPP.Calculater c, ScoreState state, DifficultyAttributes dattr, bool is_cl = false, bool is_lazer = false) {
         uint sliderTickMiss = 0;
-        var dattrosu = dattr.osu.ToNullable();
-        if (dattrosu is not null) {
-            if (is_lazer) {
-                if (is_cl) {
-                    sliderTickMiss = dattrosu.Value.n_large_ticks - state.osu_large_tick_hits;
-                } else {
-                    sliderTickMiss = dattrosu.Value.n_large_ticks + dattrosu.Value.n_sliders - state.osu_large_tick_hits;
-                }
+        var dattrosu = dattr.IsOsu ? dattr.AsOsu() : (OsuDifficultyAttributes?)null;
+        if (dattrosu is not null && is_lazer) {
+            if (!is_cl) {
+                sliderTickMiss = dattrosu.Value.n_large_ticks > state.osu_large_tick_hits
+                    ? dattrosu.Value.n_large_ticks - state.osu_large_tick_hits
+                    : 0;
             }
         }
         
@@ -28,9 +26,8 @@ public static class Extensions
     }
 
     public static OsuPP.Calculater Mods(this OsuPP.Calculater c, Mods mods) {
-        using var s = OwnedString.Empty();
-        mods.Json(s);
-        c.Mods(s.ToCstr());
+        using var s = mods.Json();
+        c.Mods(s.String);
         return c;
     }
 

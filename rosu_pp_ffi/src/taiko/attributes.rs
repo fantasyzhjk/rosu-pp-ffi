@@ -1,9 +1,9 @@
-use interoptopus::{ffi_type, patterns::option::FFIOption};
+use interoptopus::{ffi, ffi::Option as FFIOption};
 
 /// The result of a difficulty calculation on an osu!taiko map.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[repr(C)]
-#[ffi_type]
+#[ffi]
 pub struct TaikoDifficultyAttributes {
     /// The difficulty of the stamina skill.
     pub stamina: f64,
@@ -89,7 +89,7 @@ impl From<TaikoDifficultyAttributes> for rosu_pp::taiko::TaikoDifficultyAttribut
 /// The result of a performance calculation on an osu!taiko map.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[repr(C)]
-#[ffi_type]
+#[ffi]
 pub struct TaikoPerformanceAttributes {
     /// The difficulty attributes that were used for the performance calculation
     pub difficulty: TaikoDifficultyAttributes,

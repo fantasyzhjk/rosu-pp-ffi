@@ -7,18 +7,33 @@ namespace RosuPP;
 
 public static class Extensions
 {
+    public static string DebugString(this DifficultyAttributes attributes)
+    {
+        return Interop.debug_difficulty_attributes(ref attributes).IntoString();
+    }
+
+    public static string DebugString(this PerformanceAttributes attributes)
+    {
+        return Interop.debug_performance_attributes(ref attributes).IntoString();
+    }
+
+    public static string DebugString(this ScoreState state)
+    {
+        return Interop.debug_score_state(ref state).IntoString();
+    }
+
     public static double Acc(
         ref this ScoreState state,
         ref DifficultyAttributes attr,
         OsuScoreOrigin origin
     )
     {
-        return RosuLibrary.calculate_accuacy(ref state, ref attr, origin);
+        return Interop.calculate_accuacy(ref state, ref attr, origin);
     }
 
     public static double Acc(ref this ScoreState state, ref DifficultyAttributes attr)
     {
-        return RosuLibrary.calculate_accuacy(ref state, ref attr, OsuScoreOrigin.WithSliderAcc);
+        return Interop.calculate_accuacy(ref state, ref attr, OsuScoreOrigin.WithSliderAcc);
     }
 }
 
@@ -77,23 +92,46 @@ public static class Utils
 
 public partial struct ScoreState
 {
+    [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
+    public ScoreState()
+    {
+        this = default;
+    }
+
     public uint TotalHits(Mode mode)
     {
         var amount = n300 + n100 + misses;
 
-        if (mode is not Mode.Taiko)
+        if (!mode.IsTaiko)
         {
             amount += n50;
 
-            if (mode is not Mode.Osu)
+            if (!mode.IsOsu)
             {
                 amount += n_katu;
-                amount += mode is not Mode.Catch ? n_geki : 0;
+                amount += !mode.IsCatch ? n_geki : 0;
             }
         }
 
         return amount;
     }
+}
+
+public partial struct Mode : IEquatable<Mode>
+{
+    public bool Equals(Mode other) => _variant == other._variant;
+
+    public override bool Equals(object? obj) => obj is Mode other && Equals(other);
+
+    public override int GetHashCode() => _variant.GetHashCode();
+
+    public static bool operator ==(Mode left, Mode right) => left.Equals(right);
+
+    public static bool operator !=(Mode left, Mode right) => !left.Equals(right);
+
+    public static explicit operator int(Mode mode) => (int)mode._variant;
+
+    public static explicit operator uint(Mode mode) => mode._variant;
 }
 
 public partial struct OsuDifficultyAttributes
@@ -136,127 +174,35 @@ public partial struct TaikoPerformanceAttributes
     public readonly bool is_convert => difficulty.is_convert;
 }
 
-public partial struct DifficultyAttributes
-{
-    public override string ToString()
-    {
-        using var str = OwnedString.Empty();
-        RosuLibrary.debug_difficylty_attributes(ref this, str.Context);
-        return str.ToString();
-    }
-}
-
-public partial struct PerformanceAttributes
-{
-    public override string ToString()
-    {
-        using var str = OwnedString.Empty();
-        RosuLibrary.debug_performance_attributes(ref this, str.Context);
-        return str.ToString();
-    }
-}
-
 public partial struct OptionDifficultyAttributes
 {
-    public DifficultyAttributes Unwrap() =>
-        this.ToNullable()
-        ?? throw new NullReferenceException($"{nameof(DifficultyAttributes)} is null");
-}
-
-public partial struct OptionOsuDifficultyAttributes
-{
-    public OsuDifficultyAttributes Unwrap() =>
-        this.ToNullable()
-        ?? throw new NullReferenceException($"{nameof(OsuDifficultyAttributes)} is null");
-}
-
-public partial struct OptionTaikoDifficultyAttributes
-{
-    public TaikoDifficultyAttributes Unwrap() =>
-        this.ToNullable()
-        ?? throw new NullReferenceException($"{nameof(TaikoDifficultyAttributes)} is null");
-}
-
-public partial struct OptionCatchDifficultyAttributes
-{
-    public CatchDifficultyAttributes Unwrap() =>
-        this.ToNullable()
-        ?? throw new NullReferenceException($"{nameof(CatchDifficultyAttributes)} is null");
-}
-
-public partial struct OptionManiaDifficultyAttributes
-{
-    public ManiaDifficultyAttributes Unwrap() =>
-        this.ToNullable()
-        ?? throw new NullReferenceException($"{nameof(ManiaDifficultyAttributes)} is null");
+    public DifficultyAttributes? ToNullable() => IsSome ? AsSome() : null;
 }
 
 public partial struct OptionPerformanceAttributes
 {
-    public PerformanceAttributes Unwrap() =>
-        this.ToNullable()
-        ?? throw new NullReferenceException($"{nameof(PerformanceAttributes)} is null");
-}
+    public PerformanceAttributes? ToNullable() => IsSome ? AsSome() : null;
 
-public partial struct OptionOsuPerformanceAttributes
-{
-    public OsuPerformanceAttributes Unwrap() =>
-        this.ToNullable()
-        ?? throw new NullReferenceException($"{nameof(OsuPerformanceAttributes)} is null");
-}
-
-public partial struct OptionTaikoPerformanceAttributes
-{
-    public TaikoPerformanceAttributes Unwrap() =>
-        this.ToNullable()
-        ?? throw new NullReferenceException($"{nameof(TaikoPerformanceAttributes)} is null");
-}
-
-public partial struct OptionCatchPerformanceAttributes
-{
-    public CatchPerformanceAttributes Unwrap() =>
-        this.ToNullable()
-        ?? throw new NullReferenceException($"{nameof(CatchPerformanceAttributes)} is null");
-}
-
-public partial struct OptionManiaPerformanceAttributes
-{
-    public ManiaPerformanceAttributes Unwrap() =>
-        this.ToNullable()
-        ?? throw new NullReferenceException($"{nameof(ManiaPerformanceAttributes)} is null");
 }
 
 public partial struct OptionTooSuspicious
 {
-    public TooSuspicious Unwrap() =>
-        this.ToNullable() ?? throw new NullReferenceException($"{nameof(TooSuspicious)} is null");
+    public TooSuspicious? ToNullable() => IsSome ? AsSome() : null;
+
 }
 
-public partial struct ScoreState
+public partial struct OptionDouble
 {
-    public override string ToString()
-    {
-        using var str = OwnedString.Empty();
-        RosuLibrary.debug_score_state(ref this, str.Context);
-        return str.ToString();
-    }
+    public double? ToNullable() => IsSome ? AsSome() : null;
 }
 
-public partial class HitObjects
+public partial struct OptionUint
 {
-    public static HitObjects New(Beatmap beatmap)
-    {
-        return New(beatmap.Context);
-    }
+    public uint? ToNullable() => IsSome ? AsSome() : null;
 }
 
 public partial class Difficulty
 {
-    public DifficultyAttributes Calculate(Beatmap beatmap)
-    {
-        return Calculate(beatmap.Context);
-    }
-
     public void Mods(uint mods)
     {
         IMods(mods);
@@ -264,32 +210,23 @@ public partial class Difficulty
 
     public void Mods(string mods)
     {
-        SMods(mods);
+        using var value = Utf8String.From(mods);
+        SMods(value);
     }
 
     public void Mods(string[] mods)
     {
-        SMods(string.Concat(mods));
+        Mods(string.Concat(mods));
     }
 
     public void Mods(Mods mods)
     {
-        PMods(mods.Context);
+        PMods(mods);
     }
 }
 
 public partial class Performance
 {
-    public PerformanceAttributes Calculate(Beatmap beatmap)
-    {
-        return Calculate(beatmap.Context);
-    }
-
-    public ScoreState GenerateState(Beatmap beatmap)
-    {
-        return GenerateState(beatmap.Context);
-    }
-
     public void Mods(uint mods)
     {
         IMods(mods);
@@ -297,53 +234,23 @@ public partial class Performance
 
     public void Mods(string mods)
     {
-        SMods(mods);
+        using var value = Utf8String.From(mods);
+        SMods(value);
     }
 
     public void Mods(string[] mods)
     {
-        SMods(string.Concat(mods));
+        Mods(string.Concat(mods));
     }
 
     public void Mods(Mods mods)
     {
-        PMods(mods.Context);
-    }
-}
-
-public partial class GradualDifficulty
-{
-    public static GradualDifficulty New(Difficulty difficulty, Beatmap beatmap)
-    {
-        return GradualDifficulty.New(difficulty.Context, beatmap.Context);
-    }
-
-    public static GradualDifficulty NewWithMode(Difficulty difficulty, Beatmap beatmap, Mode mode)
-    {
-        return GradualDifficulty.NewWithMode(difficulty.Context, beatmap.Context, mode);
-    }
-}
-
-public partial class GradualPerformance
-{
-    public static GradualPerformance New(Difficulty difficulty, Beatmap beatmap)
-    {
-        return GradualPerformance.New(difficulty.Context, beatmap.Context);
-    }
-
-    public static GradualPerformance NewWithMode(Difficulty difficulty, Beatmap beatmap, Mode mode)
-    {
-        return GradualPerformance.NewWithMode(difficulty.Context, beatmap.Context, mode);
+        PMods(mods);
     }
 }
 
 public partial class BeatmapAttributesBuilder
 {
-    public BeatmapAttributes Build(Beatmap beatmap)
-    {
-        return Build(beatmap.Context);
-    }
-
     public void Mods(uint mods)
     {
         IMods(mods);
@@ -351,64 +258,82 @@ public partial class BeatmapAttributesBuilder
 
     public void Mods(string mods)
     {
-        SMods(mods);
+        using var value = Utf8String.From(mods);
+        SMods(value);
     }
 
     public void Mods(string[] mods)
     {
-        SMods(string.Concat(mods));
+        Mods(string.Concat(mods));
     }
 
     public void Mods(Mods mods)
     {
-        PMods(mods.Context);
-    }
-}
-
-public partial class OwnedString
-{
-    public override string ToString()
-    {
-        return ToCstr();
+        PMods(mods);
     }
 }
 
 public partial class Beatmap
 {
-    public static Beatmap FromBytes(byte[] data)
+    public static Beatmap FromPath(string path)
     {
-        var self = new Beatmap();
-        RosuLibrary.beatmap_from_bytes(ref self._context, data);
-        return self;
+        using var value = Utf8String.From(path);
+        return FromPath(value);
     }
 
-    /// Convert a Beatmap to the specified mode
-    public bool Convert(Mode mode, Mods mods)
+    public static Beatmap FromBytes(byte[] data)
     {
-        return Convert(mode, mods.Context);
+        using var slice = SliceByte.From(data);
+        return FromBytes(slice);
     }
 
     /// Convert a Beatmap to the specified mode
     public bool Convert(Mode mode)
     {
-        return Convert(mode, Mods.New(mode));
+        using var mods = Mods.Create(mode);
+        return Convert(mode, mods);
     }
 }
 
 public partial class Mods
 {
-    public void Json(OwnedString str)
+    public static Mods FromAcronyms(string str, Mode mode)
     {
-        this.Json(str.Context);
+        using var value = Utf8String.From(str);
+        return FromAcronyms(value, mode);
     }
 
     public static Mods FromJson(string str, Mode mode)
     {
-        return Mods.FromJson(str, mode, false);
+        return FromJson(str, mode, false);
+    }
+
+    public static Mods FromJson(string str, Mode mode, bool denyUnknownFields)
+    {
+        using var value = Utf8String.From(str);
+        return FromJson(value, mode, denyUnknownFields);
     }
 
     public bool InsertJson(string str)
     {
-        return this.InsertJson(str, false);
+        return InsertJson(str, false);
+    }
+
+    public bool InsertJson(string str, bool denyUnknownFields)
+    {
+        using var value = Utf8String.From(str);
+        return InsertJson(value, denyUnknownFields);
+    }
+
+    public void Insert(string str)
+    {
+        using var value = Utf8String.From(str);
+        Insert(value);
+    }
+
+    public bool Contains(string str)
+    {
+        using var value = Utf8String.From(str);
+        return Contains(value);
     }
 }

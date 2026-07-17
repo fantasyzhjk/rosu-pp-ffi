@@ -1,9 +1,9 @@
-use interoptopus::ffi_type;
+use interoptopus::ffi;
 
 /// The result of a difficulty calculation on an osu!mania map.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[repr(C)]
-#[ffi_type]
+#[ffi]
 pub struct ManiaDifficultyAttributes {
     /// The final star rating.
     pub stars: f64,
@@ -18,7 +18,6 @@ pub struct ManiaDifficultyAttributes {
     /// [`Beatmap`]: crate::model::beatmap::Beatmap
     pub is_convert: bool,
 }
-
 
 impl ManiaDifficultyAttributes {
     /// Return the maximum combo.
@@ -66,7 +65,7 @@ impl From<ManiaDifficultyAttributes> for rosu_pp::mania::ManiaDifficultyAttribut
 /// The result of a performance calculation on an osu!mania map.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[repr(C)]
-#[ffi_type]
+#[ffi]
 pub struct ManiaPerformanceAttributes {
     /// The difficulty attributes that were used for the performance calculation.
     pub difficulty: ManiaDifficultyAttributes,
@@ -103,7 +102,6 @@ impl ManiaPerformanceAttributes {
     pub const fn is_convert(&self) -> bool {
         self.difficulty.is_convert
     }
-
 }
 
 impl From<rosu_pp::mania::ManiaPerformanceAttributes> for ManiaPerformanceAttributes {

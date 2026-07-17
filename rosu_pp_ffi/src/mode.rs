@@ -1,4 +1,4 @@
-use interoptopus::ffi_type;
+use interoptopus::ffi;
 use rosu_pp::model::mode::GameMode;
 
 impl From<Mode> for GameMode {
@@ -34,7 +34,6 @@ impl From<Mode> for rosu_mods::GameMode {
     }
 }
 
-
 impl From<rosu_mods::GameMode> for Mode {
     fn from(value: rosu_mods::GameMode) -> Self {
         match value {
@@ -46,7 +45,7 @@ impl From<rosu_mods::GameMode> for Mode {
     }
 }
 
-#[ffi_type]
+#[ffi]
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, Default)]
 pub enum Mode {

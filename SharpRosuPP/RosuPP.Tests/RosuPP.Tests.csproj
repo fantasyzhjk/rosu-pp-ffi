@@ -14,11 +14,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="xunit" Version="2.5.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="ppy.osu.Game.Rulesets.Catch" Version="2025.1013.0" />
-    <PackageReference Include="ppy.osu.Game.Rulesets.Mania" Version="2025.1013.0" />
-    <PackageReference Include="ppy.osu.Game.Rulesets.Osu" Version="2025.1013.0" />
-    <PackageReference Include="ppy.osu.Game.Rulesets.Taiko" Version="2025.1013.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,6 +23,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RosuPP\RosuPP.csproj" />
+    <ProjectReference Include="..\osu\osu.Game.Rulesets.Catch\osu.Game.Rulesets.Catch.csproj" />
+    <ProjectReference Include="..\osu\osu.Game.Rulesets.Mania\osu.Game.Rulesets.Mania.csproj" />
+    <ProjectReference Include="..\osu\osu.Game.Rulesets.Osu\osu.Game.Rulesets.Osu.csproj" />
+    <ProjectReference Include="..\osu\osu.Game.Rulesets.Taiko\osu.Game.Rulesets.Taiko.csproj" />
   </ItemGroup>
 
 </Project>

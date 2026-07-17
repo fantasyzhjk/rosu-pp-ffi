@@ -12,7 +12,7 @@ using RosuPP;
 
 namespace RosuPP;
 
-internal static unsafe partial class NativeMethods
+internal static partial class NativeMethods
 {
     // https://docs.microsoft.com/en-us/dotnet/standard/native-interop/cross-platform
     // Library path will search
@@ -73,7 +73,7 @@ internal static unsafe partial class NativeMethods
         DllImportSearchPath? searchPath
     )
     {
-        if (libraryName != RosuLibrary.NativeLib)
+        if (libraryName != Interop.NativeLib)
         {
             return IntPtr.Zero;
         }

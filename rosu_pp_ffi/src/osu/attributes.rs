@@ -1,9 +1,9 @@
-use interoptopus::{ffi_type, patterns::option::FFIOption};
+use interoptopus::{ffi, ffi::Option as FFIOption};
 
 /// The result of a difficulty calculation on an osu!standard map.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[repr(C)]
-#[ffi_type]
+#[ffi]
 pub struct OsuDifficultyAttributes {
     /// The difficulty of the aim skill.
     pub aim: f64,
@@ -13,6 +13,8 @@ pub struct OsuDifficultyAttributes {
     pub speed: f64,
     /// The difficulty of the flashlight skill.
     pub flashlight: f64,
+    /// The difficulty of the reading skill.
+    pub reading: f64,
     /// The ratio of the aim strain with and without considering sliders
     pub slider_factor: f64,
     /// Describes how much of aim's difficult strain count is contributed to by sliders.
@@ -25,6 +27,8 @@ pub struct OsuDifficultyAttributes {
     pub aim_difficult_strain_count: f64,
     /// Weighted sum of speed strains.
     pub speed_difficult_strain_count: f64,
+    /// The number of reading-intensive objects weighted by difficulty.
+    pub reading_difficult_note_count: f64,
     /// The amount of nested score per object.
     pub nested_score_per_object: f64,
     /// The legacy score base multiplier.
@@ -39,7 +43,7 @@ pub struct OsuDifficultyAttributes {
     pub ok_hit_window: f64,
     /// The meh hit window.
     pub meh_hit_window: f64,
-    /// The overall difficulty
+    /// The health drain rate.
     pub hp: f64,
     /// The amount of circles.
     pub n_circles: u32,
@@ -49,10 +53,10 @@ pub struct OsuDifficultyAttributes {
     ///
     /// The meaning depends on the kind of score:
     /// - if set on osu!stable, this value is irrelevant
-    /// - if set on osu!lazer *without* `CL`, this value is the amount of
-    ///   slider ticks and repeats
-    /// - if set on osu!lazer *with* `CL`, this value is the amount of slider
-    ///   heads, ticks, and repeats
+    /// - if set on osu!lazer *with* slider accuracy, this value is the amount
+    ///   of hit slider ticks and repeats
+    /// - if set on osu!lazer *without* slider accuracy, this value is the
+    ///   amount of hit slider heads, ticks, and repeats
     pub n_large_ticks: u32,
     /// The amount of spinners.
     pub n_spinners: u32,
@@ -81,12 +85,14 @@ impl From<rosu_pp::osu::OsuDifficultyAttributes> for OsuDifficultyAttributes {
             aim_difficult_slider_count: attributes.aim_difficult_slider_count,
             speed: attributes.speed,
             flashlight: attributes.flashlight,
+            reading: attributes.reading,
             slider_factor: attributes.slider_factor,
             aim_top_weighted_slider_factor: attributes.aim_top_weighted_slider_factor,
             speed_top_weighted_slider_factor: attributes.speed_top_weighted_slider_factor,
             speed_note_count: attributes.speed_note_count,
             aim_difficult_strain_count: attributes.aim_difficult_strain_count,
             speed_difficult_strain_count: attributes.speed_difficult_strain_count,
+            reading_difficult_note_count: attributes.reading_difficult_note_count,
             nested_score_per_object: attributes.nested_score_per_object,
             legacy_score_base_multiplier: attributes.legacy_score_base_multiplier,
             maximum_legacy_combo_score: attributes.maximum_legacy_combo_score,
@@ -112,12 +118,14 @@ impl From<OsuDifficultyAttributes> for rosu_pp::osu::OsuDifficultyAttributes {
             aim_difficult_slider_count: attributes.aim_difficult_slider_count,
             speed: attributes.speed,
             flashlight: attributes.flashlight,
+            reading: attributes.reading,
             slider_factor: attributes.slider_factor,
             aim_top_weighted_slider_factor: attributes.aim_top_weighted_slider_factor,
             speed_top_weighted_slider_factor: attributes.speed_top_weighted_slider_factor,
             speed_note_count: attributes.speed_note_count,
             aim_difficult_strain_count: attributes.aim_difficult_strain_count,
             speed_difficult_strain_count: attributes.speed_difficult_strain_count,
+            reading_difficult_note_count: attributes.reading_difficult_note_count,
             nested_score_per_object: attributes.nested_score_per_object,
             legacy_score_base_multiplier: attributes.legacy_score_base_multiplier,
             maximum_legacy_combo_score: attributes.maximum_legacy_combo_score,
@@ -139,7 +147,7 @@ impl From<OsuDifficultyAttributes> for rosu_pp::osu::OsuDifficultyAttributes {
 /// The result of a performance calculation on an osu!standard map.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[repr(C)]
-#[ffi_type]
+#[ffi]
 pub struct OsuPerformanceAttributes {
     /// The difficulty attributes that were used for the performance calculation
     pub difficulty: OsuDifficultyAttributes,
@@ -151,6 +159,8 @@ pub struct OsuPerformanceAttributes {
     pub pp_aim: f64,
     /// The flashlight portion of the final pp.
     pub pp_flashlight: f64,
+    /// The reading portion of the final pp.
+    pub pp_reading: f64,
     /// The speed portion of the final pp.
     pub pp_speed: f64,
     /// Misses including an approximated amount of slider breaks
@@ -192,6 +202,7 @@ impl From<rosu_pp::osu::OsuPerformanceAttributes> for OsuPerformanceAttributes {
             pp_acc: attributes.pp_acc,
             pp_aim: attributes.pp_aim,
             pp_flashlight: attributes.pp_flashlight,
+            pp_reading: attributes.pp_reading,
             pp_speed: attributes.pp_speed,
             effective_miss_count: attributes.effective_miss_count,
             speed_deviation: attributes.speed_deviation.into(),
@@ -211,11 +222,14 @@ impl From<OsuPerformanceAttributes> for rosu_pp::osu::OsuPerformanceAttributes {
             pp_acc: attributes.pp_acc,
             pp_aim: attributes.pp_aim,
             pp_flashlight: attributes.pp_flashlight,
+            pp_reading: attributes.pp_reading,
             pp_speed: attributes.pp_speed,
             effective_miss_count: attributes.effective_miss_count,
             speed_deviation: attributes.speed_deviation.into_option(),
             combo_based_estimated_miss_count: attributes.combo_based_estimated_miss_count,
-            score_based_estimated_miss_count: attributes.score_based_estimated_miss_count.into_option(),
+            score_based_estimated_miss_count: attributes
+                .score_based_estimated_miss_count
+                .into_option(),
             aim_estimated_slider_breaks: attributes.aim_estimated_slider_breaks,
             speed_estimated_slider_breaks: attributes.speed_estimated_slider_breaks,
         }

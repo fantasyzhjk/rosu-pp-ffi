@@ -5,107 +5,112 @@ pub mod suspicious;
 
 use crate::{beatmap::suspicious::TooSuspicious, *};
 use interoptopus::{
-    ffi_service, ffi_service_ctor, ffi_service_method, ffi_type, patterns::{option::FFIOption, slice::FFISlice, string::AsciiPointer}
+    ffi,
+    ffi::{Option as FFIOption, Slice, String as FFIString},
+    wire::Wire,
 };
 use mode::Mode;
 use mods::Mods;
 use rosu_pp::GameMods;
 
-#[ffi_type(opaque)]
+#[ffi(service)]
 #[derive(Default)]
 pub struct Beatmap {
     pub inner: rosu_pp::Beatmap,
 }
 
 // Regular implementation of methods.
-#[ffi_service(error = "FFIError", prefix = "beatmap_")]
+#[ffi(prefix = "beatmap_")]
 impl Beatmap {
-    #[ffi_service_ctor]
-    pub fn from_bytes(data: FFISlice<u8>) -> Result<Self, Error> {
-        Ok(Self {
-            inner: rosu_pp::Beatmap::from_bytes(data.as_slice())?,
-        })
+    pub fn from_bytes(data: Slice<u8>) -> ffi::Result<Self, FFIError> {
+        ffi_result(
+            rosu_pp::Beatmap::from_bytes(data.as_slice())
+                .map(|inner| Self { inner })
+                .map_err(Error::from),
+        )
     }
 
-    #[ffi_service_ctor]
-    pub fn from_path(path: AsciiPointer) -> Result<Self, Error> {
-        Ok(Self {
-            inner: rosu_pp::Beatmap::from_path(
-                path.as_str()?,
-            )?,
-        })
+    pub fn from_path(path: FFIString) -> ffi::Result<Self, FFIError> {
+        ffi_result(
+            rosu_pp::Beatmap::from_path(path.as_str())
+                .map(|inner| Self { inner })
+                .map_err(Error::from),
+        )
     }
 
     /// Convert a Beatmap to the specified mode
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn convert(&mut self, mode: Mode, mods: &Mods) -> bool {
-        self.inner.convert_mut(mode.into(), &GameMods::from(mods.mods.clone())).is_ok()
+        self.inner
+            .convert_mut(mode.into(), &GameMods::from(mods.mods.clone()))
+            .is_ok()
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn bpm(&mut self) -> f64 {
         self.inner.bpm()
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn total_break_time(&mut self) -> f64 {
         self.inner.total_break_time()
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn version(&mut self) -> i32 {
         self.inner.version
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn is_convert(&mut self) -> bool {
         self.inner.is_convert
     }
 
     // General
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn stack_leniency(&mut self) -> f32 {
         self.inner.stack_leniency
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn mode(&mut self) -> Mode {
         self.inner.mode.into()
     }
 
     // Difficulty
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn ar(&mut self) -> f32 {
         self.inner.ar
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn cs(&mut self) -> f32 {
         self.inner.ar
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn hp(&mut self) -> f32 {
         self.inner.ar
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn od(&mut self) -> f32 {
         self.inner.ar
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn slider_multiplier(&mut self) -> f64 {
         self.inner.slider_multiplier
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn slider_tick_rate(&mut self) -> f64 {
         self.inner.slider_tick_rate
     }
 
-    #[ffi_service_method(on_panic = "undefined_behavior")]
     pub fn check_suspicious(&mut self) -> FFIOption<TooSuspicious> {
-        self.inner.check_suspicion().err().map(TooSuspicious::from).into()
+        self.inner
+            .check_suspicion()
+            .err()
+            .map(TooSuspicious::from)
+            .into()
+    }
+
+    /// Return all hit objects as one owned, serialized transfer.
+    pub fn hit_objects(&self) -> Wire<Vec<hitobjects::HitObject>> {
+        Wire::from(
+            self.inner
+                .hit_objects
+                .iter()
+                .map(hitobjects::HitObject::from)
+                .collect(),
+        )
     }
 }

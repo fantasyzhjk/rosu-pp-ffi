@@ -1,6 +1,6 @@
-use interoptopus::ffi_type;
+use interoptopus::ffi;
 
-#[ffi_type]
+#[ffi]
 #[repr(C)]
 #[derive(Debug, Clone, Default)]
 pub struct Pos {

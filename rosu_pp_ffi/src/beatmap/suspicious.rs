@@ -1,4 +1,4 @@
-use interoptopus::ffi_type;
+use interoptopus::ffi;
 use rosu_pp::model::beatmap;
 
 impl From<TooSuspicious> for beatmap::TooSuspicious {
@@ -28,7 +28,7 @@ impl From<beatmap::TooSuspicious> for TooSuspicious {
     }
 }
 
-#[ffi_type]
+#[ffi]
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, Default)]
 pub enum TooSuspicious {
