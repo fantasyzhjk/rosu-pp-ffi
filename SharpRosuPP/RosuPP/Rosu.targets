@@ -4,6 +4,8 @@
         <CargoPackage>rosu_pp_ffi</CargoPackage>
         <CargoBindingsPackage>rosu_pp_ffi_build</CargoBindingsPackage>
         <CargoWorkspacePath>$(MSBuildThisFileDirectory)/../../</CargoWorkspacePath>
+        <NativeRid Condition=" '$(NativeRid)' == '' And '$(RuntimeIdentifier)' != '' ">$(RuntimeIdentifier)</NativeRid>
+        <NativeRid Condition=" '$(NativeRid)' == '' ">$(NETCoreSdkPortableRuntimeIdentifier)</NativeRid>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(AotBuild)' == 'true' ">
@@ -16,18 +18,18 @@
     </PropertyGroup>
 
     <!-- Compile-time RIDs -->
-    <PropertyGroup Condition=" '$(NativeRid)' == 'win-x64' Or ('$(NativeRid)' == '' And '$([MSBuild]::IsOsPlatform(`WINDOWS`))' == 'true') ">
+    <PropertyGroup Condition=" '$(NativeRid)' == 'win-x64' Or '$(NativeRid)' == 'win-arm64' ">
         <IsWindows>true</IsWindows>
         <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(NativeRid)' == 'linux-x64' Or ('$(NativeRid)' == '' And '$([MSBuild]::IsOsPlatform(`LINUX`))' == 'true') ">
+    <PropertyGroup Condition=" '$(NativeRid)' == 'linux-x64' Or '$(NativeRid)' == 'linux-arm64' ">
         <IsLinux>true</IsLinux>
         <IsUnix>true</IsUnix>
         <DefineConstants>$(DefineConstants);LINUX;UNIX</DefineConstants>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(NativeRid)' == 'osx-x64'  Or ('$(NativeRid)' == '' And '$([MSBuild]::IsOsPlatform(`OSX`))' == 'true') ">
+    <PropertyGroup Condition=" '$(NativeRid)' == 'osx-x64' Or '$(NativeRid)' == 'osx-arm64' ">
         <IsMacOS>true</IsMacOS>
         <IsUnix>true</IsUnix>
         <DefineConstants>$(DefineConstants);MACOS;UNIX</DefineConstants>
@@ -39,9 +41,12 @@
 
         <CargoConfiguration>release</CargoConfiguration>
 
-        <CargoTarget Condition=" '$(IsWindows)' == 'true' ">x86_64-pc-windows-msvc</CargoTarget>
-        <CargoTarget Condition=" '$(IsLinux)' == 'true' ">x86_64-unknown-linux-gnu</CargoTarget>
-        <CargoTarget Condition=" '$(IsMacOS)' == 'true' ">aarch64-apple-darwin</CargoTarget>
+        <CargoTarget Condition=" '$(NativeRid)' == 'win-x64' ">x86_64-pc-windows-msvc</CargoTarget>
+        <CargoTarget Condition=" '$(NativeRid)' == 'win-arm64' ">aarch64-pc-windows-msvc</CargoTarget>
+        <CargoTarget Condition=" '$(NativeRid)' == 'linux-x64' ">x86_64-unknown-linux-gnu</CargoTarget>
+        <CargoTarget Condition=" '$(NativeRid)' == 'linux-arm64' ">aarch64-unknown-linux-gnu</CargoTarget>
+        <CargoTarget Condition=" '$(NativeRid)' == 'osx-x64' ">x86_64-apple-darwin</CargoTarget>
+        <CargoTarget Condition=" '$(NativeRid)' == 'osx-arm64' ">aarch64-apple-darwin</CargoTarget>
 
         <CargoExtension Condition=" '$(IsWindows)' == 'true' ">dll</CargoExtension>
         <CargoExtension Condition=" '$(IsLinux)' == 'true' ">so</CargoExtension>
@@ -64,7 +69,11 @@
         <CargoBuildArg Condition=" '$(CargoConfiguration)' == 'release' " Include="--release" />
     </ItemGroup>
 
-    <Target Name="Cargo" BeforeTargets="BeforeBuild">
+    <Target Name="Cargo"
+            BeforeTargets="BeforeBuild"
+            Condition=" '$(UsePrebuiltNativeArtifacts)' != 'true' ">
+        <Error Condition=" '$(CargoTarget)' == '' "
+               Text="Unsupported native runtime identifier '$(NativeRid)'." />
         <Message Text="Building libs" Importance="high" />
         <Exec Command="cargo @(CargoChannelArg, ' ') build @(CargoBuildArg, ' ') -p $(CargoPackage)" WorkingDirectory="$(CargoWorkspacePath)" />
         <Message Text="Generate Bindings" Importance="high" />
@@ -82,15 +91,18 @@
     </ItemGroup>
 
     <!-- In standard builds, copy the native dynamic artifact to the output dir  -->
-    <ItemGroup Condition=" '$(IsAotBuild)' == 'false' ">
+    <ItemGroup Condition=" '$(IsAotBuild)' == 'false' And '$(UsePrebuiltNativeArtifacts)' != 'true' ">
         <CargoLibrary Include="$(CargoArtifactPath)" />
     </ItemGroup>
 
-    <Target Name="CargoBuildCopy" DependsOnTargets="Cargo" BeforeTargets="BeforeBuild" Condition=" '$(IsAotBuild)' == 'false' ">
+    <Target Name="CargoBuildCopy"
+            DependsOnTargets="Cargo"
+            BeforeTargets="BeforeBuild"
+            Condition=" '$(IsAotBuild)' == 'false' And '$(UsePrebuiltNativeArtifacts)' != 'true' ">
         <Message Text="Copy native libs" Importance="high" />
         <ItemGroup>
 			<Content Include="@(CargoLibrary)">
-                <Link>native/%(RecursiveDir)%(Filename)%(Extension)</Link>
+                <Link>runtimes/$(NativeRid)/native/%(Filename)%(Extension)</Link>
                 <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             </Content>
             <!-- <EmbeddedResource Include="@(CargoLibrary)" /> -->

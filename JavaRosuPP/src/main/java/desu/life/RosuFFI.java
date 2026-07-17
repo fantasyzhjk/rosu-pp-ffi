@@ -2,6 +2,8 @@ package desu.life;
 
 import desu.life.raw.RosuNative;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
@@ -12,8 +14,12 @@ import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalLong;
@@ -23,9 +29,7 @@ import java.util.OptionalLong;
 public final class RosuFFI {
     private static final long API_GUARD = 0x697593acafdd88bbL;
     static {
-        String configured = System.getProperty("rosu.pp.ffi.library");
-        if (configured == null || configured.isBlank()) System.loadLibrary("rosu_pp_ffi");
-        else System.load(java.nio.file.Path.of(configured).toAbsolutePath().toString());
+        loadNativeLibrary();
         long actual = RosuNative.__api_guard();
         if (actual != API_GUARD) throw new UnsatisfiedLinkError(
             "rosu_pp_ffi ABI mismatch: native=0x" + Long.toHexString(actual)
@@ -33,6 +37,62 @@ public final class RosuFFI {
     }
 
     private RosuFFI() {}
+
+    private static void loadNativeLibrary() {
+        String configured = System.getProperty("rosu.pp.ffi.library");
+        if (configured != null && !configured.isBlank()) {
+            System.load(Path.of(configured).toAbsolutePath().toString());
+            return;
+        }
+
+        String library = System.mapLibraryName("rosu_pp_ffi");
+        String resourcePath = "/native/" + currentRid() + "/" + library;
+        InputStream resource = RosuFFI.class.getResourceAsStream(resourcePath);
+
+        if (resource == null) {
+            System.loadLibrary("rosu_pp_ffi");
+            return;
+        }
+
+        try (InputStream stream = resource) {
+            String extension = library.substring(library.lastIndexOf('.'));
+            Path extracted = Files.createTempFile("rosu_pp_ffi-", extension);
+            Files.copy(stream, extracted, StandardCopyOption.REPLACE_EXISTING);
+            extracted.toFile().deleteOnExit();
+            System.load(extracted.toAbsolutePath().toString());
+        } catch (IOException error) {
+            var loadError = new UnsatisfiedLinkError(
+                "Failed to extract native library resource " + resourcePath
+            );
+            loadError.initCause(error);
+            throw loadError;
+        }
+    }
+
+    private static String currentRid() {
+        String osName = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+        String os = osName.contains("win")
+            ? "win"
+            : osName.contains("mac") || osName.contains("darwin")
+                ? "osx"
+                : osName.contains("linux") ? "linux" : null;
+
+        String osArch = System.getProperty("os.arch", "").toLowerCase(Locale.ROOT);
+        String arch = switch (osArch) {
+            case "amd64", "x86_64", "x64" -> "x64";
+            case "aarch64", "arm64" -> "arm64";
+            default -> null;
+        };
+
+        if (os == null || arch == null) {
+            throw new UnsatisfiedLinkError(
+                "Unsupported platform for packaged rosu_pp_ffi: "
+                    + System.getProperty("os.name") + "/" + System.getProperty("os.arch")
+            );
+        }
+
+        return os + "-" + arch;
+    }
 
     public enum Mode {
         Osu(0), Taiko(1), Catch(2), Mania(3);

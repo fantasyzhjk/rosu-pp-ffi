@@ -1,83 +1,240 @@
 name: Continuous Integration
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
 
 jobs:
-  test:
-    name: Test
-
+  test-dotnet:
+    name: Test .NET (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-22.04, macos-latest, windows-latest]
-
-    runs-on: ${{ matrix.platform }}  
+        include:
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            rid: linux-x64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            rid: osx-arm64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            rid: win-x64
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-    - name: Rust setup
-      uses: dtolnay/rust-toolchain@nightly
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
 
-    - name: Rust cache
-      uses: swatinem/rust-cache@v2
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
 
-    # Install the .NET Core workload
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
 
-    # Execute all unit tests in the solution
-    - name: Execute unit tests
-      run: dotnet test
+      - name: Run .NET tests
+        run: >
+          dotnet test RosuPP.sln
+          --configuration Release
+          --property:NativeRid=${{ matrix.rid }}
 
+  test-java:
+    name: Test Java
+    runs-on: ubuntu-22.04
 
-  build:
-    name: Build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "22"
+          cache: maven
+
+      - name: Build native library for tests
+        run: cargo build --locked --release -p rosu_pp_ffi
+
+      - name: Run Java tests
+        run: >
+          mvn --batch-mode
+          --file JavaRosuPP/pom.xml
+          --define skipNativeBuild=true
+          test
+
+  build-native:
+    name: Build native (${{ matrix.rid }})
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-22.04, macos-latest, windows-latest]
-
-    # For a list of available runner types, refer to
-    # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
-    runs-on: ${{ matrix.platform }}  
+        include:
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            rid: linux-x64
+            library: librosu_pp_ffi.so
+          - os: ubuntu-22.04
+            target: aarch64-unknown-linux-gnu
+            rid: linux-arm64
+            library: librosu_pp_ffi.so
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            rid: win-x64
+            library: rosu_pp_ffi.dll
+          - os: windows-latest
+            target: aarch64-pc-windows-msvc
+            rid: win-arm64
+            library: rosu_pp_ffi.dll
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            rid: osx-x64
+            library: librosu_pp_ffi.dylib
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            rid: osx-arm64
+            library: librosu_pp_ffi.dylib
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Rust setup
-      uses: dtolnay/rust-toolchain@nightly
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
 
-    - name: Rust cache
-      uses: swatinem/rust-cache@v2
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ${{ matrix.target }}
 
-    - name: build artifacts
-      working-directory: ./
-      run: cargo build --release -p rosu_pp_ffi
+      - name: Install Linux ARM64 linker
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes gcc-aarch64-linux-gnu
 
-    - uses: actions/upload-artifact@v4
-      if: matrix.platform == 'ubuntu-22.04'
-      with:
-        name: linux
-        path: ./target/release/librosu_pp_ffi.so
+      - name: Build native library
+        run: cargo build --locked --release -p rosu_pp_ffi --target ${{ matrix.target }}
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
 
-    - uses: actions/upload-artifact@v4
-      if: matrix.platform == 'windows-latest'
-      with:
-        name: windows
-        path: ./target/release/rosu_pp_ffi.dll
+      - name: Upload native library
+        uses: actions/upload-artifact@v4
+        with:
+          name: rosu-pp-native-${{ matrix.rid }}
+          path: target/${{ matrix.target }}/release/${{ matrix.library }}
+          if-no-files-found: error
 
-    - uses: actions/upload-artifact@v4
-      if: matrix.platform == 'macos-latest'
-      with:
-        name: macos-arm
-        path: ./target/release/librosu_pp_ffi.dylib
+  package-bindings:
+    name: Package bindings
+    needs:
+      - test-dotnet
+      - test-java
+      - build-native
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Install Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "22"
+          cache: maven
+
+      - name: Download native libraries
+        uses: actions/download-artifact@v4
+        with:
+          path: native-artifacts
+          pattern: rosu-pp-native-*
+
+      - name: Generate bindings
+        run: cargo build --locked -p rosu_pp_ffi_build
+
+      - name: Pack .NET binding
+        run: >
+          dotnet pack SharpRosuPP/RosuPP/RosuPP.csproj
+          --configuration Release
+          --property:NativeArtifactsRoot=${{ github.workspace }}/native-artifacts
+
+      - name: Add native libraries to Java resources
+        shell: bash
+        run: |
+          for rid in linux-x64 linux-arm64 win-x64 win-arm64 osx-x64 osx-arm64; do
+            destination="JavaRosuPP/src/main/resources/native/$rid"
+            mkdir -p "$destination"
+            cp native-artifacts/rosu-pp-native-"$rid"/* "$destination/"
+          done
+
+      - name: Pack Java binding
+        run: >
+          mvn --batch-mode
+          --file JavaRosuPP/pom.xml
+          --define skipNativeBuild=true
+          --define skipTests
+          package
+
+      - name: Assemble distribution
+        shell: bash
+        run: |
+          mkdir -p distribution/dotnet distribution/java distribution/bindings distribution/native
+
+          find SharpRosuPP/RosuPP/bin/Release \
+            -type f -name '*.nupkg' \
+            -exec cp {} distribution/dotnet/ \;
+
+          find JavaRosuPP/target \
+            -maxdepth 1 -type f -name '*.jar' \
+            -exec cp {} distribution/java/ \;
+
+          cp bindings/RosuFFI.cs bindings/RosuFFI.h distribution/bindings/
+          cp JavaRosuPP/src/main/java/desu/life/RosuFFI.java distribution/bindings/
+
+          for rid in linux-x64 linux-arm64 win-x64 win-arm64 osx-x64 osx-arm64; do
+            mkdir -p distribution/native/"$rid"
+            cp native-artifacts/rosu-pp-native-"$rid"/* distribution/native/"$rid"/
+          done
+
+      - name: Upload packaged bindings
+        uses: actions/upload-artifact@v4
+        with:
+          name: rosu-pp-bindings
+          path: distribution
+          if-no-files-found: error

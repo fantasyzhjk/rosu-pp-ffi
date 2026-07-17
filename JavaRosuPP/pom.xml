@@ -32,6 +32,89 @@
 
     <build>
         <plugins>
+            <!-- Java FFM became final in Java 22; fail before compilation/tests on older runtimes. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>require-java-22</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>[22,)</version>
+                                    <message>RosuFFI requires JDK 22 or newer because it uses the final Foreign Function and Memory API.</message>
+                                </requireJavaVersion>
+                                <requireProperty>
+                                    <property>native.rid</property>
+                                    <message>RosuFFI does not support native packaging on ${os.name}/${os.arch}.</message>
+                                </requireProperty>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Local builds compile and package the native library for the current RID. -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>build-current-native-library</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipNativeBuild}</skip>
+                            <workingDirectory>${project.basedir}/..</workingDirectory>
+                            <executable>cargo</executable>
+                            <arguments>
+                                <argument>build</argument>
+                                <argument>--locked</argument>
+                                <argument>--release</argument>
+                                <argument>-p</argument>
+                                <argument>rosu_pp_ffi</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.4.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-current-native-library</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipNativeBuild}</skip>
+                            <outputDirectory>${project.build.outputDirectory}/native/${native.rid}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/../target/release</directory>
+                                    <includes>
+                                        <include>${native.library}</include>
+                                    </includes>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- 配置 Maven Compiler 插件 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -82,5 +165,91 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>native-win-x64</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <properties>
+                <native.rid>win-x64</native.rid>
+                <native.library>rosu_pp_ffi.dll</native.library>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>native-win-arm64</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <properties>
+                <native.rid>win-arm64</native.rid>
+                <native.library>rosu_pp_ffi.dll</native.library>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>native-linux-x64</id>
+            <activation>
+                <os>
+                    <name>Linux</name>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <properties>
+                <native.rid>linux-x64</native.rid>
+                <native.library>librosu_pp_ffi.so</native.library>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>native-linux-arm64</id>
+            <activation>
+                <os>
+                    <name>Linux</name>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <properties>
+                <native.rid>linux-arm64</native.rid>
+                <native.library>librosu_pp_ffi.so</native.library>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>native-osx-x64</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <properties>
+                <native.rid>osx-x64</native.rid>
+                <native.library>librosu_pp_ffi.dylib</native.library>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>native-osx-arm64</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <properties>
+                <native.rid>osx-arm64</native.rid>
+                <native.library>librosu_pp_ffi.dylib</native.library>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

@@ -61,8 +61,10 @@ The Java binding exposes the same payload-enum, owned UTF-8 string, wire, and
 service concepts. The public facade is
 `JavaRosuPP/src/main/java/desu/life/RosuFFI.java`; running
 `rosu_pp_ffi_build` synchronizes it to `bindings/RosuFFI.java`. Set the
-`rosu.pp.ffi.library` system property to the current native library path, or
-make `rosu_pp_ffi` available through the platform library search path.
+`rosu.pp.ffi.library` system property to override the native library path.
+Packaged JARs otherwise select and extract the matching native library from
+`native/<rid>/` automatically, falling back to the platform library search path
+when no packaged resource is available.
 Applications should enable native access for the binding module, or use
 `--enable-native-access=ALL-UNNAMED` when running from the class path.
 Native service and wire instances implement `AutoCloseable` and should be used
