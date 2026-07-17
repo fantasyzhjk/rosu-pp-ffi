@@ -13,7 +13,7 @@ old_osu!(Osu2021July, osu_2021_july);
 old_osu!(Osu2021November, osu_2021_november);
 modern_osu!(Osu2022, osu_2022, direct);
 modern_osu!(Osu2024, osu_2024, direct);
-modern_osu!(Osu2025, osu_2025, checked);
+modern_osu!(Osu2025March, osu_2025, checked);
 old_taiko_ppv1!(TaikoPpv1);
 old_taiko!(Taiko2020, taiko_2020, |map, mods| {
     rosu_pp_older::taiko_2020::TaikoStars::new(map)
@@ -58,33 +58,29 @@ fn registry() -> &'static [Box<dyn LegacyCalculator>] {
     static REGISTRY: OnceLock<Vec<Box<dyn LegacyCalculator>>> = OnceLock::new();
     REGISTRY.get_or_init(|| {
         vec![
-            Box::new(Osu2014May(LegacyVersion::Osu2014May)),
-            Box::new(Osu2014July(LegacyVersion::Osu2014July)),
-            Box::new(Osu2015February(LegacyVersion::Osu2015February)),
-            Box::new(Osu2015April(LegacyVersion::Osu2015April)),
-            Box::new(Osu2018(LegacyVersion::Osu2018)),
-            Box::new(Osu2019(LegacyVersion::Osu2019)),
-            Box::new(Osu2021January(LegacyVersion::Osu2021January)),
-            Box::new(Osu2021July(LegacyVersion::Osu2021July)),
-            Box::new(Osu2021November(LegacyVersion::Osu2021November)),
-            Box::new(Osu2022(LegacyVersion::Osu2022)),
-            Box::new(Osu2024(LegacyVersion::Osu2024)),
-            Box::new(Osu2025(LegacyVersion::Osu2025)),
-            Box::new(TaikoPpv1(LegacyVersion::TaikoPpv1)),
-            Box::new(Taiko2020(LegacyVersion::Taiko2020)),
-            Box::new(Taiko2022(LegacyVersion::Taiko2022)),
-            Box::new(Taiko2024(LegacyVersion::Taiko2024)),
-            Box::new(Taiko2025(LegacyVersion::Taiko2025)),
-            Box::new(FruitsPpv1(LegacyVersion::FruitsPpv1)),
-            Box::new(Fruits2022(LegacyVersion::Fruits2022)),
-            Box::new(Fruits2024(LegacyVersion::Fruits2024)),
-            Box::new(ManiaPpv1(LegacyVersion::ManiaPpv1)),
-            Box::new(Mania2018(LegacyVersion::Mania2018)),
-            Box::new(Mania2022(LegacyVersion::Mania2022)),
+            Box::new(Osu2014May(LegacyVersion::V2014_5)),
+            Box::new(Osu2014July(LegacyVersion::V2014_7)),
+            Box::new(Osu2015February(LegacyVersion::V2015_2)),
+            Box::new(Osu2015April(LegacyVersion::V2015_4)),
+            Box::new(Osu2018(LegacyVersion::V2018)),
+            Box::new(Osu2019(LegacyVersion::V2019)),
+            Box::new(Osu2021January(LegacyVersion::V2021_1)),
+            Box::new(Osu2021July(LegacyVersion::V2021_7)),
+            Box::new(Osu2021November(LegacyVersion::V2021_11)),
             Box::new(Osu2022(LegacyVersion::V2022)),
             Box::new(Taiko2022(LegacyVersion::V2022)),
             Box::new(Fruits2022(LegacyVersion::V2022)),
             Box::new(Mania2022(LegacyVersion::V2022)),
+            Box::new(Osu2024(LegacyVersion::V2024)),
+            Box::new(Taiko2024(LegacyVersion::V2024)),
+            Box::new(Fruits2024(LegacyVersion::V2024)),
+            Box::new(Osu2025March(LegacyVersion::V2025_3)),
+            Box::new(Taiko2025(LegacyVersion::V2025_3)),
+            Box::new(TaikoPpv1(LegacyVersion::VPpv1)),
+            Box::new(FruitsPpv1(LegacyVersion::VPpv1)),
+            Box::new(ManiaPpv1(LegacyVersion::VPpv1)),
+            Box::new(Taiko2020(LegacyVersion::V2020)),
+            Box::new(Mania2018(LegacyVersion::V2018)),
             Box::new(BaseOsu),
             Box::new(BaseTaiko),
             Box::new(BaseCatch),
@@ -159,38 +155,38 @@ mod tests {
             assert!(result.pp > 0.0, "{:?}", calculator.version());
 
             match (calculator.version(), calculator.mode()) {
-                (LegacyVersion::RosuPpOlderBase, Mode::Osu) => {
+                (LegacyVersion::V2025_10, Mode::Osu) => {
                     assert!(result.difficulty.aim_difficult_slider_count.is_some());
                     assert!(result.difficulty.aim_top_weighted_slider_factor.is_some());
                     assert!(result.difficulty.maximum_legacy_combo_score.is_some());
                     assert!(result.difficulty.n_large_ticks.is_some());
                 }
-                (LegacyVersion::RosuPpOlderBase, Mode::Taiko) => {
+                (LegacyVersion::V2025_10, Mode::Taiko) => {
                     assert!(result.difficulty.reading.is_some());
                     assert!(result.difficulty.mechanical_difficulty.is_some());
                     assert!(result.difficulty.consistency_factor.is_some());
                 }
-                (LegacyVersion::RosuPpOlderBase, Mode::Catch) => {
+                (LegacyVersion::V2025_10, Mode::Catch) => {
                     assert!(result.difficulty.preempt.is_some());
                     assert!(result.difficulty.n_fruits.is_some());
                 }
-                (LegacyVersion::RosuPpOlderBase, Mode::Mania) => {
+                (LegacyVersion::V2025_10, Mode::Mania) => {
                     assert!(result.difficulty.n_objects.is_some());
                     assert!(result.difficulty.n_hold_notes.is_some());
                 }
-                (LegacyVersion::Osu2021November, Mode::Osu) => {
+                (LegacyVersion::V2021_11, Mode::Osu) => {
                     assert!(result.difficulty.flashlight.is_some());
                     assert!(result.difficulty.slider_factor.is_some());
                 }
                 (
-                    LegacyVersion::Osu2014May
-                    | LegacyVersion::Osu2014July
-                    | LegacyVersion::Osu2015February
-                    | LegacyVersion::Osu2015April
-                    | LegacyVersion::Osu2018
-                    | LegacyVersion::Osu2019
-                    | LegacyVersion::Osu2021January
-                    | LegacyVersion::Osu2021July,
+                    LegacyVersion::V2014_5
+                    | LegacyVersion::V2014_7
+                    | LegacyVersion::V2015_2
+                    | LegacyVersion::V2015_4
+                    | LegacyVersion::V2018
+                    | LegacyVersion::V2019
+                    | LegacyVersion::V2021_1
+                    | LegacyVersion::V2021_7,
                     Mode::Osu,
                 ) => {
                     assert!(result.difficulty.aim.is_some());
@@ -202,41 +198,41 @@ mod tests {
                     assert!(result.difficulty.n_sliders.is_some());
                     assert!(result.difficulty.n_spinners.is_some());
                 }
-                (LegacyVersion::Osu2024, Mode::Osu) => {
+                (LegacyVersion::V2024, Mode::Osu) => {
                     assert!(result.difficulty.aim_difficult_strain_count.is_some());
                     assert!(result.difficulty.speed_difficult_strain_count.is_some());
                     assert!(result.difficulty.n_large_ticks.is_some());
                 }
-                (LegacyVersion::Osu2025, Mode::Osu) => {
+                (LegacyVersion::V2025_3, Mode::Osu) => {
                     assert!(result.difficulty.aim_difficult_slider_count.is_some());
                     assert!(result.difficulty.great_hit_window.is_some());
                     assert!(result.speed_deviation.is_some());
                 }
-                (LegacyVersion::Taiko2022, Mode::Taiko) => {
+                (LegacyVersion::V2022, Mode::Taiko) => {
                     assert!(result.difficulty.peak.is_some());
                     assert!(result.difficulty.hit_window.is_some());
                     assert!(result.effective_miss_count.is_some());
                 }
-                (LegacyVersion::Taiko2024, Mode::Taiko) => {
+                (LegacyVersion::V2024, Mode::Taiko) => {
                     assert!(result.difficulty.peak.is_some());
                     assert!(result.difficulty.mono_stamina_factor.is_some());
                     assert!(result.estimated_unstable_rate.is_some());
                 }
-                (LegacyVersion::Taiko2025, Mode::Taiko) => {
+                (LegacyVersion::V2025_3, Mode::Taiko) => {
                     assert!(result.difficulty.reading.is_some());
                     assert!(result.difficulty.mono_stamina_factor.is_some());
                     assert!(result.estimated_unstable_rate.is_some());
                 }
-                (LegacyVersion::FruitsPpv1, Mode::Catch) => {
+                (LegacyVersion::VPpv1, Mode::Catch) => {
                     assert!(result.difficulty.preempt.is_some());
                     assert!(result.difficulty.n_fruits.is_some());
                 }
-                (LegacyVersion::Fruits2022 | LegacyVersion::Fruits2024, Mode::Catch) => {
+                (LegacyVersion::V2022 | LegacyVersion::V2024, Mode::Catch) => {
                     assert!(result.difficulty.ar.is_some());
                     assert!(result.difficulty.n_fruits.is_some());
                     assert!(result.difficulty.is_convert.is_some());
                 }
-                (LegacyVersion::Mania2022, Mode::Mania) => {
+                (LegacyVersion::V2022, Mode::Mania) => {
                     assert!(result.difficulty.hit_window.is_some());
                     assert!(result.difficulty.n_objects.is_some());
                     assert!(result.difficulty.is_convert.is_some());
@@ -249,7 +245,20 @@ mod tests {
         let mut unsupported = LegacyDifficulty::default();
         unsupported.set_mode(Mode::Catch);
         assert!(unsupported
-            .calculate(&beatmap, LegacyVersion::Osu2014May)
+            .calculate(&beatmap, LegacyVersion::V2014_5)
             .is_none());
+    }
+
+    #[test]
+    fn supported_modes_for_every_version() {
+        use Mode::*;
+        assert_eq!(LegacyVersion::V2022.supported_modes(), &[Osu, Taiko, Catch, Mania]);
+        assert_eq!(LegacyVersion::V2025_10.supported_modes(), &[Osu, Taiko, Catch, Mania]);
+        assert_eq!(LegacyVersion::V2025_3.supported_modes(), &[Osu, Taiko]);
+        assert_eq!(LegacyVersion::V2024.supported_modes(), &[Osu, Taiko, Catch]);
+        assert_eq!(LegacyVersion::V2018.supported_modes(), &[Osu, Mania]);
+        assert_eq!(LegacyVersion::VPpv1.supported_modes(), &[Taiko, Catch, Mania]);
+        assert_eq!(LegacyVersion::V2020.supported_modes(), &[Taiko]);
+        assert_eq!(LegacyVersion::V2014_5.supported_modes(), &[Osu]);
     }
 }

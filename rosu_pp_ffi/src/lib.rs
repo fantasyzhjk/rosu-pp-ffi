@@ -58,6 +58,7 @@ pub fn ffi_inventory() -> RustInventory {
         .register(function!(state::calculate_accuacy))
         // Keep extension types at the end to minimize churn in generated bindings.
         .register(extra_type!(legacy::LegacyVersion))
+        .register(function!(legacy::legacy_version_supported_modes))
         .register(extra_type!(legacy::LegacyDifficultyAttributes))
         .register(extra_type!(legacy::LegacyPerformanceAttributes))
         .register(service!(legacy::LegacyBeatmap))

@@ -19,30 +19,48 @@ pub use attributes::{LegacyDifficultyAttributes, LegacyPerformanceAttributes};
 pub enum LegacyVersion {
     #[default]
     V2022 = 0,
-    Osu2014May = 1,
-    Osu2014July = 2,
-    Osu2015February = 3,
-    Osu2015April = 4,
-    Osu2018 = 5,
-    Osu2019 = 6,
-    Osu2021January = 7,
-    Osu2021July = 8,
-    Osu2021November = 9,
-    Osu2022 = 10,
-    Osu2024 = 11,
-    Osu2025 = 12,
-    TaikoPpv1 = 13,
-    Taiko2020 = 14,
-    Taiko2022 = 15,
-    Taiko2024 = 16,
-    Taiko2025 = 17,
-    FruitsPpv1 = 18,
-    Fruits2022 = 19,
-    Fruits2024 = 20,
-    ManiaPpv1 = 21,
-    Mania2018 = 22,
-    Mania2022 = 23,
-    RosuPpOlderBase = 24,
+    V2014_5 = 1,
+    V2014_7 = 2,
+    V2015_2 = 3,
+    V2015_4 = 4,
+    V2018 = 5,
+    V2019 = 6,
+    V2021_1 = 7,
+    V2021_7 = 8,
+    V2021_11 = 9,
+    V2024 = 11,
+    V2025_3 = 12,
+    VPpv1 = 13,
+    V2020 = 14,
+    V2025_10 = 24,
+}
+
+impl LegacyVersion {
+    pub fn supported_modes(&self) -> &'static [Mode] {
+        use Mode::*;
+        match self {
+            LegacyVersion::V2022 => &[Osu, Taiko, Catch, Mania],
+            LegacyVersion::V2014_5 => &[Osu],
+            LegacyVersion::V2014_7 => &[Osu],
+            LegacyVersion::V2015_2 => &[Osu],
+            LegacyVersion::V2015_4 => &[Osu],
+            LegacyVersion::V2018 => &[Osu, Mania],
+            LegacyVersion::V2019 => &[Osu],
+            LegacyVersion::V2021_1 => &[Osu],
+            LegacyVersion::V2021_7 => &[Osu],
+            LegacyVersion::V2021_11 => &[Osu],
+            LegacyVersion::V2024 => &[Osu, Taiko, Catch],
+            LegacyVersion::V2025_3 => &[Osu, Taiko],
+            LegacyVersion::VPpv1 => &[Taiko, Catch, Mania],
+            LegacyVersion::V2020 => &[Taiko],
+            LegacyVersion::V2025_10 => &[Osu, Taiko, Catch, Mania],
+        }
+    }
+}
+
+#[ffi]
+pub fn legacy_version_supported_modes(version: LegacyVersion) -> Slice<'static, Mode> {
+    Slice::from_slice(version.supported_modes())
 }
 
 #[ffi(service)]

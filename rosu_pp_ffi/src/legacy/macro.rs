@@ -772,7 +772,7 @@ macro_rules! modern_osu {
 
         impl LegacyCalculator for $name {
             fn version(&self) -> LegacyVersion {
-                LegacyVersion::RosuPpOlderBase
+                LegacyVersion::V2025_10
             }
 
             fn mode(&self) -> Mode {
@@ -867,7 +867,7 @@ macro_rules! modern_taiko {
 
         impl LegacyCalculator for $name {
             fn version(&self) -> LegacyVersion {
-                LegacyVersion::RosuPpOlderBase
+                LegacyVersion::V2025_10
             }
 
             fn mode(&self) -> Mode {
@@ -971,7 +971,7 @@ macro_rules! modern_fruits {
 
         impl LegacyCalculator for $name {
             fn version(&self) -> LegacyVersion {
-                LegacyVersion::RosuPpOlderBase
+                LegacyVersion::V2025_10
             }
 
             fn mode(&self) -> Mode {
@@ -1076,7 +1076,7 @@ macro_rules! modern_mania {
 
         impl LegacyCalculator for $name {
             fn version(&self) -> LegacyVersion {
-                LegacyVersion::RosuPpOlderBase
+                LegacyVersion::V2025_10
             }
 
             fn mode(&self) -> Mode {
