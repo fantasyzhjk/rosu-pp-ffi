@@ -14,19 +14,18 @@ typedef struct Option_bool Option_bool;
 typedef struct OsuPerformanceAttributes OsuPerformanceAttributes;
 typedef struct Pos Pos;
 typedef struct Option_TooSuspicious Option_TooSuspicious;
-typedef struct LegacyDifficulty LegacyDifficulty;
 typedef struct ManiaPerformanceAttributes ManiaPerformanceAttributes;
 typedef struct ExpectedDistance ExpectedDistance;
 typedef struct HitObject HitObject;
 typedef struct GradualDifficulty GradualDifficulty;
 typedef struct ScoreState ScoreState;
-typedef struct LegacyPerformance LegacyPerformance;
 typedef struct PerformanceAttributes PerformanceAttributes;
 typedef struct ManiaDifficultyAttributes ManiaDifficultyAttributes;
 typedef struct Difficulty Difficulty;
 typedef struct DurationData DurationData;
 typedef struct Slice_u8 Slice_u8;
 typedef struct Option_PerformanceAttributes Option_PerformanceAttributes;
+typedef struct LegacyDifficulty LegacyDifficulty;
 typedef struct LegacyDifficultyAttributes LegacyDifficultyAttributes;
 typedef struct Option_DifficultyAttributes Option_DifficultyAttributes;
 typedef struct Performance Performance;
@@ -44,39 +43,13 @@ typedef struct Mods Mods;
 typedef struct TaikoDifficultyAttributes TaikoDifficultyAttributes;
 typedef struct Wire_Vec_HitObject Wire_Vec_HitObject;
 typedef struct GradualPerformance GradualPerformance;
-typedef struct LegacyBeatmap LegacyBeatmap;
+typedef struct LegacyPerformance LegacyPerformance;
 typedef struct TaikoPerformanceAttributes TaikoPerformanceAttributes;
 typedef struct HitObjectData HitObjectData;
 typedef struct Beatmap Beatmap;
 typedef struct OsuDifficultyAttributes OsuDifficultyAttributes;
+typedef struct LegacyBeatmap LegacyBeatmap;
 typedef struct Option_u32 Option_u32;
-
-struct ResultPtrFFIError { uint32_t variant; union { void *ok; uint32_t err; } payload; };
-
-struct String { uint8_t *ptr; uintptr_t len; uintptr_t capacity; };
-
-struct Option_bool { uint32_t variant; bool some; };
-
-struct Pos {
-    float x;
-    float y;
-};
-
-typedef enum TooSuspicious {
-    TOOSUSPICIOUS_DENSITY = 0,
-    TOOSUSPICIOUS_LENGTH = 1,
-    TOOSUSPICIOUS_OBJECTCOUNT = 2,
-    TOOSUSPICIOUS_REDFLAG = 3,
-    TOOSUSPICIOUS_SLIDERPOSITIONS = 4,
-    TOOSUSPICIOUS_SLIDERREPEATS = 5,
-} TooSuspicious;
-
-struct ExpectedDistance {
-    uint32_t variant;
-    union {
-        double some;
-    } payload;
-};
 
 typedef enum LegacyVersion {
     LEGACYVERSION_V2022 = 0,
@@ -105,6 +78,33 @@ typedef enum LegacyVersion {
     LEGACYVERSION_MANIA2022 = 23,
     LEGACYVERSION_ROSUPPOLDERBASE = 24,
 } LegacyVersion;
+
+struct ResultPtrFFIError { uint32_t variant; union { void *ok; uint32_t err; } payload; };
+
+struct String { uint8_t *ptr; uintptr_t len; uintptr_t capacity; };
+
+struct Option_bool { uint32_t variant; bool some; };
+
+struct Pos {
+    float x;
+    float y;
+};
+
+typedef enum TooSuspicious {
+    TOOSUSPICIOUS_DENSITY = 0,
+    TOOSUSPICIOUS_LENGTH = 1,
+    TOOSUSPICIOUS_OBJECTCOUNT = 2,
+    TOOSUSPICIOUS_REDFLAG = 3,
+    TOOSUSPICIOUS_SLIDERPOSITIONS = 4,
+    TOOSUSPICIOUS_SLIDERREPEATS = 5,
+} TooSuspicious;
+
+struct ExpectedDistance {
+    uint32_t variant;
+    union {
+        double some;
+    } payload;
+};
 
 struct ManiaDifficultyAttributes {
     double stars;
@@ -388,6 +388,7 @@ struct DifficultyAttributes {
 struct Option_DifficultyAttributes { uint32_t variant; DifficultyAttributes some; };
 
 void mods_sanitize(Mods * instance);
+void legacy_performance_score(LegacyPerformance * instance, uint32_t score);
 ResultPtrFFIError performance_create(void);
 Option_f64 mods_clock_rate(Mods * instance);
 void performance_n_katu(Performance * instance, uint32_t n_katu);
@@ -396,7 +397,11 @@ ResultPtrFFIError mods_from_json(String str, Mode mode, bool deny_unknown_fields
 ResultPtrFFIError difficulty_create(void);
 void beatmap_attributes_builder_mode(BeatmapAttributesBuilder * instance, Mode mode);
 ResultPtrFFIError gradual_difficulty_create(const Difficulty * difficulty, const Beatmap * beatmap);
+void legacy_beatmap_destroy(const LegacyBeatmap * instance);
+double legacy_difficulty_stars(const LegacyDifficulty * instance);
+void legacy_performance_misses(LegacyPerformance * instance, uint32_t misses);
 uint32_t mods_len(Mods * instance);
+void legacy_performance_slider_end_hits(LegacyPerformance * instance, uint32_t slider_end_hits);
 void difficulty_s_mods(Difficulty * instance, String str);
 bool mods_insert_json(Mods * instance, String str, bool deny_unknown_fields);
 void beatmap_attributes_builder_s_mods(BeatmapAttributesBuilder * instance, String str);
@@ -406,48 +411,52 @@ Option_PerformanceAttributes gradual_performance_nth(GradualPerformance * instan
 void beatmap_attributes_builder_p_mods(BeatmapAttributesBuilder * instance, const Mods * mods);
 void performance_clock_rate(Performance * instance, double clock_rate);
 void beatmap_destroy(const Beatmap * instance);
+Option_LegacyDifficultyAttributes legacy_difficulty_calculate(LegacyDifficulty * instance, const LegacyBeatmap * beatmap, LegacyVersion version);
 Wire_Vec_HitObject beatmap_hit_objects(const Beatmap * instance);
+void legacy_performance_p_mods(LegacyPerformance * instance, const Mods * mods);
 void legacy_performance_n300(LegacyPerformance * instance, uint32_t n300);
-LegacyVersion legacy_difficulty_version(const LegacyDifficulty * instance);
+void legacy_performance_s_mods(LegacyPerformance * instance, String str);
 void performance_small_tick_hits(Performance * instance, uint32_t small_tick_hits);
-ResultPtrFFIError legacy_beatmap_from_bytes(Slice_u8 data);
 BeatmapAttributes beatmap_attributes_builder_build(const BeatmapAttributesBuilder * instance, const Beatmap * beatmap);
 void performance_mode(Performance * instance, Mode mode);
-ResultPtrFFIError legacy_performance_create(void);
 Version __api_guard(void);
+ResultPtrFFIError legacy_performance_create(void);
 ResultPtrFFIError gradual_performance_create(const Difficulty * difficulty, const Beatmap * beatmap);
+void legacy_difficulty_destroy(const LegacyDifficulty * instance);
 void performance_state(Performance * instance, ScoreState state);
 void interoptopus_wire_destroy_78044(uint8_t * data, int32_t len, int32_t capacity);
+void legacy_performance_combo(LegacyPerformance * instance, uint32_t combo);
 void performance_hp(Performance * instance, float hp);
-Option_LegacyDifficultyAttributes legacy_difficulty_calculate(LegacyDifficulty * instance, const LegacyBeatmap * beatmap, LegacyVersion version);
+LegacyVersion legacy_difficulty_version(const LegacyDifficulty * instance);
 String debug_score_state(const ScoreState * res);
 void difficulty_p_mods(Difficulty * instance, const Mods * mods);
-void legacy_performance_combo(LegacyPerformance * instance, uint32_t combo);
 void beatmap_attributes_builder_hp(BeatmapAttributesBuilder * instance, float hp);
+ResultPtrFFIError legacy_difficulty_create(void);
 void beatmap_attributes_builder_cs(BeatmapAttributesBuilder * instance, float cs);
 void difficulty_ar(Difficulty * instance, float ar);
 void performance_n100(Performance * instance, uint32_t n100);
 float beatmap_od(Beatmap * instance);
-void legacy_difficulty_mods(LegacyDifficulty * instance, uint32_t mods);
+void legacy_performance_accuracy(LegacyPerformance * instance, double accuracy);
 void difficulty_i_mods(Difficulty * instance, uint32_t mods);
 void mods_clear(Mods * instance);
+void legacy_performance_destroy(const LegacyPerformance * instance);
 void difficulty_cs(Difficulty * instance, float cs);
 Option_f64 beatmap_hit_object_end_time(const Beatmap * instance, uint32_t index);
 Option_PerformanceAttributes gradual_performance_last(GradualPerformance * instance, ScoreState state);
 Option_DifficultyAttributes gradual_difficulty_next(GradualDifficulty * instance);
-void legacy_performance_n_katu(LegacyPerformance * instance, uint32_t n_katu);
+Mode legacy_difficulty_mode(const LegacyDifficulty * instance);
 uint32_t gradual_performance_len(const GradualPerformance * instance);
+void legacy_performance_n50(LegacyPerformance * instance, uint32_t n50);
 void beatmap_attributes_builder_i_mods(BeatmapAttributesBuilder * instance, uint32_t mods);
 void gradual_difficulty_destroy(const GradualDifficulty * instance);
-void legacy_beatmap_destroy(const LegacyBeatmap * instance);
+void legacy_performance_n_katu(LegacyPerformance * instance, uint32_t n_katu);
 void gradual_performance_destroy(const GradualPerformance * instance);
 float beatmap_ar(Beatmap * instance);
 double calculate_accuacy(const ScoreState * state, const DifficultyAttributes * difficulty, OsuScoreOrigin origin);
 void performance_accuracy(Performance * instance, double accuracy);
 void performance_misses(Performance * instance, uint32_t misses);
 double beatmap_slider_tick_rate(Beatmap * instance);
-void legacy_difficulty_set_mode(LegacyDifficulty * instance, Mode mode);
-void legacy_performance_misses(LegacyPerformance * instance, uint32_t misses);
+void legacy_difficulty_passed_objects(LegacyDifficulty * instance, uint32_t passed_objects);
 bool beatmap_is_convert(Beatmap * instance);
 ResultPtrFFIError gradual_performance_new_with_mode(const Difficulty * difficulty, const Beatmap * beatmap, Mode mode);
 uint32_t mods_bits(Mods * instance);
@@ -455,12 +464,9 @@ float beatmap_stack_leniency(Beatmap * instance);
 ResultPtrFFIError beatmap_attributes_builder_create(void);
 void beatmap_attributes_builder_ar(BeatmapAttributesBuilder * instance, float ar);
 void performance_combo(Performance * instance, uint32_t combo);
-double legacy_difficulty_stars(const LegacyDifficulty * instance);
-ResultPtrFFIError legacy_performance_calculate(const LegacyPerformance * instance, const LegacyBeatmap * beatmap, const LegacyDifficulty * difficulty);
 PerformanceAttributes performance_calculate_from_difficulty(const Performance * instance, DifficultyAttributes difficulty_attr);
 void mods_destroy(const Mods * instance);
 void mods_insert(Mods * instance, String str);
-Mode legacy_difficulty_mode(const LegacyDifficulty * instance);
 String mods_json(const Mods * instance);
 float beatmap_hp(Beatmap * instance);
 void difficulty_od(Difficulty * instance, float od);
@@ -471,36 +477,40 @@ void performance_n_geki(Performance * instance, uint32_t n_geki);
 void difficulty_passed_objects(Difficulty * instance, uint32_t passed_objects);
 void difficulty_lazer(Difficulty * instance, bool lazer);
 ResultPtrFFIError gradual_difficulty_new_with_mode(const Difficulty * difficulty, const Beatmap * beatmap, Mode mode);
-void legacy_performance_destroy(const LegacyPerformance * instance);
+void legacy_performance_n_geki(LegacyPerformance * instance, uint32_t n_geki);
+void legacy_difficulty_mods(LegacyDifficulty * instance, uint32_t mods);
 void performance_i_mods(Performance * instance, uint32_t mods);
-void legacy_difficulty_destroy(const LegacyDifficulty * instance);
 void performance_destroy(const Performance * instance);
 void performance_hitresult_priority(Performance * instance, HitResultPriority hitresult_priority);
+void legacy_difficulty_clock_rate(LegacyDifficulty * instance, double clock_rate);
 Option_DifficultyAttributes gradual_difficulty_nth(GradualDifficulty * instance, uint32_t n);
 void performance_hardrock_offsets(Performance * instance, bool hardrock_offsets);
 void performance_cs(Performance * instance, float cs);
+ResultPtrFFIError legacy_performance_calculate(const LegacyPerformance * instance, const LegacyBeatmap * beatmap, const LegacyDifficulty * difficulty);
 Mode beatmap_mode(Beatmap * instance);
 ResultPtrFFIError mods_from_bits(uint32_t bits, Mode mode);
 Option_PerformanceAttributes gradual_performance_next(GradualPerformance * instance, ScoreState state);
+void legacy_performance_i_mods(LegacyPerformance * instance, uint32_t mods);
 uint8_t * interoptopus_wire_create_75623(int32_t size, int32_t * out_len, int32_t * out_capacity);
-void legacy_performance_mods(LegacyPerformance * instance, uint32_t mods);
 ResultPtrFFIError mods_create(Mode mode);
 int32_t beatmap_version(Beatmap * instance);
 void performance_od(Performance * instance, float od);
-ResultPtrFFIError legacy_difficulty_create(void);
 int64_t interoptopus_string_clone(const String * utf8, String * rval);
 double beatmap_total_break_time(Beatmap * instance);
 int64_t interoptopus_string_create(const void * utf8, uint64_t len, String * rval);
+void legacy_difficulty_set_mode(LegacyDifficulty * instance, Mode mode);
 void beatmap_attributes_builder_destroy(const BeatmapAttributesBuilder * instance);
-void legacy_performance_n_geki(LegacyPerformance * instance, uint32_t n_geki);
 DifficultyAttributes difficulty_calculate(const Difficulty * instance, const Beatmap * beatmap);
 String debug_performance_attributes(const PerformanceAttributes * res);
+void legacy_performance_large_tick_hits(LegacyPerformance * instance, uint32_t large_tick_hits);
 void performance_large_tick_hits(Performance * instance, uint32_t large_tick_hits);
+ResultPtrFFIError legacy_beatmap_from_bytes(Slice_u8 data);
 double difficulty_get_clock_rate(Difficulty * instance);
 void beatmap_attributes_builder_clock_rate(BeatmapAttributesBuilder * instance, double clock_rate);
-void legacy_difficulty_passed_objects(LegacyDifficulty * instance, uint32_t passed_objects);
+void legacy_performance_small_tick_hits(LegacyPerformance * instance, uint32_t small_tick_hits);
 float beatmap_cs(Beatmap * instance);
 double beatmap_slider_multiplier(Beatmap * instance);
+void legacy_performance_n100(LegacyPerformance * instance, uint32_t n100);
 bool beatmap_convert(Beatmap * instance, Mode mode, const Mods * mods);
 int64_t interoptopus_string_destroy(String utf8);
 ScoreState performance_generate_state_from_difficulty(const Performance * instance, DifficultyAttributes difficulty_attr);
@@ -509,22 +519,20 @@ void performance_ar(Performance * instance, float ar);
 void performance_slider_end_hits(Performance * instance, uint32_t slider_end_hits);
 void beatmap_attributes_builder_od(BeatmapAttributesBuilder * instance, float od);
 ScoreState performance_generate_state(const Performance * instance, const Beatmap * beatmap);
-uint32_t legacy_difficulty_max_combo(const LegacyDifficulty * instance);
 double beatmap_attributes_builder_get_clock_rate(BeatmapAttributesBuilder * instance);
 void mods_remove_unknown_mods(Mods * instance);
-void legacy_performance_accuracy(LegacyPerformance * instance, double accuracy);
-void legacy_performance_n50(LegacyPerformance * instance, uint32_t n50);
+uint32_t legacy_difficulty_max_combo(const LegacyDifficulty * instance);
 PerformanceAttributes performance_calculate(const Performance * instance, const Beatmap * beatmap);
-void legacy_performance_n100(LegacyPerformance * instance, uint32_t n100);
 void difficulty_destroy(const Difficulty * instance);
 void difficulty_hp(Difficulty * instance, float hp);
 void performance_legacy_total_score(Performance * instance, uint32_t legacy_total_score);
 void difficulty_hardrock_offsets(Difficulty * instance, bool hardrock_offsets);
-void legacy_difficulty_clock_rate(LegacyDifficulty * instance, double clock_rate);
 void performance_s_mods(Performance * instance, String str);
 String debug_difficulty_attributes(const DifficultyAttributes * res);
+void legacy_performance_legacy_total_score(LegacyPerformance * instance, uint32_t legacy_total_score);
 bool mods_contains(const Mods * instance, String str);
 void difficulty_clock_rate(Difficulty * instance, double clock_rate);
+void legacy_performance_lazer(LegacyPerformance * instance, bool lazer);
 uint32_t gradual_difficulty_len(const GradualDifficulty * instance);
 ResultPtrFFIError beatmap_from_path(String path);
 double performance_get_clock_rate(Performance * instance);

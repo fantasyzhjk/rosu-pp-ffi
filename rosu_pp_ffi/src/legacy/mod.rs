@@ -1,9 +1,10 @@
-use crate::{ffi_result, mode::Mode, Error, FFIError};
+use crate::{ffi_result, mode::Mode, mods::Mods, Error, FFIError};
 
 use interoptopus::{
     ffi,
-    ffi::{Option as FFIOption, Slice},
+    ffi::{Option as FFIOption, Slice, String as FFIString},
 };
+use rosu_mods::{GameMods, GameModsIntermode};
 
 mod attributes;
 #[macro_use]
@@ -153,16 +154,24 @@ impl LegacyDifficulty {
 
 #[ffi(service)]
 #[derive(Clone, Default, PartialEq)]
+#[allow(non_snake_case)]
 pub struct LegacyPerformance {
-    mods: u32,
-    accuracy: Option<f64>,
-    misses: Option<u32>,
-    combo: Option<u32>,
-    n300: Option<u32>,
-    n100: Option<u32>,
-    n50: Option<u32>,
-    n_katu: Option<u32>,
-    n_geki: Option<u32>,
+    pub mods: Option<GameMods>,
+    pub mods_intermode: Option<GameModsIntermode>,
+    pub accuracy: Option<f64>,
+    pub score: Option<u32>,
+    pub misses: Option<u32>,
+    pub combo: Option<u32>,
+    pub n300: Option<u32>,
+    pub n100: Option<u32>,
+    pub n50: Option<u32>,
+    pub n_katu: Option<u32>,
+    pub n_geki: Option<u32>,
+    pub lazer: Option<bool>,
+    pub legacy_total_score: Option<u32>,
+    pub large_tick_hits: Option<u32>,
+    pub small_tick_hits: Option<u32>,
+    pub slider_end_hits: Option<u32>,
 }
 
 #[ffi(prefix = "legacy_performance_")]
@@ -171,12 +180,44 @@ impl LegacyPerformance {
         ffi_result(Ok(Self::default()))
     }
 
-    pub fn mods(&mut self, mods: u32) {
-        self.mods = mods;
+    pub fn p_mods(&mut self, mods: &Mods) {
+        self.mods = Some(mods.mods.clone());
+    }
+
+    pub fn i_mods(&mut self, mods: u32) {
+        self.mods_intermode = Some(GameModsIntermode::from_bits(mods));
+    }
+
+    pub fn s_mods(&mut self, str: FFIString) {
+        self.mods_intermode = Some(GameModsIntermode::from_acronyms(str.as_str()));
     }
 
     pub fn accuracy(&mut self, accuracy: f64) {
         self.accuracy = Some(accuracy);
+    }
+
+    pub fn score(&mut self, score: u32) {
+        self.score = Some(score);
+    }
+
+    pub fn lazer(&mut self, lazer: bool) {
+        self.lazer = Some(lazer);
+    }
+
+    pub fn legacy_total_score(&mut self, legacy_total_score: u32) {
+        self.legacy_total_score = Some(legacy_total_score);
+    }
+
+    pub fn large_tick_hits(&mut self, large_tick_hits: u32) {
+        self.large_tick_hits = Some(large_tick_hits);
+    }
+
+    pub fn small_tick_hits(&mut self, small_tick_hits: u32) {
+        self.small_tick_hits = Some(small_tick_hits);
+    }
+
+    pub fn slider_end_hits(&mut self, slider_end_hits: u32) {
+        self.slider_end_hits = Some(slider_end_hits);
     }
 
     pub fn misses(&mut self, misses: u32) {
@@ -221,6 +262,21 @@ impl LegacyPerformance {
         };
 
         ffi_result(Ok(calculator.performance(&beatmap.inner, difficulty, self)))
+    }
+}
+
+impl LegacyPerformance {
+    /// Derive legacy mod bits from whichever mod representation was set.
+    pub fn bits(&self) -> u32 {
+        if let Some(mods) = self.mods.as_ref() {
+            return mods.bits();
+        }
+
+        if let Some(mods_intermode) = self.mods_intermode.as_ref() {
+            return mods_intermode.bits();
+        }
+
+        0
     }
 }
 

@@ -1,4 +1,4 @@
-macro_rules! finish {
+﻿macro_rules! finish {
     ($value:expr, direct) => {
         $value
     };
@@ -358,7 +358,47 @@ macro_rules! apply_base_performance_state {
         if let Some(value) = $state.n_geki {
             calculation = calculation.n_geki(value);
         }
+        if let Some(value) = $state.lazer {
+            calculation = calculation.lazer(value);
+        }
+        if let Some(value) = $state.legacy_total_score {
+            calculation = calculation.legacy_total_score(value);
+        }
+        if let Some(value) = $state.large_tick_hits {
+            calculation = calculation.large_tick_hits(value);
+        }
+        if let Some(value) = $state.small_tick_hits {
+            calculation = calculation.small_tick_hits(value);
+        }
+        if let Some(value) = $state.slider_end_hits {
+            calculation = calculation.slider_end_hits(value);
+        }
         calculation
+    }};
+}
+
+/// Apply osu-specific tick/lazer fields to modern legacy `OsuPP` builders.
+///
+/// osu_2022 lacks these setters so the value is passed through unchanged.
+macro_rules! apply_modern_osu_score_state {
+    (osu_2022, $calc:expr, $state:expr) => {
+        $calc
+    };
+    ($module:ident, $calc:expr, $state:expr) => {{
+        let mut calc = $calc;
+        if let Some(value) = $state.lazer {
+            calc = calc.lazer(value);
+        }
+        if let Some(value) = $state.large_tick_hits {
+            calc = calc.large_tick_hits(value);
+        }
+        if let Some(value) = $state.small_tick_hits {
+            calc = calc.small_tick_hits(value);
+        }
+        if let Some(value) = $state.slider_end_hits {
+            calc = calc.slider_end_hits(value);
+        }
+        calc
     }};
 }
 
@@ -389,7 +429,7 @@ macro_rules! old_osu {
                 let prepared = prepare(attrs, move |attrs, map, state| {
                     let mut calc = rosu_pp_older::$module::OsuPP::new(map)
                         .attributes((*attrs).clone())
-                        .mods(state.mods);
+                        .mods(state.bits());
                     if let Some(value) = state.accuracy {
                         calc = calc.accuracy(value as _);
                     }
@@ -452,7 +492,7 @@ macro_rules! old_taiko {
                 let prepared = prepare(attrs, move |attrs, map, state| {
                     let mut calc = rosu_pp_older::$module::TaikoPP::new(map)
                         .attributes((*attrs).clone())
-                        .mods(state.mods);
+                        .mods(state.bits());
                     if let Some(value) = state.accuracy {
                         calc = calc.accuracy(value as _);
                     }
@@ -511,7 +551,7 @@ macro_rules! old_taiko_ppv1 {
                 let prepared = prepare(stars as f32, move |stars_attr, map, state| {
                     let mut calc = rosu_pp_older::taiko_ppv1::TaikoPP::new(map)
                         .attributes(*stars_attr)
-                        .mods(state.mods);
+                        .mods(state.bits());
                     if let Some(value) = state.accuracy {
                         calc = calc.accuracy(value as _);
                     }
@@ -563,7 +603,7 @@ macro_rules! old_fruits {
                 let prepared = prepare(attrs, move |attrs, map, state| {
                     let mut calc = rosu_pp_older::$module::FruitsPP::new(map)
                         .attributes((*attrs).clone())
-                        .mods(state.mods);
+                        .mods(state.bits());
                     if let Some(value) = state.accuracy {
                         calc = calc.accuracy(value as _);
                     }
@@ -628,8 +668,8 @@ macro_rules! old_mania {
                 let prepared = prepare(reusable, move |attrs, map, state| {
                     let calc = rosu_pp_older::$module::ManiaPP::new(map)
                         .attributes(*attrs)
-                        .mods(state.mods);
-                    let calc = apply_mania_accuracy!(calc, state, $accuracy);
+                        .mods(state.bits());
+                    let calc = apply_mania_score!(calc, state, $accuracy);
                     let result = calc.calculate();
                     LegacyPerformanceAttributes {
                         pp: result.pp,
@@ -651,17 +691,23 @@ macro_rules! mania_reusable {
     ($attrs:expr, no_accuracy) => {
         $attrs.stars
     };
+    ($attrs:expr, score) => {
+        $attrs.stars
+    };
 }
 
-macro_rules! apply_mania_accuracy {
+macro_rules! apply_mania_score {
     ($calc:expr, $state:expr, accuracy) => {
         match $state.accuracy {
             Some(value) => $calc.accuracy(value as _),
             None => $calc,
         }
     };
-    ($calc:expr, $state:expr, no_accuracy) => {
-        $calc
+    ($calc:expr, $state:expr, score) => {
+        match $state.score {
+            Some(value) => $calc.score(value),
+            None => $calc,
+        }
     };
 }
 
@@ -694,7 +740,7 @@ macro_rules! modern_osu {
                 let prepared = prepare(attrs, move |attrs, map, state| {
                     let mut calc = rosu_pp_older::$module::OsuPP::new(map)
                         .attributes((*attrs).clone())
-                        .mods(state.mods);
+                        .mods(state.bits());
                     if let Some(value) = state.accuracy {
                         calc = calc.accuracy(value);
                     }
@@ -713,6 +759,7 @@ macro_rules! modern_osu {
                     if let Some(value) = state.n50 {
                         calc = calc.n50(value);
                     }
+                    let calc = apply_modern_osu_score_state!($module, calc, state);
                     let result = finish!(calc.calculate(), $finish);
                     modern_osu_performance_attributes!($module, result)
                 });
@@ -751,7 +798,7 @@ macro_rules! modern_osu {
                 let attrs = rosu_pp_older_base::any::DifficultyAttributes::Osu(attrs);
                 let prepared = prepare(attrs, move |attrs, _map, state| {
                     let calculation = apply_base_performance_state!(
-                        attrs.clone().performance().mods(state.mods),
+                        attrs.clone().performance().mods(state.bits()),
                         state
                     );
                     base_performance_attributes(calculation.calculate())
@@ -792,7 +839,7 @@ macro_rules! modern_taiko {
                 let prepared = prepare(attrs, move |attrs, map, state| {
                     let mut calc = rosu_pp_older::$module::TaikoPP::new(map)
                         .attributes((*attrs).clone())
-                        .mods(state.mods);
+                        .mods(state.bits());
                     if let Some(value) = state.accuracy {
                         calc = calc.accuracy(value);
                     }
@@ -846,7 +893,7 @@ macro_rules! modern_taiko {
                 let attrs = rosu_pp_older_base::any::DifficultyAttributes::Taiko(attrs);
                 let prepared = prepare(attrs, move |attrs, _map, state| {
                     let calculation = apply_base_performance_state!(
-                        attrs.clone().performance().mods(state.mods),
+                        attrs.clone().performance().mods(state.bits()),
                         state
                     );
                     base_performance_attributes(calculation.calculate())
@@ -887,7 +934,7 @@ macro_rules! modern_fruits {
                 let prepared = prepare(attrs, move |attrs, map, state| {
                     let mut calc = rosu_pp_older::$module::FruitsPP::new(map)
                         .attributes((*attrs).clone())
-                        .mods(state.mods);
+                        .mods(state.bits());
                     if let Some(value) = state.accuracy {
                         calc = calc.accuracy(value);
                     }
@@ -950,7 +997,7 @@ macro_rules! modern_fruits {
                 let attrs = rosu_pp_older_base::any::DifficultyAttributes::Catch(attrs);
                 let prepared = prepare(attrs, move |attrs, _map, state| {
                     let calculation = apply_base_performance_state!(
-                        attrs.clone().performance().mods(state.mods),
+                        attrs.clone().performance().mods(state.bits()),
                         state
                     );
                     base_performance_attributes(calculation.calculate())
@@ -991,7 +1038,7 @@ macro_rules! modern_mania {
                 let prepared = prepare(attrs, move |attrs, map, state| {
                     let mut calc = rosu_pp_older::mania_2022::ManiaPP::new(map)
                         .attributes((*attrs).clone())
-                        .mods(state.mods);
+                        .mods(state.bits());
                     if let Some(value) = state.accuracy {
                         calc = calc.accuracy(value);
                     }
@@ -1055,7 +1102,7 @@ macro_rules! modern_mania {
                 let attrs = rosu_pp_older_base::any::DifficultyAttributes::Mania(attrs);
                 let prepared = prepare(attrs, move |attrs, _map, state| {
                     let calculation = apply_base_performance_state!(
-                        attrs.clone().performance().mods(state.mods),
+                        attrs.clone().performance().mods(state.bits()),
                         state
                     );
                     base_performance_attributes(calculation.calculate())

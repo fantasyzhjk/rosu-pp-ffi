@@ -38,7 +38,7 @@ old_mania!(
     |map, mods| rosu_pp_older::mania_2018::ManiaStars::new(map)
         .mods(mods)
         .calculate(),
-    no_accuracy
+    score
 );
 modern_mania!(Mania2022, mania_2022);
 
